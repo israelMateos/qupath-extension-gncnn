@@ -10,7 +10,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
- * Class to tile the WSI into the given size patches and save them in a temporary folder
+ * Class to tile the WSI into the given size patches and save them in a
+ * temporary folder
  * 
  * @author Israel Mateos Aparicio
  */
@@ -20,33 +21,68 @@ public class Tiler {
 
     private int tileSize;
 
-    public Tiler(int tileSize) {
+    private int tileOverlap;
+
+    private int downsample;
+
+    private String imageExtension;
+
+    public Tiler(int tileSize, int tileOverlap, int downsample, String imageExtension) {
         this.tileSize = tileSize;
+        this.tileOverlap = tileOverlap;
+        this.downsample = downsample;
+        this.imageExtension = imageExtension;
     }
 
     public int getTileSize() {
         return tileSize;
     }
 
+    public int getTileOverlap() {
+        return tileOverlap;
+    }
+
+    public int getDownsample() {
+        return downsample;
+    }
+
+    public String getImageExtension() {
+        return imageExtension;
+    }
+
     public void setTileSize(int tileSize) {
         this.tileSize = tileSize;
     }
 
+    public void setTileOverlap(int tileOverlap) {
+        this.tileOverlap = tileOverlap;
+    }
+
+    public void setDownsample(int downsample) {
+        this.downsample = downsample;
+    }
+
+    public void setImageExtension(String imageExtension) {
+        this.imageExtension = imageExtension;
+    }
+
     /**
      * Tiles the image data and saves the tiles in the given output path
+     * 
      * @param imageData
      * @param outputPath
-     * @throws IOException 
+     * @throws IOException
      */
     public void tileWSI(ImageData<BufferedImage> imageData, String outputPath) throws IOException {
-        logger.info("Tiling image data {} into patches of size {}", imageData.getServer().getMetadata().getName(), tileSize);
+        logger.info("Tiling image data {} into patches of size {}", imageData.getServer().getMetadata().getName(),
+                tileSize);
         new TileExporter(imageData)
-            .tileSize(tileSize)
-            .imageExtension("png")
-            .overlap(tileSize / 2)
-            .downsample(0)
-            .annotatedTilesOnly(false)
-            .writeTiles(outputPath);
+                .tileSize(tileSize)
+                .imageExtension(imageExtension)
+                .overlap(tileOverlap)
+                .downsample(downsample)
+                .annotatedTilesOnly(false)
+                .writeTiles(outputPath);
         logger.info("Tiling finished. Tiles saved in {}", outputPath);
     }
 
