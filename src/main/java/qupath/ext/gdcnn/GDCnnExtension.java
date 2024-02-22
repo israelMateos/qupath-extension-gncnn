@@ -100,7 +100,7 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 		MenuItem menuItem = new MenuItem("Run pipeline");
 		menuItem.setOnAction(e -> {
 			try {
-				// TODO: Add the code to run the pipeline
+				new GDCnn().runPipeline();
 			} catch (Exception ex) {
 				logger.error("Error running pipeline", ex);
 			}
