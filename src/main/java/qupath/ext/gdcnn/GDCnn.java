@@ -1,12 +1,20 @@
 package qupath.ext.gdcnn;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import qupath.lib.common.GeneralTools;
+import qupath.lib.gui.QuPathGUI;
+import qupath.lib.images.ImageData;
+import qupath.lib.projects.Project;
+import qupath.lib.projects.ProjectImageEntry;
 import qupath.ext.env.VirtualEnvironment;
 
 /**
@@ -54,5 +62,30 @@ public class GDCnn {
         venv.runCommand();
 
         logger.info("Pipeline finished running");
+    }
+
+    /**
+     * Tiles each WSI in the project to the given size and saves them in a temporary folder
+     * @param qupath
+     * @param tileSize
+     * @throws IOException
+     */
+    public void tileWSI(QuPathGUI qupath, int tileSize) throws IOException {
+        // Get the list of images in the project
+        Project<BufferedImage> project = qupath.getProject();
+        List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
+
+        logger.info("Tiling images in the project to patches of size {}", tileSize);
+        // For each image, tile it and save the tiles in a temporary folder
+        for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
+            Tiler tiler = new Tiler(tileSize);
+            ImageData<BufferedImage> imageData = imageEntry.readImageData();
+            String outputPath = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName()) + "_tiles";
+            // Create the output folder if it does not exist
+            Files.createDirectories(Paths.get(outputPath));
+            tiler.tileWSI(imageData, outputPath);
+        }
+        
+        logger.info("Tiling images in the project finished");
     }
 }
