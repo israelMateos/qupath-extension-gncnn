@@ -97,7 +97,7 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 	 */
 	private void addMenuItem(QuPathGUI qupath) {
 		var menu = qupath.getMenu("Extensions>" + EXTENSION_NAME, true);
-		MenuItem pipelineItem = new MenuItem("Tile WSIs");
+		MenuItem pipelineItem = new MenuItem("Run pipeline");
 		MenuItem tileItem = new MenuItem("Tile WSIs");
 
 		pipelineItem.setOnAction(e -> {

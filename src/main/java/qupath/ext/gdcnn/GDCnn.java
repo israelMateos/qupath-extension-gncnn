@@ -88,7 +88,7 @@ public class GDCnn {
             String outputPath = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName()) + "_tiles";
             // Create the output folder if it does not exist
             Files.createDirectories(Paths.get(outputPath));
-            tiler.tileWSI(imageData, outputPath);
+            tiler.tileWSIAsync(imageData, outputPath);
         }
 
         logger.info("Tiling images in the project finished");
