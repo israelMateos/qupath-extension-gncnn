@@ -4,6 +4,7 @@ import org.controlsfx.tools.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
  * @author Israel Mateos Aparicio
  */
 public class VirtualEnvironment {
-    
+
     private final Logger logger = LoggerFactory.getLogger(VirtualEnvironment.class);
 
     private String name;
@@ -30,7 +31,6 @@ public class VirtualEnvironment {
 
     private List<String> arguments;
 
-
     public VirtualEnvironment(String name, String pythonPath, String gdcnnPath) {
         this.name = name;
         this.pythonPath = pythonPath;
@@ -39,6 +39,7 @@ public class VirtualEnvironment {
 
     /**
      * Sets the arguments to be used in the command
+     * 
      * @param arguments
      */
     public void setArguments(List<String> arguments) {
@@ -47,14 +48,17 @@ public class VirtualEnvironment {
 
     /**
      * Builds the command to be run and executes it
-     * @throws IOException // In case there is an issue starting the process
-     * @throws InterruptedException // In case there is an issue after the process is started
+     * 
+     * @throws IOException          // In case there is an issue starting the
+     *                              process
+     * @throws InterruptedException // In case there is an issue after the process
+     *                              is started
      */
     public void runCommand() throws IOException, InterruptedException {
 
         // Add PYTHONPATH and Python executable to the environment
         List<String> command = new ArrayList<>(
-            Arrays.asList("PYTHONPATH=" + gdcnnPath, pythonPath));
+                Arrays.asList("PYTHONPATH=" + gdcnnPath, pythonPath));
 
         // Get the arguments specific to the command we want to run
         command.addAll(arguments);
@@ -68,15 +72,15 @@ public class VirtualEnvironment {
 
                 // If there are spaces, encapsulate the command with quotes
                 command = command.stream().map(s -> {
-                            if (s.trim().contains(" "))
-                                return "\"" + s.trim() + "\"";
-                            return s;
-                        }).collect(Collectors.toList());
+                    if (s.trim().contains(" "))
+                        return "\"" + s.trim() + "\"";
+                    return s;
+                }).collect(Collectors.toList());
 
                 // The last part needs to be sent as a single string, otherwise it does not run
-                String cmdString = command.toString().replace(",","");
+                String cmdString = command.toString().replace(",", "");
 
-                shell.add(cmdString.substring(1, cmdString.length()-1));
+                shell.add(cmdString.substring(1, cmdString.length() - 1));
                 break;
 
             // For windows, continue appending the command;
@@ -86,7 +90,6 @@ public class VirtualEnvironment {
                 shell.addAll(command);
                 break;
         }
-
 
         // Make the command human readable
         List<String> printable = shell.stream().map(s -> {
@@ -98,10 +101,11 @@ public class VirtualEnvironment {
         }).collect(Collectors.toList());
         String executionString = printable.toString().replace(",", "");
 
-        logger.info("Executing command:\n{}", executionString.substring(1, executionString.length()-1));
+        logger.info("Executing command:\n{}", executionString.substring(1, executionString.length() - 1));
         logger.info("This command should run directly if copy-pasted into your shell");
 
         ProcessBuilder pb = new ProcessBuilder(shell).redirectErrorStream(true);
+        pb.directory(new File(gdcnnPath));
 
         Process p = pb.start();
 
@@ -110,7 +114,7 @@ public class VirtualEnvironment {
             public void run() {
                 BufferedReader stdIn = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 try {
-                    for (String line = stdIn.readLine(); line != null; ) {
+                    for (String line = stdIn.readLine(); line != null;) {
                         logger.info("{}: {}", name, line);
                         line = stdIn.readLine();
                     }
@@ -129,15 +133,8 @@ public class VirtualEnvironment {
         int exitValue = p.exitValue();
 
         if (exitValue != 0) {
-            logger.error("Runner '{}' exited with value {}. Please check output above for indications of the problem.", name, exitValue);
+            logger.error("Runner '{}' exited with value {}. Please check output above for indications of the problem.",
+                    name, exitValue);
         }
     }
-
-    /**
-     * Reads annotations from a pickle file and adds them to the QuPath project
-     * @param path
-     */
-    // public void readAnnotations(String path) {
-        
-    // }
 }
