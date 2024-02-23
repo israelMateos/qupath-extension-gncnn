@@ -14,14 +14,13 @@ import qupath.lib.gui.extensions.GitHubProject;
 import qupath.lib.gui.extensions.QuPathExtension;
 import qupath.lib.gui.prefs.PathPrefs;
 
-
 /**
  * QuPath extension to detect and classify glomeruli using deep learning.
  * 
  * @author Israel Mateos Aparicio
  */
 public class GDCnnExtension implements QuPathExtension, GitHubProject {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(GDCnnExtension.class);
 
 	private static final String EXTENSION_NAME = "GDCnn";
@@ -45,7 +44,7 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 			return;
 		}
 		isInstalled = true;
-		addMenuItem(qupath);
+		addMenuItems(qupath);
 		addPreferences();
 	}
 
@@ -53,15 +52,15 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 	 * Adds the needed preferences to the QuPath preferences dialog.
 	 */
 	private void addPreferences() {
-        // Get an instance of the options
-        GDCnnSetup options = GDCnnSetup.getInstance();
+		// Get an instance of the options
+		GDCnnSetup options = GDCnnSetup.getInstance();
 
-        //Set options to current values
-        options.setPythonPath(pythonPathProperty.get());
+		// Set options to current values
+		options.setPythonPath(pythonPathProperty.get());
 		options.setGdcnnPath(gdcnnPathProperty.get());
 
-        // Listen for property changes
-        pythonPathProperty.addListener((v, o, n) -> options.setPythonPath(n));
+		// Listen for property changes
+		pythonPathProperty.addListener((v, o, n) -> options.setPythonPath(n));
 		gdcnnPathProperty.addListener((v, o, n) -> options.setGdcnnPath(n));
 
 		// Create the items for the preferences dialog
@@ -71,7 +70,7 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 				.category(EXTENSION_NAME)
 				.description("Enable or disable the " + EXTENSION_NAME + " extension.")
 				.build();
-		
+
 		PropertySheet.Item pythonPathItem = new PropertyItemBuilder<>(pythonPathProperty, String.class)
 				.propertyType(PropertyItemBuilder.PropertyType.FILE)
 				.name("Python path")
@@ -85,7 +84,7 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 				.category(EXTENSION_NAME)
 				.description("Path to the GDCnn project.")
 				.build();
-		
+
 		// Add the items to the preferences dialog
 		QuPathGUI.getInstance().getPreferencePane().getPropertySheet().getItems().addAll(
 				enableExtensionItem, pythonPathItem, gdcnnPathItem);
@@ -93,23 +92,37 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 
 	/**
 	 * Adds a menu item to the Extensions menu.
+	 * 
 	 * @param qupath
 	 */
-	private void addMenuItem(QuPathGUI qupath) {
+	private void addMenuItems(QuPathGUI qupath) {
 		var menu = qupath.getMenu("Extensions>" + EXTENSION_NAME, true);
-		MenuItem menuItem = new MenuItem("Run pipeline");
-		menuItem.setOnAction(e -> {
+		MenuItem pipelineItem = new MenuItem("Run pipeline");
+		MenuItem tileItem = new MenuItem("Tile WSIs");
+
+		GDCnn gdcnn = new GDCnn(qupath);
+
+		pipelineItem.setOnAction(e -> {
 			try {
-				new GDCnn().runPipeline();
+				gdcnn.runPipeline();
 			} catch (Exception ex) {
 				logger.error("Error running pipeline", ex);
 			}
 		});
-		menuItem.disableProperty().bind(enableExtensionProperty.not());
-		menu.getItems().add(menuItem);
+		tileItem.setOnAction(e -> {
+			try {
+				gdcnn.tileWSIs();
+			} catch (Exception ex) {
+				logger.error("Error tiling WSIs", ex);
+			}
+		});
+
+		pipelineItem.disableProperty().bind(enableExtensionProperty.not());
+		tileItem.disableProperty().bind(enableExtensionProperty.not());
+
+		menu.getItems().addAll(pipelineItem, tileItem);
 	}
-	
-	
+
 	@Override
 	public String getName() {
 		return EXTENSION_NAME;
@@ -119,7 +132,7 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 	public String getDescription() {
 		return EXTENSION_DESCRIPTION;
 	}
-	
+
 	@Override
 	public Version getQuPathVersion() {
 		return EXTENSION_QUPATH_VERSION;
