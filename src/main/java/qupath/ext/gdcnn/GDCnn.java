@@ -1,21 +1,19 @@
 package qupath.ext.gdcnn;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import qupath.lib.common.GeneralTools;
+import javafx.concurrent.Task;
+import qupath.lib.common.ThreadTools;
 import qupath.lib.gui.QuPathGUI;
-import qupath.lib.images.ImageData;
-import qupath.lib.projects.Project;
-import qupath.lib.projects.ProjectImageEntry;
 import qupath.ext.env.VirtualEnvironment;
+import qupath.fx.dialogs.Dialogs;
 
 /**
  * Glomeruli detection and classification using deep learning
@@ -28,7 +26,25 @@ public class GDCnn {
 
     private GDCnnSetup gdcnnSetup = GDCnnSetup.getInstance();
 
-    public GDCnn() {
+    private ExecutorService pool = Executors.newCachedThreadPool(ThreadTools.createThreadFactory("GDCnn", true));
+
+    private QuPathGUI qupath;
+
+    public GDCnn(QuPathGUI qupath) {
+        this.qupath = qupath;
+    }
+
+    /**
+     * Submits a task to the thread pool to run in the background
+     * 
+     * @param task
+     */
+    private void submitTask(Task<?> task) {
+        task.setOnFailed(e -> {
+            logger.error("Task failed", e.getSource().getException());
+            Dialogs.showErrorMessage("Task failed", e.getSource().getException());
+        });
+        pool.submit(task);
     }
 
     /**
@@ -66,31 +82,11 @@ public class GDCnn {
     }
 
     /**
-     * Tiles each WSI in the project to the given size and saves them in a temporary
-     * folder
+     * Tiles each WSI and saves them in a temporary folder
      * 
-     * @param qupath
-     * @param tileSize
      * @throws IOException // In case there is an issue reading the image
      */
-    public void tileWSI(
-            QuPathGUI qupath, int tileSize, int tileOverlap, int downsample, String imageExtension) throws IOException {
-        // Get the list of images in the project
-        Project<BufferedImage> project = qupath.getProject();
-        List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
-
-        logger.info("Tiling images in the project to patches of size {}", tileSize);
-        // For each image, tile it and save the tiles in a temporary folder
-        for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
-            Tiler tiler = new Tiler(
-                    tileSize, tileOverlap, downsample, imageExtension);
-            ImageData<BufferedImage> imageData = imageEntry.readImageData();
-            String outputPath = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName()) + "_tiles";
-            // Create the output folder if it does not exist
-            Files.createDirectories(Paths.get(outputPath));
-            tiler.tileWSIAsync(imageData, outputPath);
-        }
-
-        logger.info("Tiling images in the project finished");
+    public void tileWSIs() throws IOException {
+        submitTask(new TilerTask(qupath, 4096, 2048, 0, ".png"));
     }
 }

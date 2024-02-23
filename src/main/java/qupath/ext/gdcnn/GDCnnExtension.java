@@ -44,7 +44,7 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 			return;
 		}
 		isInstalled = true;
-		addMenuItem(qupath);
+		addMenuItems(qupath);
 		addPreferences();
 	}
 
@@ -95,21 +95,23 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 	 * 
 	 * @param qupath
 	 */
-	private void addMenuItem(QuPathGUI qupath) {
+	private void addMenuItems(QuPathGUI qupath) {
 		var menu = qupath.getMenu("Extensions>" + EXTENSION_NAME, true);
 		MenuItem pipelineItem = new MenuItem("Run pipeline");
 		MenuItem tileItem = new MenuItem("Tile WSIs");
 
+		GDCnn gdcnn = new GDCnn(qupath);
+
 		pipelineItem.setOnAction(e -> {
 			try {
-				new GDCnn().runPipeline();
+				gdcnn.runPipeline();
 			} catch (Exception ex) {
 				logger.error("Error running pipeline", ex);
 			}
 		});
 		tileItem.setOnAction(e -> {
 			try {
-				new GDCnn().tileWSI(qupath, 4096, 1024, 0, ".png");
+				gdcnn.tileWSIs();
 			} catch (Exception ex) {
 				logger.error("Error tiling WSIs", ex);
 			}
