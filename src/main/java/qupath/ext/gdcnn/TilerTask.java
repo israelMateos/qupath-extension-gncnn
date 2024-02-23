@@ -36,12 +36,15 @@ public class TilerTask extends Task<Void> {
 
     private String imageExtension;
 
-    public TilerTask(QuPathGUI quPath, int tileSize, int tileOverlap, int downsample, String imageExtension) {
+    private String gdcnnPath;
+
+    public TilerTask(QuPathGUI quPath, int tileSize, int tileOverlap, int downsample, String imageExtension, String gdcnnPath) {
         this.qupath = quPath;
         this.tileSize = tileSize;
         this.tileOverlap = tileOverlap;
         this.downsample = downsample;
         this.imageExtension = imageExtension;
+        this.gdcnnPath = gdcnnPath;
     }
 
     @Override
@@ -68,7 +71,11 @@ public class TilerTask extends Task<Void> {
      */
     private void tileWSI(ImageData<BufferedImage> imageData) throws IOException {
         String imageName = imageData.getServer().getMetadata().getName();
-        String outputPath = GeneralTools.stripExtension(imageName) + "_tiles";
+        // If gdcnnPath does not end with a slash, add it
+        if (!gdcnnPath.endsWith("/")) {
+            gdcnnPath += "/";
+        }
+        String outputPath = gdcnnPath + "Temp/tiler-output/Tiles/" + GeneralTools.stripExtension(imageName);
         // Create the output folder if it does not exist
         Utils.createFolder(outputPath);
         logger.info("Tiling {} [size={},overlap={}]", imageName, tileSize, tileOverlap);
@@ -79,7 +86,7 @@ public class TilerTask extends Task<Void> {
                 .downsample(downsample)
                 .annotatedTilesOnly(false)
                 .writeTiles(outputPath);
-        logger.info("Tiling of {} finished", imageName);
+        logger.info("Tiling of {} finished: {}", imageName, outputPath);
     }
 
     /**
