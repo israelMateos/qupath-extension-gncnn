@@ -32,13 +32,13 @@ public class TilerTask extends Task<Void> {
 
     private int tileOverlap;
 
-    private int downsample;
+    private double downsample;
 
     private String imageExtension;
 
     private String gdcnnPath;
 
-    public TilerTask(QuPathGUI quPath, int tileSize, int tileOverlap, int downsample, String imageExtension, String gdcnnPath) {
+    public TilerTask(QuPathGUI quPath, int tileSize, int tileOverlap, double downsample, String imageExtension, String gdcnnPath) {
         this.qupath = quPath;
         this.tileSize = tileSize;
         this.tileOverlap = tileOverlap;

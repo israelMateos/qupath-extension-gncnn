@@ -87,9 +87,12 @@ public class DetectionTask extends Task<Void> {
         }
         String scriptPath = gdcnnPath + "mescnn/detection/qupath/segment.py";
 
+        double pixelSize = imageData.getServer().getPixelCalibration().getAveragedPixelSizeMicrons();
+
         // This is the list of commands after the 'python' call
         List<String> arguments = Arrays.asList(scriptPath, "--wsi", imageName, "--export", gdcnnPath, "--model",
-                modelName, "--train-config", trainConfig, "--undersampling", Integer.toString(undersampling));
+                modelName, "--train-config", trainConfig, "--undersampling", Integer.toString(undersampling),
+                "--pixel-size", Double.toString(pixelSize));
         venv.setArguments(arguments);
 
         // Run the command

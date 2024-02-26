@@ -1,8 +1,6 @@
 package qupath.ext.gdcnn;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -12,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import javafx.concurrent.Task;
 import qupath.lib.common.ThreadTools;
 import qupath.lib.gui.QuPathGUI;
-import qupath.ext.env.VirtualEnvironment;
 import qupath.fx.dialogs.Dialogs;
 
 /**
@@ -26,7 +23,7 @@ public class GDCnn {
 
     private GDCnnSetup gdcnnSetup = GDCnnSetup.getInstance();
 
-    private ExecutorService pool = Executors.newCachedThreadPool(ThreadTools.createThreadFactory("GDCnn", true));
+    private ExecutorService pool = Executors.newSingleThreadExecutor(ThreadTools.createThreadFactory("GDCnn", true));
 
     private QuPathGUI qupath;
 
@@ -53,14 +50,14 @@ public class GDCnn {
      * @throws IOException // In case there is an issue reading the image
      */
     public void tileWSIs() throws IOException {
-        submitTask(new TilerTask(qupath, 4096, 2048, 0, ".png", gdcnnSetup.getGdcnnPath()));
+        submitTask(new TilerTask(qupath, 4096, 2048, 1, ".jpeg", gdcnnSetup.getGdcnnPath()));
     }
 
     /**
      * Detects glomeruli in the WSI patches
      */
     public void detectGlomeruli() {
-        submitTask(new DetectionTask(qupath, "cascade_R_50_FPN_3x", "external", 4, gdcnnSetup.getPythonPath(),
+        submitTask(new DetectionTask(qupath, "cascade_R_50_FPN_3x", "external", 1, gdcnnSetup.getPythonPath(),
                 gdcnnSetup.getGdcnnPath()));
     }
 }
