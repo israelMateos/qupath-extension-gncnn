@@ -1,19 +1,18 @@
 package qupath.ext.gdcnn;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import javafx.concurrent.Task;
 import java.nio.file.Paths;
-
 import java.util.List;
 import java.util.Arrays;
 
-import qupath.lib.gui.QuPathGUI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javafx.concurrent.Task;
 import qupath.ext.env.VirtualEnvironment;
 import qupath.lib.common.GeneralTools;
+import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
 import qupath.lib.io.PathIO;
 import qupath.lib.objects.PathObject;
@@ -78,7 +77,7 @@ public class DetectionTask extends Task<Void> {
      * @throws IOException
      */
     public void detectGlomeruli(ImageData<BufferedImage> imageData)
-    throws IOException, InterruptedException {
+            throws IOException, InterruptedException {
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
         VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), pythonPath, gdcnnPath);
 
@@ -106,8 +105,7 @@ public class DetectionTask extends Task<Void> {
         List<PathObject> detectedObjects = PathIO.readObjects(Paths.get(geoJSONPath));
 
         // Add the detected objects to the image hierarchy
-        // FIXME: Working for single image, but not for the project
-        PathObjectHierarchy hierarchy =  imageData.getHierarchy();
+        PathObjectHierarchy hierarchy = imageData.getHierarchy();
         hierarchy.addObjects(detectedObjects);
         logger.info("Added {} detected objects to {}", detectedObjects.size(), imageName);
     }
@@ -126,8 +124,9 @@ public class DetectionTask extends Task<Void> {
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
             detectGlomeruli(imageData);
+            imageEntry.saveImageData(imageData);
         }
-        logger.info("Detection for the images in the project finished", imageEntryList.size());
+        logger.info("Detection for {} images in the project finished", imageEntryList.size());
     }
 
 }
