@@ -72,4 +72,12 @@ public class GDCnn {
             qupath.getViewer().setImageData(null);
         }
     }
+
+    /**
+     * Exports the annotations of each WSI to images
+     * 
+     */
+    public void exportAnnotations() {
+        submitTask(new AnnotationExportTask(qupath, 300, 1));
+    }
 }
