@@ -99,6 +99,7 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 		var menu = qupath.getMenu("Extensions>" + EXTENSION_NAME, true);
 		MenuItem tileItem = new MenuItem("Tile WSIs");
 		MenuItem detectionItem = new MenuItem("Run detection");
+		MenuItem exportItem = new MenuItem("Export annotations");
 
 		GDCnn gdcnn = new GDCnn(qupath);
 
@@ -116,11 +117,19 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 				logger.error("Error running detection", ex);
 			}
 		});
+		exportItem.setOnAction(e -> {
+			try {
+				gdcnn.exportAnnotations();
+			} catch (Exception ex) {
+				logger.error("Error exporting annotations", ex);
+			}
+		});
 
 		tileItem.disableProperty().bind(enableExtensionProperty.not());
 		detectionItem.disableProperty().bind(enableExtensionProperty.not());
+		exportItem.disableProperty().bind(enableExtensionProperty.not());
 
-		menu.getItems().addAll(tileItem, detectionItem);
+		menu.getItems().addAll(tileItem, detectionItem, exportItem);
 	}
 
 	@Override
