@@ -15,6 +15,7 @@ import qupath.lib.images.ImageData;
 import qupath.lib.images.writers.TileExporter;
 import qupath.lib.projects.Project;
 import qupath.lib.projects.ProjectImageEntry;
+import qupath.lib.scripting.QP;
 
 /**
  * Class to tile the WSI into the given size patches and save them in a
@@ -32,11 +33,11 @@ public class TilerTask extends Task<Void> {
 
     private int tileOverlap;
 
-    private int downsample;
+    private double downsample;
 
     private String imageExtension;
 
-    public TilerTask(QuPathGUI quPath, int tileSize, int tileOverlap, int downsample, String imageExtension) {
+    public TilerTask(QuPathGUI quPath, int tileSize, int tileOverlap, double downsample, String imageExtension) {
         this.qupath = quPath;
         this.tileSize = tileSize;
         this.tileOverlap = tileOverlap;
@@ -67,8 +68,8 @@ public class TilerTask extends Task<Void> {
      * @throws IOException
      */
     private void tileWSI(ImageData<BufferedImage> imageData) throws IOException {
-        String imageName = imageData.getServer().getMetadata().getName();
-        String outputPath = GeneralTools.stripExtension(imageName) + "_tiles";
+        String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
+        String outputPath = QP.buildFilePath(QP.PROJECT_BASE_DIR, "Temp", "tiler-output", "Tiles", imageName);
         // Create the output folder if it does not exist
         Utils.createFolder(outputPath);
         logger.info("Tiling {} [size={},overlap={}]", imageName, tileSize, tileOverlap);
@@ -79,7 +80,7 @@ public class TilerTask extends Task<Void> {
                 .downsample(downsample)
                 .annotatedTilesOnly(false)
                 .writeTiles(outputPath);
-        logger.info("Tiling of {} finished", imageName);
+        logger.info("Tiling of {} finished: {}", imageName, outputPath);
     }
 
     /**

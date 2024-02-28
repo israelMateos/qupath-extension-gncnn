@@ -97,18 +97,11 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 	 */
 	private void addMenuItems(QuPathGUI qupath) {
 		var menu = qupath.getMenu("Extensions>" + EXTENSION_NAME, true);
-		MenuItem pipelineItem = new MenuItem("Run pipeline");
 		MenuItem tileItem = new MenuItem("Tile WSIs");
+		MenuItem detectionItem = new MenuItem("Run detection");
 
 		GDCnn gdcnn = new GDCnn(qupath);
 
-		pipelineItem.setOnAction(e -> {
-			try {
-				gdcnn.runPipeline();
-			} catch (Exception ex) {
-				logger.error("Error running pipeline", ex);
-			}
-		});
 		tileItem.setOnAction(e -> {
 			try {
 				gdcnn.tileWSIs();
@@ -116,11 +109,18 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 				logger.error("Error tiling WSIs", ex);
 			}
 		});
+		detectionItem.setOnAction(e -> {
+			try {
+				gdcnn.detectGlomeruli();
+			} catch (Exception ex) {
+				logger.error("Error running detection", ex);
+			}
+		});
 
-		pipelineItem.disableProperty().bind(enableExtensionProperty.not());
 		tileItem.disableProperty().bind(enableExtensionProperty.not());
+		detectionItem.disableProperty().bind(enableExtensionProperty.not());
 
-		menu.getItems().addAll(pipelineItem, tileItem);
+		menu.getItems().addAll(tileItem, detectionItem);
 	}
 
 	@Override
