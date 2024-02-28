@@ -19,6 +19,7 @@ import qupath.lib.objects.PathObject;
 import qupath.lib.objects.hierarchy.PathObjectHierarchy;
 import qupath.lib.projects.Project;
 import qupath.lib.projects.ProjectImageEntry;
+import qupath.lib.scripting.QP;
 
 /**
  * Class to detect glomeruli in the WSI patches, and add the detected objects to
@@ -54,12 +55,10 @@ public class DetectionTask extends Task<Void> {
     protected Void call() throws Exception {
         Project<BufferedImage> project = qupath.getProject();
         if (project != null) {
-            // return detectGlomeruliProject(project);
             detectGlomeruliProject(project);
         } else {
             ImageData<BufferedImage> imageData = qupath.getImageData();
             if (imageData != null) {
-                // return detectGlomeruli(imageData);
                 detectGlomeruli(imageData);
             } else {
                 logger.error("No image or project is open");
@@ -81,11 +80,7 @@ public class DetectionTask extends Task<Void> {
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
         VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), pythonPath, gdcnnPath);
 
-        // If gdcnnPath does not end with a slash, add it
-        if (!gdcnnPath.endsWith("/")) {
-            gdcnnPath += "/";
-        }
-        String scriptPath = gdcnnPath + "mescnn/detection/qupath/segment.py";
+        String scriptPath = QP.buildFilePath(gdcnnPath, "mescnn", "detection", "qupath", "segment.py");
 
         double pixelSize = imageData.getServer().getPixelCalibration().getAveragedPixelSizeMicrons();
 
@@ -101,7 +96,8 @@ public class DetectionTask extends Task<Void> {
         logger.info("Detection for {} finished", imageName);
 
         // Read the annotations from the GeoJSON file
-        String geoJSONPath = gdcnnPath + "Temp/segment-output/Detections/" + imageName + "/detections.geojson";
+        String geoJSONPath = QP.buildFilePath(QP.PROJECT_BASE_DIR, "Temp", "segment-output", "Detections", imageName,
+                "detections.geojson");
         List<PathObject> detectedObjects = PathIO.readObjects(Paths.get(geoJSONPath));
 
         // Add the detected objects to the image hierarchy

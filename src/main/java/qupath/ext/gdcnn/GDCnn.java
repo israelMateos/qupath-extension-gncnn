@@ -53,12 +53,13 @@ public class GDCnn {
      * @throws IOException // In case there is an issue reading the image
      */
     public void tileWSIs() throws IOException {
-        submitTask(new TilerTask(qupath, 4096, 2048, 1, ".jpeg", gdcnnSetup.getGdcnnPath()));
+        submitTask(new TilerTask(qupath, 4096, 2048, 1, ".jpeg"));
     }
 
     /**
      * Detects glomeruli in the WSI patches
-     * @throws IOException 
+     * 
+     * @throws IOException
      */
     public void detectGlomeruli() throws IOException {
         submitTask(new DetectionTask(qupath, "cascade_R_50_FPN_3x", "external", 1, gdcnnSetup.getPythonPath(),
