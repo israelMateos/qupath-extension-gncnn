@@ -80,4 +80,21 @@ public class GDCnn {
     public void exportAnnotations() {
         submitTask(new AnnotationExportTask(qupath, 300, 1));
     }
+
+    /**
+     * Classifies annotated glomeruli
+     * 
+     * @throws IOException
+     */
+    public void classifyGlomeruli() throws IOException {
+        submitTask(new ClassificationTask(qupath, "swin_transformer", gdcnnSetup.getPythonPath(),
+                gdcnnSetup.getGdcnnPath()));
+        // If dealing with a project, remove the image data from the viewer
+        // to refresh the viewer after the detection
+        Project<BufferedImage> project = qupath.getProject();
+        ImageData<BufferedImage> currentImageData = qupath.getViewer().getImageData();
+        if (project != null && currentImageData != null) {
+            qupath.getViewer().setImageData(null);
+        }
+    }
 }
