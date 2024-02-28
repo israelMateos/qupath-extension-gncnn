@@ -85,7 +85,9 @@ public class DetectionTask extends Task<Void> {
         double pixelSize = imageData.getServer().getPixelCalibration().getAveragedPixelSizeMicrons();
 
         // This is the list of commands after the 'python' call
-        List<String> arguments = Arrays.asList(scriptPath, "--wsi", imageName, "--export", QP.PROJECT_BASE_DIR, "--model",
+        List<String> arguments = Arrays.asList(scriptPath, "--wsi", imageName, "--export",
+                QP.buildFilePath(QP.PROJECT_BASE_DIR),
+                "--model",
                 modelName, "--train-config", trainConfig, "--undersampling", Integer.toString(undersampling),
                 "--pixel-size", Double.toString(pixelSize));
         venv.setArguments(arguments);
