@@ -101,6 +101,7 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 		MenuItem detectionItem = new MenuItem("Run detection");
 		MenuItem exportItem = new MenuItem("Export annotations");
 		MenuItem classificationItem = new MenuItem("Run classification");
+		MenuItem allItem = new MenuItem("Run all");
 
 		GDCnn gdcnn = new GDCnn(qupath);
 
@@ -132,13 +133,24 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 				logger.error("Error running classification", ex);
 			}
 		});
+		allItem.setOnAction(e -> {
+			try {
+				gdcnn.tileWSIs();
+				gdcnn.detectGlomeruli();
+				gdcnn.exportAnnotations();
+				gdcnn.classifyGlomeruli();
+			} catch (Exception ex) {
+				logger.error("Error running all tasks", ex);
+			}
+		});
 
 		tileItem.disableProperty().bind(enableExtensionProperty.not());
 		detectionItem.disableProperty().bind(enableExtensionProperty.not());
 		exportItem.disableProperty().bind(enableExtensionProperty.not());
 		classificationItem.disableProperty().bind(enableExtensionProperty.not());
+		allItem.disableProperty().bind(enableExtensionProperty.not());
 
-		menu.getItems().addAll(tileItem, detectionItem, exportItem, classificationItem);
+		menu.getItems().addAll(tileItem, detectionItem, exportItem, classificationItem, allItem);
 	}
 
 	@Override
