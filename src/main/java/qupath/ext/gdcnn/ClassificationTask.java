@@ -3,9 +3,11 @@ package qupath.ext.gdcnn;
 import java.awt.image.BufferedImage;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.LinkedHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import org.apache.commons.csv.CSVRecord;
 import javafx.concurrent.Task;
 import qupath.ext.env.VirtualEnvironment;
 import qupath.lib.common.GeneralTools;
+import qupath.lib.common.ColorTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
 import qupath.lib.objects.PathObject;
@@ -33,6 +36,13 @@ import qupath.lib.scripting.QP;
 public class ClassificationTask extends Task<Void> {
 
     private static final Logger logger = LoggerFactory.getLogger(ClassificationTask.class);
+
+    private static final LinkedHashMap<String, Integer> CLASS_COLORS = new LinkedHashMap<String, Integer>() {
+        {
+            put("NoSclerotic", ColorTools.GREEN);
+            put("Sclerotic", ColorTools.RED);
+        }
+    };
 
     private QuPathGUI qupath;
 
@@ -53,14 +63,16 @@ public class ClassificationTask extends Task<Void> {
     @Override
     protected Void call() throws Exception {
         Project<BufferedImage> project = qupath.getProject();
+        String outputBaseDir = QP.PROJECT_BASE_DIR;
         if (project != null) {
-            runClassification();
+            runClassification(outputBaseDir);
             classifyGlomeruliProject(project);
         } else {
             ImageData<BufferedImage> imageData = qupath.getImageData();
             if (imageData != null) {
-                runClassification();
-                classifyGlomeruli(imageData);
+                outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
+                runClassification(outputBaseDir);
+                classifyGlomeruli(imageData, outputBaseDir);
             } else {
                 logger.error("No image or project is open");
             }
@@ -72,17 +84,18 @@ public class ClassificationTask extends Task<Void> {
      * Runs the classification of glomeruli for all the annotations exported
      * previously
      * 
+     * @param outputBaseDir
      * @throws InterruptedException
      * @throws IOException
      */
-    public void runClassification()
+    public void runClassification(String outputBaseDir)
             throws IOException, InterruptedException {
         VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), pythonPath, gdcnnPath);
 
         String scriptPath = QP.buildFilePath(gdcnnPath, "mescnn", "classification", "inference", "classify.py");
 
         // This is the list of commands after the 'python' call
-        List<String> arguments = Arrays.asList(scriptPath, "-e", QP.buildFilePath(QP.PROJECT_BASE_DIR), "--netB",
+        List<String> arguments = Arrays.asList(scriptPath, "-e", QP.buildFilePath(outputBaseDir), "--netB",
                 modelName);
         venv.setArguments(arguments);
 
@@ -97,14 +110,15 @@ public class ClassificationTask extends Task<Void> {
      * image hierarchy
      * 
      * @param imageData
+     * @param outputBaseDir
      * @throws InterruptedException
      * @throws IOException
      * @throws NumberFormatException
      */
-    public void classifyGlomeruli(ImageData<BufferedImage> imageData)
+    public void classifyGlomeruli(ImageData<BufferedImage> imageData, String outputBaseDir)
             throws IOException, InterruptedException, NumberFormatException {
         String imageName = imageData.getServer().getMetadata().getName();
-        String reportPath = QP.buildFilePath(QP.PROJECT_BASE_DIR, "Report", "B-swin_transformer_M-None",
+        String reportPath = QP.buildFilePath(outputBaseDir, "Report", "B-swin_transformer_M-None",
                 GeneralTools.stripExtension(imageName) + ".csv");
 
         Collection<PathObject> annotations = imageData.getHierarchy().getAnnotationObjects();
@@ -128,7 +142,8 @@ public class ClassificationTask extends Task<Void> {
                 if (annotation != null) {
                     String predictedClass = record.get(1);
                     double classProbability = Double.parseDouble(record.get(2));
-                    PathClass pathClass = PathClass.getInstance(predictedClass);
+                    Integer color = CLASS_COLORS.get(predictedClass);
+                    PathClass pathClass = PathClass.getInstance(predictedClass, color);
 
                     annotation.setPathClass(pathClass, classProbability);
                 }
@@ -151,7 +166,7 @@ public class ClassificationTask extends Task<Void> {
         logger.info("Running classification for {} images", imageEntryList.size());
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
-            classifyGlomeruli(imageData);
+            classifyGlomeruli(imageData, QP.PROJECT_BASE_DIR);
             imageEntry.saveImageData(imageData);
         }
         logger.info("Classification for {} images in the project finished", imageEntryList.size());
