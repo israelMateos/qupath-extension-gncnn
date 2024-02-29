@@ -71,11 +71,14 @@ public class AnnotationExportTask extends Task<Void> {
             throws IOException, InterruptedException {
         ImageServer<BufferedImage> server = imageData.getServer();
         String imageName = server.getMetadata().getName();
-        String outputPath = QP.buildFilePath(outputBaseDir, "Temp", "ann-export-output", GeneralTools.stripExtension(imageName));
+        String outputPath = QP.buildFilePath(outputBaseDir, "Temp", "ann-export-output",
+                GeneralTools.stripExtension(imageName));
         // Create the output folder if it does not exist
         Utils.createFolder(outputPath);
 
         Collection<PathObject> annotations = imageData.getHierarchy().getAnnotationObjects();
+        // Use only 'Glomerulus' annotations
+        annotations.removeIf(annotation -> !annotation.getPathClass().getName().equals("Glomerulus"));
         logger.info("Exporting {} annotations for {}", annotations.size(), imageName);
         for (PathObject annotation : annotations) {
             ROI roi = annotation.getROI();
@@ -86,7 +89,6 @@ public class AnnotationExportTask extends Task<Void> {
                     (int) roi.getBoundsX() - padding, (int) roi.getBoundsY() - padding,
                     (int) roi.getBoundsWidth() + padding * 2, (int) roi.getBoundsHeight() + padding * 2, roi.getZ(),
                     roi.getT());
-            
 
             String outputName = String.format("%s_%s_%s_%d_%d_%d_%d.png", imageName, className, annotationId,
                     region.getX(), region.getY(), region.getWidth(), region.getHeight());
