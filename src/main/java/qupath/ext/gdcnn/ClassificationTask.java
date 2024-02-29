@@ -71,6 +71,8 @@ public class ClassificationTask extends Task<Void> {
             ImageData<BufferedImage> imageData = qupath.getImageData();
             if (imageData != null) {
                 outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
+                // Take substring from the first slash after file: to the last slash
+                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5, outputBaseDir.lastIndexOf("/"));
                 runClassification(outputBaseDir);
                 classifyGlomeruli(imageData, outputBaseDir);
             } else {

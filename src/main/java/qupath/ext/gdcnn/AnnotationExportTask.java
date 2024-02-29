@@ -51,6 +51,8 @@ public class AnnotationExportTask extends Task<Void> {
             ImageData<BufferedImage> imageData = qupath.getImageData();
             if (imageData != null) {
                 String outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
+                // Take substring from the first slash after file: to the last slash
+                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5, outputBaseDir.lastIndexOf("/"));
                 exportAnnotations(imageData, outputBaseDir);
             } else {
                 logger.error("No image or project is open");
