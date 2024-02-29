@@ -151,11 +151,10 @@ public class ClassificationTask extends Task<Void> {
 
                 if (annotation != null) {
                     String predictedClass = record.get(1);
-                    double classProbability = Double.parseDouble(record.get(2));
                     Integer color = CLASS_COLORS.get(predictedClass);
                     PathClass pathClass = PathClass.getInstance(predictedClass, color);
 
-                    annotation.setPathClass(pathClass, classProbability);
+                    annotation.setPathClass(pathClass);
                 }
             }
         }
