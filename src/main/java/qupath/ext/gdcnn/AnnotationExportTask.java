@@ -45,14 +45,16 @@ public class AnnotationExportTask extends Task<Void> {
     @Override
     protected Void call() throws Exception {
         Project<BufferedImage> project = qupath.getProject();
+        String outputBaseDir = QP.PROJECT_BASE_DIR;
         if (project != null) {
-            exportAnnotationsProject(project);
+            exportAnnotationsProject(project, outputBaseDir);
         } else {
             ImageData<BufferedImage> imageData = qupath.getImageData();
             if (imageData != null) {
-                String outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
+                outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
                 // Take substring from the first slash after file: to the last slash
-                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5, outputBaseDir.lastIndexOf("/"));
+                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
+                        outputBaseDir.lastIndexOf("/"));
                 exportAnnotations(imageData, outputBaseDir);
             } else {
                 logger.error("No image or project is open");
@@ -107,15 +109,17 @@ public class AnnotationExportTask extends Task<Void> {
      * Export the annotations for each WSI in the project to images
      * 
      * @param project
+     * @param outputBaseDir
      * @throws InterruptedException
      * @throws IOException
      */
-    public void exportAnnotationsProject(Project<BufferedImage> project) throws IOException, InterruptedException {
+    public void exportAnnotationsProject(Project<BufferedImage> project, String outputBaseDir)
+            throws IOException, InterruptedException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
         logger.info("Exporting annotations for {} images in the project", imageEntryList.size());
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
-            exportAnnotations(imageData, QP.PROJECT_BASE_DIR);
+            exportAnnotations(imageData, outputBaseDir);
         }
         logger.info("Exporting annotations for {} images in the project finished", imageEntryList.size());
     }

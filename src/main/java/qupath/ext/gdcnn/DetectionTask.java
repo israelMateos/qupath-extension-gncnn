@@ -1,6 +1,7 @@
 package qupath.ext.gdcnn;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
@@ -54,19 +55,34 @@ public class DetectionTask extends Task<Void> {
     @Override
     protected Void call() throws Exception {
         Project<BufferedImage> project = qupath.getProject();
+        String outputBaseDir = QP.PROJECT_BASE_DIR;
         if (project != null) {
-            detectGlomeruliProject(project);
+            detectGlomeruliProject(project, outputBaseDir);
         } else {
             ImageData<BufferedImage> imageData = qupath.getImageData();
             if (imageData != null) {
-                String outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
+                outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
                 // Take substring from the first slash after file: to the last slash
-                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5, outputBaseDir.lastIndexOf("/"));
+                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
+                        outputBaseDir.lastIndexOf("/"));
                 detectGlomeruli(imageData, outputBaseDir);
             } else {
                 logger.error("No image or project is open");
             }
         }
+
+        // Tiles are not needed anymore
+        File tilerOutputFolder = new File(
+                QP.buildFilePath(outputBaseDir, TaskPaths.TMP_FOLDER, TaskPaths.TILER_OUTPUT_FOLDER));
+        if (tilerOutputFolder.exists())
+            Utils.deleteFolder(tilerOutputFolder);
+
+        // Detections are already added to the image hierarchy, so they are not needed
+        File segmentOutputFolder = new File(
+                QP.buildFilePath(outputBaseDir, TaskPaths.TMP_FOLDER, TaskPaths.SEGMENT_OUTPUT_FOLDER));
+        if (segmentOutputFolder.exists())
+            Utils.deleteFolder(segmentOutputFolder);
+
         return null;
     }
 
@@ -84,7 +100,7 @@ public class DetectionTask extends Task<Void> {
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
         VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), pythonPath, gdcnnPath);
 
-        String scriptPath = QP.buildFilePath(gdcnnPath, "mescnn", "detection", "qupath", "segment.py");
+        String scriptPath = TaskPaths.getDetectionScriptPath(gdcnnPath);
 
         double pixelSize = imageData.getServer().getPixelCalibration().getAveragedPixelSizeMicrons();
 
@@ -102,8 +118,7 @@ public class DetectionTask extends Task<Void> {
         logger.info("Detection for {} finished", imageName);
 
         // Read the annotations from the GeoJSON file
-        String geoJSONPath = QP.buildFilePath(outputBaseDir, "Temp", "segment-output", "Detections", imageName,
-                "detections.geojson");
+        String geoJSONPath = TaskPaths.getDetectionResultsPath(outputBaseDir, imageName);
         List<PathObject> detectedObjects = PathIO.readObjects(Paths.get(geoJSONPath));
 
         // Add the detected objects to the image hierarchy
@@ -117,15 +132,17 @@ public class DetectionTask extends Task<Void> {
      * the each image hierarchy
      * 
      * @param project
+     * @param outputBaseDir
      * @throws InterruptedException
      * @throws IOException
      */
-    public void detectGlomeruliProject(Project<BufferedImage> project) throws IOException, InterruptedException {
+    public void detectGlomeruliProject(Project<BufferedImage> project, String outputBaseDir)
+            throws IOException, InterruptedException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
         logger.info("Running detection for {} images", imageEntryList.size());
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
-            detectGlomeruli(imageData, QP.PROJECT_BASE_DIR);
+            detectGlomeruli(imageData, outputBaseDir);
             imageEntry.saveImageData(imageData);
         }
         logger.info("Detection for {} images in the project finished", imageEntryList.size());

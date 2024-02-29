@@ -1,6 +1,7 @@
 package qupath.ext.gdcnn;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -66,18 +67,25 @@ public class ClassificationTask extends Task<Void> {
         String outputBaseDir = QP.PROJECT_BASE_DIR;
         if (project != null) {
             runClassification(outputBaseDir);
-            classifyGlomeruliProject(project);
+            classifyGlomeruliProject(project, outputBaseDir);
         } else {
             ImageData<BufferedImage> imageData = qupath.getImageData();
             if (imageData != null) {
                 outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
                 // Take substring from the first slash after file: to the last slash
-                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5, outputBaseDir.lastIndexOf("/"));
+                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
+                        outputBaseDir.lastIndexOf("/"));
                 runClassification(outputBaseDir);
                 classifyGlomeruli(imageData, outputBaseDir);
             } else {
                 logger.error("No image or project is open");
             }
+        }
+
+        // The temp folder is not needed anymore
+        File tempFolder = new File(QP.buildFilePath(outputBaseDir, TaskPaths.TMP_FOLDER));
+        if (tempFolder.exists()) {
+            Utils.deleteFolder(tempFolder);
         }
         return null;
     }
@@ -158,17 +166,18 @@ public class ClassificationTask extends Task<Void> {
      * objects in each image hierarchy
      * 
      * @param project
+     * @param outputBaseDir
      * @throws InterruptedException
      * @throws IOException
      * @throws NumberFormatException
      */
-    public void classifyGlomeruliProject(Project<BufferedImage> project)
+    public void classifyGlomeruliProject(Project<BufferedImage> project, String outputBaseDir)
             throws IOException, InterruptedException, NumberFormatException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
         logger.info("Running classification for {} images", imageEntryList.size());
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
-            classifyGlomeruli(imageData, QP.PROJECT_BASE_DIR);
+            classifyGlomeruli(imageData, outputBaseDir);
             imageEntry.saveImageData(imageData);
         }
         logger.info("Classification for {} images in the project finished", imageEntryList.size());

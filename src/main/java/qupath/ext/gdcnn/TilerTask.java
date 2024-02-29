@@ -49,14 +49,16 @@ public class TilerTask extends Task<Void> {
     @Override
     protected Void call() throws Exception {
         Project<BufferedImage> project = qupath.getProject();
+        String outputBaseDir = QP.PROJECT_BASE_DIR;
         if (project != null) {
-            tileWSIProject(project);
+            tileWSIProject(project, outputBaseDir);
         } else {
             ImageData<BufferedImage> imageData = qupath.getImageData();
             if (imageData != null) {
-                String outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
+                outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
                 // Take substring from the first slash after file: to the last slash
-                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5, outputBaseDir.lastIndexOf("/"));
+                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
+                        outputBaseDir.lastIndexOf("/"));
                 tileWSI(imageData, outputBaseDir);
             } else {
                 logger.error("No image or project is open");
@@ -74,7 +76,7 @@ public class TilerTask extends Task<Void> {
      */
     private void tileWSI(ImageData<BufferedImage> imageData, String outputBaseDir) throws IOException {
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
-        String outputPath = QP.buildFilePath(outputBaseDir, "Temp", "tiler-output", "Tiles", imageName);
+        String outputPath = TaskPaths.getTilerOutputDir(outputBaseDir, imageName);
         // Create the output folder if it does not exist
         Utils.createFolder(outputPath);
         logger.info("Tiling {} [size={},overlap={}]", imageName, tileSize, tileOverlap);
@@ -92,9 +94,10 @@ public class TilerTask extends Task<Void> {
      * Tiles each WSI in a project and saves them in corresponding temporary folders
      * 
      * @param project
+     * @param outputBaseDir
      * @throws IOException
      */
-    private void tileWSIProject(Project<BufferedImage> project) throws IOException {
+    private void tileWSIProject(Project<BufferedImage> project, String outputBaseDir) throws IOException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
 
         logger.info("Tiling {} images in the project [size={},overlap={}]",
@@ -102,7 +105,7 @@ public class TilerTask extends Task<Void> {
         // For each image, tile it and save the tiles in a temporary folder
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
-            tileWSI(imageData, QP.PROJECT_BASE_DIR);
+            tileWSI(imageData, outputBaseDir);
         }
 
         logger.info("Tiling images in the project finished");
