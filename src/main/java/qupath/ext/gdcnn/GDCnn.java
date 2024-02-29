@@ -28,6 +28,10 @@ public class GDCnn {
 
     private ExecutorService pool = Executors.newSingleThreadExecutor(ThreadTools.createThreadFactory("GDCnn", true));
 
+    private final int TOTAL_TASKS = 4;
+
+    private int completedTasks = 0;
+
     private QuPathGUI qupath;
 
     public GDCnn(QuPathGUI qupath) {
@@ -45,6 +49,26 @@ public class GDCnn {
             Dialogs.showErrorMessage("Task failed", e.getSource().getException());
         });
         pool.submit(task);
+        task.stateProperty().addListener((obs, oldState, newState) -> taskStateChange(task, newState));
+    }
+
+    /**
+     * Handles the state change of a task
+     * 
+     * @param task
+     * @param newState
+     */
+    private void taskStateChange(Task<?> task, Task.State newState) {
+        if (newState == Task.State.SUCCEEDED) {
+            logger.info("Task {} succeeded", task);
+            completedTasks++;
+        } else if (newState == Task.State.FAILED) {
+            logger.error("Task {} failed", task);
+            completedTasks++;
+        } else if (newState == Task.State.CANCELLED) {
+            logger.info("Task {} cancelled", task);
+            completedTasks++;
+        }
     }
 
     /**
