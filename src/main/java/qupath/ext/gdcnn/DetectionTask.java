@@ -59,7 +59,10 @@ public class DetectionTask extends Task<Void> {
         } else {
             ImageData<BufferedImage> imageData = qupath.getImageData();
             if (imageData != null) {
-                detectGlomeruli(imageData);
+                String outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
+                // Take substring from the first slash after file: to the last slash
+                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5, outputBaseDir.lastIndexOf("/"));
+                detectGlomeruli(imageData, outputBaseDir);
             } else {
                 logger.error("No image or project is open");
             }
@@ -72,10 +75,11 @@ public class DetectionTask extends Task<Void> {
      * hierarchy
      * 
      * @param imageData
+     * @param outputBaseDir
      * @throws InterruptedException
      * @throws IOException
      */
-    public void detectGlomeruli(ImageData<BufferedImage> imageData)
+    public void detectGlomeruli(ImageData<BufferedImage> imageData, String outputBaseDir)
             throws IOException, InterruptedException {
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
         VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), pythonPath, gdcnnPath);
@@ -85,7 +89,9 @@ public class DetectionTask extends Task<Void> {
         double pixelSize = imageData.getServer().getPixelCalibration().getAveragedPixelSizeMicrons();
 
         // This is the list of commands after the 'python' call
-        List<String> arguments = Arrays.asList(scriptPath, "--wsi", imageName, "--export", QP.PROJECT_BASE_DIR, "--model",
+        List<String> arguments = Arrays.asList(scriptPath, "--wsi", imageName, "--export",
+                QP.buildFilePath(outputBaseDir),
+                "--model",
                 modelName, "--train-config", trainConfig, "--undersampling", Integer.toString(undersampling),
                 "--pixel-size", Double.toString(pixelSize));
         venv.setArguments(arguments);
@@ -96,7 +102,7 @@ public class DetectionTask extends Task<Void> {
         logger.info("Detection for {} finished", imageName);
 
         // Read the annotations from the GeoJSON file
-        String geoJSONPath = QP.buildFilePath(QP.PROJECT_BASE_DIR, "Temp", "segment-output", "Detections", imageName,
+        String geoJSONPath = QP.buildFilePath(outputBaseDir, "Temp", "segment-output", "Detections", imageName,
                 "detections.geojson");
         List<PathObject> detectedObjects = PathIO.readObjects(Paths.get(geoJSONPath));
 
@@ -119,7 +125,7 @@ public class DetectionTask extends Task<Void> {
         logger.info("Running detection for {} images", imageEntryList.size());
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
-            detectGlomeruli(imageData);
+            detectGlomeruli(imageData, QP.PROJECT_BASE_DIR);
             imageEntry.saveImageData(imageData);
         }
         logger.info("Detection for {} images in the project finished", imageEntryList.size());

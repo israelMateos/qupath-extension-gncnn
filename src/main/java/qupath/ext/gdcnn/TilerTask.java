@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.nio.file.Paths;
 import javafx.concurrent.Task;
 
 import java.util.List;
@@ -53,7 +54,10 @@ public class TilerTask extends Task<Void> {
         } else {
             ImageData<BufferedImage> imageData = qupath.getImageData();
             if (imageData != null) {
-                tileWSI(imageData);
+                String outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
+                // Take substring from the first slash after file: to the last slash
+                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5, outputBaseDir.lastIndexOf("/"));
+                tileWSI(imageData, outputBaseDir);
             } else {
                 logger.error("No image or project is open");
             }
@@ -65,11 +69,12 @@ public class TilerTask extends Task<Void> {
      * Tiles the image data and saves the tiles
      * 
      * @param imageData
+     * @param outputBaseDir
      * @throws IOException
      */
-    private void tileWSI(ImageData<BufferedImage> imageData) throws IOException {
+    private void tileWSI(ImageData<BufferedImage> imageData, String outputBaseDir) throws IOException {
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
-        String outputPath = QP.buildFilePath(QP.PROJECT_BASE_DIR, "Temp", "tiler-output", "Tiles", imageName);
+        String outputPath = QP.buildFilePath(outputBaseDir, "Temp", "tiler-output", "Tiles", imageName);
         // Create the output folder if it does not exist
         Utils.createFolder(outputPath);
         logger.info("Tiling {} [size={},overlap={}]", imageName, tileSize, tileOverlap);
@@ -97,7 +102,7 @@ public class TilerTask extends Task<Void> {
         // For each image, tile it and save the tiles in a temporary folder
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
-            tileWSI(imageData);
+            tileWSI(imageData, QP.PROJECT_BASE_DIR);
         }
 
         logger.info("Tiling images in the project finished");
