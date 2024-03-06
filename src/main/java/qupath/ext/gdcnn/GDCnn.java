@@ -44,6 +44,10 @@ public class GDCnn {
      * @param task
      */
     private void submitTask(Task<?> task) {
+        task.setOnSucceeded(e -> {
+            logger.info("Task succeeded");
+            Dialogs.showInfoNotification("Task succeeded", task.getClass().getSimpleName() + " succeeded");
+        });
         task.setOnFailed(e -> {
             logger.error("Task failed", e.getSource().getException());
             Dialogs.showErrorMessage("Task failed", e.getSource().getException());
@@ -72,6 +76,15 @@ public class GDCnn {
     }
 
     /**
+     * Apply the threshold to separate the foreground from the background
+     * 
+     * @throws IOException
+     */
+    public void thresholdForeground() throws IOException {
+        submitTask(new ThresholdTask(qupath, 20, ".jpeg", gdcnnSetup.getPythonPath(), gdcnnSetup.getGdcnnPath()));
+    }
+
+    /**
      * Tiles each WSI and saves them in a temporary folder
      * 
      * @throws IOException // In case there is an issue reading the image
@@ -86,7 +99,7 @@ public class GDCnn {
      * @throws IOException
      */
     public void detectGlomeruli() throws IOException {
-        submitTask(new DetectionTask(qupath, "cascade_R_50_FPN_3x", "external", 1, gdcnnSetup.getPythonPath(),
+        submitTask(new DetectionTask(qupath, "cascade_R_50_FPN_1x", "external", 1, gdcnnSetup.getPythonPath(),
                 gdcnnSetup.getGdcnnPath()));
         // If dealing with a project, remove the image data from the viewer
         // to refresh the viewer after the detection

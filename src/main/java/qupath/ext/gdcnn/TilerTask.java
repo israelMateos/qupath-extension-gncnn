@@ -85,9 +85,14 @@ public class TilerTask extends Task<Void> {
                 .imageExtension(imageExtension)
                 .overlap(tileOverlap)
                 .downsample(downsample)
-                .annotatedTilesOnly(false)
+                .annotatedTilesOnly(true)
                 .writeTiles(outputPath);
         logger.info("Tiling of {} finished: {}", imageName, outputPath);
+
+        // Remove all 'Tissue' annotations in the image hierarchy
+        imageData.getHierarchy().getAnnotationObjects().stream()
+                .filter(annotation -> annotation.getPathClass().getName().equals("Tissue"))
+                .forEach(annotation -> imageData.getHierarchy().removeObject(annotation, false));
     }
 
     /**
@@ -106,6 +111,7 @@ public class TilerTask extends Task<Void> {
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
             tileWSI(imageData, outputBaseDir);
+            imageEntry.saveImageData(imageData);
         }
 
         logger.info("Tiling images in the project finished");

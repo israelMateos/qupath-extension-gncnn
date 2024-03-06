@@ -97,6 +97,7 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 	 */
 	private void addMenuItems(QuPathGUI qupath) {
 		var menu = qupath.getMenu("Extensions>" + EXTENSION_NAME, true);
+		MenuItem thresholdItem = new MenuItem("Threshold foreground");
 		MenuItem tileItem = new MenuItem("Tile WSIs");
 		MenuItem detectionItem = new MenuItem("Run detection");
 		MenuItem exportItem = new MenuItem("Export annotations");
@@ -105,6 +106,13 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 
 		GDCnn gdcnn = new GDCnn(qupath);
 
+		thresholdItem.setOnAction(e -> {
+			try {
+				gdcnn.thresholdForeground();
+			} catch (Exception ex) {
+				logger.error("Error thresholding foreground", ex);
+			}
+		});
 		tileItem.setOnAction(e -> {
 			try {
 				gdcnn.tileWSIs();
@@ -135,6 +143,7 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 		});
 		allItem.setOnAction(e -> {
 			try {
+				gdcnn.thresholdForeground();
 				gdcnn.tileWSIs();
 				gdcnn.detectGlomeruli();
 				gdcnn.exportAnnotations();
@@ -144,13 +153,14 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 			}
 		});
 
+		thresholdItem.disableProperty().bind(enableExtensionProperty.not());
 		tileItem.disableProperty().bind(enableExtensionProperty.not());
 		detectionItem.disableProperty().bind(enableExtensionProperty.not());
 		exportItem.disableProperty().bind(enableExtensionProperty.not());
 		classificationItem.disableProperty().bind(enableExtensionProperty.not());
 		allItem.disableProperty().bind(enableExtensionProperty.not());
 
-		menu.getItems().addAll(tileItem, detectionItem, exportItem, classificationItem, allItem);
+		menu.getItems().addAll(thresholdItem, tileItem, detectionItem, exportItem, classificationItem, allItem);
 	}
 
 	@Override
