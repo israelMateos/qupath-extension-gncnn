@@ -67,7 +67,7 @@ public class TaskPaths {
      * @return Path to the threshold script
      */
     public static String getThresholdScriptPath(String gdcnnPath) {
-        return QP.buildFilePath(gdcnnPath, "mescnn", "detection", "qupath", "threshold.py");
+        return QP.buildFilePath(gdcnnPath, "gdcnn", "detection", "qupath", "threshold.py");
     }
 
     /**
@@ -89,7 +89,7 @@ public class TaskPaths {
      * @return Path to the detection script
      */
     public static String getDetectionScriptPath(String gdcnnPath) {
-        return QP.buildFilePath(gdcnnPath, "mescnn", "detection", "qupath", "segment.py");
+        return QP.buildFilePath(gdcnnPath, "gdcnn", "detection", "qupath", "segment.py");
     }
 
     /**
@@ -111,7 +111,7 @@ public class TaskPaths {
      * @return Path to the classification script
      */
     public static String getClassificationScriptPath(String gdcnnPath) {
-        return QP.buildFilePath(gdcnnPath, "mescnn", "classification", "inference", "classify.py");
+        return QP.buildFilePath(gdcnnPath, "gdcnn", "classification", "inference", "classify.py");
     }
 
     /**

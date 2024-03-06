@@ -102,7 +102,7 @@ public class ClassificationTask extends Task<Void> {
             throws IOException, InterruptedException {
         VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), pythonPath, gdcnnPath);
 
-        String scriptPath = QP.buildFilePath(gdcnnPath, "mescnn", "classification", "inference", "classify.py");
+        String scriptPath = TaskPaths.getClassificationScriptPath(gdcnnPath);
 
         // This is the list of commands after the 'python' call
         List<String> arguments = Arrays.asList(scriptPath, "-e", QP.buildFilePath(outputBaseDir), "--netB",
