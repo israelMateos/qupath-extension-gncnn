@@ -1,0 +1,13 @@
+numpy==1.24.4
+cached-property==1.5.2
+
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.8.0+cu111
+
+huggingface-hub==0.20.3
+mmcls==0.25.0
+mmcv-full==1.4.6
+opencv-python==4.9.0.80
+pandas==2.0.3
+shapely==2.0.3
+tqdm==4.66.2
