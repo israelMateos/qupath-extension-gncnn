@@ -19,7 +19,7 @@ from gdcnn.detection.qupath.shapely2geojson import poly2geojson
 print("Local libraries loaded!")
 
 
-if __name__ == '__main__':
+def main():
     import argparse
     parser = argparse.ArgumentParser(description='Segment Glomeruli with Detectron2 from WSI')
     parser.add_argument('-w', '--wsi', type=str, help='path/to/wsi', required=True)
@@ -42,12 +42,13 @@ if __name__ == '__main__':
 
     undersampling = args.undersampling
 
-    model_folder = os.path.join(ROOT_DIR, 'gdcnn', 'detection', 'logs', model_name, config_dir)
+    tool_dir = os.path.join(ROOT_DIR, 'gdcnn')
+    model_folder = os.path.join(tool_dir, 'detection', 'logs', model_name, config_dir)
     logs_dir = os.path.join(model_folder, 'output')
     path_to_weights = os.path.join(logs_dir, "model_final.pth")
     if not os.path.exists(path_to_weights):
         print(f"Model weights not found: {path_to_weights}!")
-        model_path = download_detector(model_name, config_dir)
+        model_path = download_detector(model_name, config_dir, tool_dir)
         print(f"Downloaded: {model_path}")
     else:
         print(f"Model weights found: {path_to_weights}!")
@@ -142,3 +143,7 @@ if __name__ == '__main__':
     # Save as GeoJSON for QuPath
     path_to_geojson = os.path.join(detection_dir, 'detections.geojson')
     poly2geojson(list_polygons, 'Glomerulus', [0, 0, 255], path_to_geojson)
+
+
+if __name__ == '__main__':
+    main()

@@ -43,8 +43,8 @@ bin/
 
 ## Python
 /detectron2/
-/gdcnn/detection/logs*
-/gdcnn/classification/logs*
+/gdcnn/gdcnn/detection/logs*
+/gdcnn/gdcnn/classification/logs*
 /Data/
 /build/
 /GDCnn.egg-info/

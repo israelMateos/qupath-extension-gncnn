@@ -58,7 +58,7 @@ def contours2geojson(contours, pixel_size, output_path):
     poly2geojson(polygons, 'Tissue', [255, 0, 0], output_path)
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description='Segment Glomeruli with Detectron2 from WSI')
     parser.add_argument('--undersampling', type=int, help='Undersampling factor of tiles', default=20)
     parser.add_argument('-w', '--wsi', type=str, help='path/to/wsi', required=True)
@@ -86,3 +86,7 @@ if __name__ == '__main__':
         # Save as GeoJSON for QuPath
         path_to_geojson = os.path.join(annotation_dir, 'annotations.geojson')
         contours2geojson(contours, args.pixel_size, path_to_geojson)
+
+
+if __name__ == '__main__':
+    main()

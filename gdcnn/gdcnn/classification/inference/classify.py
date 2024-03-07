@@ -12,7 +12,7 @@ from gdcnn.classification.inference.paths import get_logs_path
 from gdcnn.definitions import ROOT_DIR
 
 
-if __name__ == '__main__':
+def main():
     import argparse
     parser = argparse.ArgumentParser(description='Classifiers Inference for Glomeruli Task')
     parser.add_argument('-r', '--root-path', type=str, help='Root path', default=ROOT_DIR)
@@ -169,3 +169,7 @@ if __name__ == '__main__':
 
     wsi_df = pd.DataFrame(data=wsi_dict)
     wsi_df.to_csv(output_file_summary_csv, sep=';', index=False)
+
+
+if __name__ == '__main__':
+    main()
