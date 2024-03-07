@@ -38,18 +38,11 @@ public class DetectionTask extends Task<Void> {
 
     private int undersampling;
 
-    private String pythonPath;
-
-    private String gdcnnPath;
-
-    public DetectionTask(QuPathGUI quPath, String modelName, String trainConfig, int undersampling, String pythonPath,
-            String gdcnnPath) {
+    public DetectionTask(QuPathGUI quPath, String modelName, String trainConfig, int undersampling) {
         this.qupath = quPath;
         this.modelName = modelName;
         this.trainConfig = trainConfig;
         this.undersampling = undersampling;
-        this.pythonPath = pythonPath;
-        this.gdcnnPath = gdcnnPath;
     }
 
     @Override
@@ -98,14 +91,12 @@ public class DetectionTask extends Task<Void> {
     public void detectGlomeruli(ImageData<BufferedImage> imageData, String outputBaseDir)
             throws IOException, InterruptedException {
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
-        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), pythonPath, gdcnnPath);
-
-        String scriptPath = TaskPaths.getDetectionScriptPath(gdcnnPath);
+        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName());
 
         double pixelSize = imageData.getServer().getPixelCalibration().getAveragedPixelSizeMicrons();
 
         // This is the list of commands after the 'python' call
-        List<String> arguments = Arrays.asList(scriptPath, "--wsi", imageName, "--export",
+        List<String> arguments = Arrays.asList(TaskPaths.SEGMENT_COMMAND, "--wsi", imageName, "--export",
                 QP.buildFilePath(outputBaseDir),
                 "--model",
                 modelName, "--train-config", trainConfig, "--undersampling", Integer.toString(undersampling),

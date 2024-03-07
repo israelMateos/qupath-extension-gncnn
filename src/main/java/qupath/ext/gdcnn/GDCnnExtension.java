@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.StringProperty;
 import javafx.scene.control.MenuItem;
 import qupath.fx.prefs.controlsfx.PropertyItemBuilder;
 import qupath.lib.common.Version;
@@ -32,10 +31,6 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 	private boolean isInstalled = false;
 	private BooleanProperty enableExtensionProperty = PathPrefs.createPersistentPreference(
 			"enableExtension", true);
-	private StringProperty pythonPathProperty = PathPrefs.createPersistentPreference(
-			"pythonPath", "/home/visilab/anaconda3/envs/GDCnn/bin/python3.8");
-	private StringProperty gdcnnPathProperty = PathPrefs.createPersistentPreference(
-			"gdcnnPath", "/home/visilab/Israel/GDCnn");
 
 	@Override
 	public void installExtension(QuPathGUI qupath) {
@@ -52,17 +47,6 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 	 * Adds the needed preferences to the QuPath preferences dialog.
 	 */
 	private void addPreferences() {
-		// Get an instance of the options
-		GDCnnSetup options = GDCnnSetup.getInstance();
-
-		// Set options to current values
-		options.setPythonPath(pythonPathProperty.get());
-		options.setGdcnnPath(gdcnnPathProperty.get());
-
-		// Listen for property changes
-		pythonPathProperty.addListener((v, o, n) -> options.setPythonPath(n));
-		gdcnnPathProperty.addListener((v, o, n) -> options.setGdcnnPath(n));
-
 		// Create the items for the preferences dialog
 		PropertySheet.Item enableExtensionItem = new PropertyItemBuilder<>(enableExtensionProperty, Boolean.class)
 				.propertyType(PropertyItemBuilder.PropertyType.GENERAL)
@@ -71,23 +55,9 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 				.description("Enable or disable the " + EXTENSION_NAME + " extension.")
 				.build();
 
-		PropertySheet.Item pythonPathItem = new PropertyItemBuilder<>(pythonPathProperty, String.class)
-				.propertyType(PropertyItemBuilder.PropertyType.FILE)
-				.name("Python path")
-				.category(EXTENSION_NAME)
-				.description("Path to the Python executable.")
-				.build();
-
-		PropertySheet.Item gdcnnPathItem = new PropertyItemBuilder<>(gdcnnPathProperty, String.class)
-				.propertyType(PropertyItemBuilder.PropertyType.DIRECTORY)
-				.name("GDCnn path")
-				.category(EXTENSION_NAME)
-				.description("Path to the GDCnn project.")
-				.build();
-
 		// Add the items to the preferences dialog
-		QuPathGUI.getInstance().getPreferencePane().getPropertySheet().getItems().addAll(
-				enableExtensionItem, pythonPathItem, gdcnnPathItem);
+		QuPathGUI.getInstance().getPreferencePane().getPropertySheet().getItems().add(
+				enableExtensionItem);
 	}
 
 	/**

@@ -49,16 +49,9 @@ public class ClassificationTask extends Task<Void> {
 
     private String modelName;
 
-    private String pythonPath;
-
-    private String gdcnnPath;
-
-    public ClassificationTask(QuPathGUI quPath, String modelName, String pythonPath,
-            String gdcnnPath) {
+    public ClassificationTask(QuPathGUI quPath, String modelName) {
         this.qupath = quPath;
         this.modelName = modelName;
-        this.pythonPath = pythonPath;
-        this.gdcnnPath = gdcnnPath;
     }
 
     @Override
@@ -100,12 +93,10 @@ public class ClassificationTask extends Task<Void> {
      */
     public void runClassification(String outputBaseDir)
             throws IOException, InterruptedException {
-        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), pythonPath, gdcnnPath);
-
-        String scriptPath = QP.buildFilePath(gdcnnPath, "mescnn", "classification", "inference", "classify.py");
+        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName());
 
         // This is the list of commands after the 'python' call
-        List<String> arguments = Arrays.asList(scriptPath, "-e", QP.buildFilePath(outputBaseDir), "--netB",
+        List<String> arguments = Arrays.asList(TaskPaths.CLASSIFICATION_COMMAND, "-e", QP.buildFilePath(outputBaseDir), "--netB",
                 modelName);
         venv.setArguments(arguments);
 

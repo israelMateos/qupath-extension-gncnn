@@ -14,8 +14,8 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
- * Wraps a Python environment to be used for the extension
- * and provides methods to execute Python scripts in the environment.
+ * Wraps a shell environment to be used for the extension
+ * and provides methods to execute commands in the environment.
  * 
  * @author Israel Mateos Aparicio
  */
@@ -25,16 +25,10 @@ public class VirtualEnvironment {
 
     private String name;
 
-    private String pythonPath;
-
-    private String gdcnnPath;
-
     private List<String> arguments;
 
-    public VirtualEnvironment(String name, String pythonPath, String gdcnnPath) {
+    public VirtualEnvironment(String name) {
         this.name = name;
-        this.pythonPath = pythonPath;
-        this.gdcnnPath = gdcnnPath;
     }
 
     /**
@@ -55,10 +49,7 @@ public class VirtualEnvironment {
      *                              is started
      */
     public void runCommand() throws IOException, InterruptedException {
-
-        // Add PYTHONPATH and Python executable to the environment
-        List<String> command = new ArrayList<>(
-                Arrays.asList("PYTHONPATH=" + gdcnnPath, pythonPath));
+        List<String> command = new ArrayList<>();
 
         // Get the arguments specific to the command we want to run
         command.addAll(arguments);
@@ -105,7 +96,6 @@ public class VirtualEnvironment {
         logger.info("This command should run directly if copy-pasted into your shell");
 
         ProcessBuilder pb = new ProcessBuilder(shell).redirectErrorStream(true);
-        pb.directory(new File(gdcnnPath));
 
         Process p = pb.start();
 
