@@ -39,16 +39,10 @@ public class ThresholdTask extends Task<Void> {
 
     private String imageExtension;
 
-    private String pythonPath;
-
-    private String gdcnnPath;
-
-    public ThresholdTask(QuPathGUI quPath, int downsample, String imageExtension, String pythonPath, String gdcnnPath) {
+    public ThresholdTask(QuPathGUI quPath, int downsample, String imageExtension) {
         this.qupath = quPath;
         this.downsample = downsample;
         this.imageExtension = imageExtension;
-        this.pythonPath = pythonPath;
-        this.gdcnnPath = gdcnnPath;
     }
 
     @Override
@@ -115,14 +109,12 @@ public class ThresholdTask extends Task<Void> {
         exportLowResolutionImage(imageData, outputBaseDir);
 
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
-        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), pythonPath, gdcnnPath);
-
-        String scriptPath = TaskPaths.getThresholdScriptPath(gdcnnPath);
+        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName());
 
         double pixelSize = imageData.getServer().getPixelCalibration().getAveragedPixelSizeMicrons();
 
         // This is the list of commands after the 'python' call
-        List<String> arguments = Arrays.asList(scriptPath, "--wsi", imageName, "--export",
+        List<String> arguments = Arrays.asList(TaskPaths.THRESHOLD_COMMAND, "--wsi", imageName, "--export",
                 QP.buildFilePath(outputBaseDir), "--undersampling", Integer.toString(downsample), "--pixel-size",
                 Double.toString(pixelSize));
         venv.setArguments(arguments);

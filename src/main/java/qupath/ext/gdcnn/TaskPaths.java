@@ -10,6 +10,10 @@ public class TaskPaths {
 
     public static final String TMP_FOLDER = "Temp";
 
+    public static final String THRESHOLD_COMMAND = "gdcnn-threshold";
+    public static final String SEGMENT_COMMAND = "gdcnn-segment";
+    public static final String CLASSIFICATION_COMMAND = "gdcnn-classify";
+
     public static final String LOWRES_OUTPUT_FOLDER = "lowres-output";
     public static final String THRESHOLD_OUTPUT_FOLDER = "threshold-output";
     public static final String TILER_OUTPUT_FOLDER = "tiler-output";
@@ -61,16 +65,6 @@ public class TaskPaths {
     }
 
     /**
-     * Returns the path to the threshold script
-     * 
-     * @param gdcnnPath
-     * @return Path to the threshold script
-     */
-    public static String getThresholdScriptPath(String gdcnnPath) {
-        return QP.buildFilePath(gdcnnPath, "gdcnn", "detection", "qupath", "threshold.py");
-    }
-
-    /**
      * Returns the path to the threshold results
      * 
      * @param baseDir
@@ -83,16 +77,6 @@ public class TaskPaths {
     }
 
     /**
-     * Returns the detection script path
-     * 
-     * @param gdcnnPath
-     * @return Path to the detection script
-     */
-    public static String getDetectionScriptPath(String gdcnnPath) {
-        return QP.buildFilePath(gdcnnPath, "gdcnn", "detection", "qupath", "segment.py");
-    }
-
-    /**
      * Returns the path to the detection results
      * 
      * @param baseDir
@@ -102,16 +86,6 @@ public class TaskPaths {
     public static String getDetectionResultsPath(String baseDir, String imageName) {
         return QP.buildFilePath(baseDir, TMP_FOLDER, SEGMENT_OUTPUT_FOLDER, DETECTIONS_FOLDER, imageName,
                 "detections.geojson");
-    }
-
-    /**
-     * Returns the classification script path
-     * 
-     * @param gdcnnPath
-     * @return Path to the classification script
-     */
-    public static String getClassificationScriptPath(String gdcnnPath) {
-        return QP.buildFilePath(gdcnnPath, "gdcnn", "classification", "inference", "classify.py");
     }
 
     /**

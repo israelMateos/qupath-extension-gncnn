@@ -24,8 +24,6 @@ public class GDCnn {
 
     private static final Logger logger = LoggerFactory.getLogger(GDCnn.class);
 
-    private GDCnnSetup gdcnnSetup = GDCnnSetup.getInstance();
-
     private ExecutorService pool = Executors.newSingleThreadExecutor(ThreadTools.createThreadFactory("GDCnn", true));
 
     private final int TOTAL_TASKS = 4;
@@ -81,7 +79,7 @@ public class GDCnn {
      * @throws IOException
      */
     public void thresholdForeground() throws IOException {
-        submitTask(new ThresholdTask(qupath, 20, ".jpeg", gdcnnSetup.getPythonPath(), gdcnnSetup.getGdcnnPath()));
+        submitTask(new ThresholdTask(qupath, 20, ".jpeg"));
     }
 
     /**
@@ -99,8 +97,7 @@ public class GDCnn {
      * @throws IOException
      */
     public void detectGlomeruli() throws IOException {
-        submitTask(new DetectionTask(qupath, "cascade_R_50_FPN_1x", "external", 1, gdcnnSetup.getPythonPath(),
-                gdcnnSetup.getGdcnnPath()));
+        submitTask(new DetectionTask(qupath, "cascade_R_50_FPN_1x", "external", 1));
         // If dealing with a project, remove the image data from the viewer
         // to refresh the viewer after the detection
         Project<BufferedImage> project = qupath.getProject();
@@ -124,8 +121,7 @@ public class GDCnn {
      * @throws IOException
      */
     public void classifyGlomeruli() throws IOException {
-        submitTask(new ClassificationTask(qupath, "swin_transformer", gdcnnSetup.getPythonPath(),
-                gdcnnSetup.getGdcnnPath()));
+        submitTask(new ClassificationTask(qupath, "swin_transformer"));
         // If dealing with a project, remove the image data from the viewer
         // to refresh the viewer after the detection
         Project<BufferedImage> project = qupath.getProject();
