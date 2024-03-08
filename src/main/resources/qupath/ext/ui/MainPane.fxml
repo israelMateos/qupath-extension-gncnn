@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.GridPane?>
+<?import org.controlsfx.control.CheckListView?>
+
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="404.0" minWidth="300.0" prefHeight="404.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="qupath.ext.ui.GDCnnController">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+      <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="8.0">
+         <children>
+            <Label text="Glomeruli Disease Classification">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+               <VBox.margin>
+                  <Insets top="8.0" />
+               </VBox.margin>
+            </Label>
+            <Separator prefWidth="200.0" />
+            <Label alignment="TOP_LEFT" text="Select images">
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+            </Label>
+            <CheckListView fx:id="imgsCheckList" prefHeight="110.0" prefWidth="300.0">
+               <VBox.margin>
+                  <Insets left="8.0" right="8.0" />
+               </VBox.margin>
+            </CheckListView>
+            <HBox alignment="CENTER_RIGHT" prefHeight="25.0" prefWidth="200.0">
+               <children>
+                  <Button fx:id="selectAllImgsBtn" mnemonicParsing="false" text="Select all" />
+               </children>
+               <VBox.margin>
+                  <Insets right="8.0" />
+               </VBox.margin>
+            </HBox>
+            <Separator prefWidth="200.0" />
+            <Button fx:id="runAllBtn" mnemonicParsing="false" onAction="#runAll" text="Run Detection + Classification" />
+            <Label alignment="TOP_LEFT" text="or" />
+            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="200.0" spacing="8.0">
+               <children>
+                  <Button fx:id="runDetectionBtn" mnemonicParsing="false" onAction="#runDetection" text="Run Detection" />
+                  <Label alignment="TOP_LEFT" text="and" />
+                  <Button fx:id="runClassificationBtn" mnemonicParsing="false" onAction="#runClassification" text="Run Classification" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="200.0">
+               <children>
+                  <ProgressIndicator fx:id="progressInd" />
+                  <Label fx:id="progressLabel" alignment="TOP_LEFT" text="Detecting glomeruli..." />
+               </children>
+               <VBox.margin>
+                  <Insets top="8.0" />
+               </VBox.margin>
+            </HBox>
+            <Separator prefWidth="200.0" />
+            <Button fx:id="viewResultsBtn" mnemonicParsing="false" onAction="#viewResults" text="View results" />
+         </children>
+      </VBox>
+   </children>
+</GridPane>
