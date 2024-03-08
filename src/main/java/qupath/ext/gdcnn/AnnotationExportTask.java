@@ -77,12 +77,20 @@ public class AnnotationExportTask extends Task<Void> {
         String imageName = server.getMetadata().getName();
         String outputPath = QP.buildFilePath(outputBaseDir, "Temp", "ann-export-output",
                 GeneralTools.stripExtension(imageName));
-        // Create the output folder if it does not exist
-        Utils.createFolder(outputPath);
 
         Collection<PathObject> annotations = imageData.getHierarchy().getAnnotationObjects();
         // Use only 'Glomerulus' annotations
-        annotations.removeIf(annotation -> !annotation.getPathClass().getName().equals("Glomerulus"));
+        annotations.removeIf(annotation -> annotation.getPathClass() == null
+                || !annotation.getPathClass().getName().equals("Glomerulus"));
+        
+        if (annotations.isEmpty()) {
+            logger.info("No annotations found for {}", imageName);
+            return;
+        } else {
+            // Create the output folder if it does not exist
+            Utils.createFolder(outputPath);
+        }
+
         logger.info("Exporting {} annotations for {}", annotations.size(), imageName);
         for (PathObject annotation : annotations) {
             ROI roi = annotation.getROI();

@@ -60,6 +60,9 @@ public class GDCnnController {
     private int completedTasks = 0;
 
     @FXML
+    /**
+     * Initializes the controller
+     */
     private void initialize() {
         logger.info("Initializing...");
 
@@ -67,45 +70,110 @@ public class GDCnnController {
     }
 	
 	@FXML
+    /**
+     * Runs the detection and classification of the glomeruli
+     */
 	private void runAll() {
-		try {
-			thresholdForeground();
-			tileWSIs();
-			detectGlomeruli();
-			exportAnnotations();
-			classifyGlomeruli();
-		} catch (IOException e) {
-			logger.error("Error running all tasks", e);
-			Dialogs.showErrorMessage("Error running all tasks", e);
-		}	
+        if (!isImageOrProjectOpen()) {
+            Dialogs.showErrorMessage("No image or project open", "Please open an image or project to run the tasks");
+            return;
+        } else {
+            logger.info("Running all tasks");
+            try {
+                thresholdForeground();
+                tileWSIs();
+                detectGlomeruli();
+                exportAnnotations();
+                classifyGlomeruli();
+            } catch (IOException e) {
+                logger.error("Error running all tasks", e);
+                Dialogs.showErrorMessage("Error running all tasks", e);
+            }	
+        }
 	}
 	
 	@FXML
+    /**
+     * Runs the detection of the glomeruli
+     */
 	private void runDetection() {
-		try {
-			thresholdForeground();
-			tileWSIs();
-			detectGlomeruli();
-		} catch (IOException e) {
-			logger.error("Error running detection", e);
-			Dialogs.showErrorMessage("Error running detection", e);
-		}
+        if (!isImageOrProjectOpen()) {
+            Dialogs.showErrorMessage("No image or project open", "Please open an image or project to run the tasks");
+            return;
+        } else {
+            logger.info("Running detection pipeline");
+            try {
+                thresholdForeground();
+                tileWSIs();
+                detectGlomeruli();
+            } catch (IOException e) {
+                logger.error("Error running detection", e);
+                Dialogs.showErrorMessage("Error running detection", e);
+            }
+        }
 	}
 	
 	@FXML
+    /**
+     * Runs the classification of the glomeruli
+     */
 	private void runClassification() {
-		try {
-			exportAnnotations();
-			classifyGlomeruli();
-		} catch (IOException e) {
-			logger.error("Error running classification", e);
-			Dialogs.showErrorMessage("Error running classification", e);
-		}
+        if (!isImageOrProjectOpen()) {
+            Dialogs.showErrorMessage("No image or project open", "Please open an image or project to run the tasks");
+            return;
+        } else {
+            logger.info("Running classification pipeline");
+            try {
+                exportAnnotations();
+                classifyGlomeruli();
+            } catch (IOException e) {
+                logger.error("Error running classification", e);
+                Dialogs.showErrorMessage("Error running classification", e);
+            }
+        }
 	}
 	
 	@FXML
+    // TODO
 	private void viewResults() {
 		
+	}
+
+    /**
+     * Returns true if an image or project is open, false otherwise
+     * 
+     * @return True if an image or project is open, false otherwise
+     */
+    private boolean isImageOrProjectOpen() {
+        return qupath.getProject() != null || qupath.getImageData() != null;
+    }
+
+    /**
+     * Puts the project images in the check list
+     */
+	public void setImgsCheckListElements() {
+		ObservableList<String> imgsCheckListItems = FXCollections.observableArrayList();
+        Project<BufferedImage> project = qupath.getProject();
+		if (project != null) {
+			// Add all images in the project to the list
+        	List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
+
+			for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
+				String imageName = GeneralTools.stripExtension(imageEntry.getImageName());
+				imgsCheckListItems.add(imageName);
+			}
+		} else {
+			// Add the current image to the list
+            ImageData<BufferedImage> imageData = qupath.getImageData();
+            if (imageData != null) {
+				String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
+				imgsCheckListItems.add(imageName);
+			} else {
+				logger.error("No project or image is open");
+			}
+		}
+
+		imgsCheckList.setItems(imgsCheckListItems);
 	}
 
     /**
@@ -202,30 +270,5 @@ public class GDCnnController {
             qupath.getViewer().setImageData(null);
         }
     }
-
-	public void setImgsCheckListElements() {
-		ObservableList<String> imgsCheckListItems = FXCollections.observableArrayList();
-        Project<BufferedImage> project = qupath.getProject();
-		if (project != null) {
-			// Add all images in the project to the list
-        	List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
-
-			for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
-				String imageName = GeneralTools.stripExtension(imageEntry.getImageName());
-				imgsCheckListItems.add(imageName);
-			}
-		} else {
-			// Add the current image to the list
-            ImageData<BufferedImage> imageData = qupath.getImageData();
-            if (imageData != null) {
-				String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
-				imgsCheckListItems.add(imageName);
-			} else {
-				logger.error("No project or image is open");
-			}
-		}
-
-		imgsCheckList.setItems(imgsCheckListItems);
-	}
 	
 }
