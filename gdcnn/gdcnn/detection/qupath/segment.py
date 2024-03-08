@@ -4,7 +4,6 @@ import tqdm
 import cv2
 import numpy as np
 import time
-import pickle
 
 from detectron2.engine import DefaultPredictor
 

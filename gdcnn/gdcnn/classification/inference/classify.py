@@ -1,4 +1,6 @@
+import logging
 import os
+
 import numpy as np
 import torch
 import pandas as pd
@@ -30,19 +32,24 @@ def main():
         "M": args.netM if args.multi else None,
     }
 
-    criterion_pr = "min"
     root_path = args.root_path
     export_dir = args.export_dir
 
     mesc_log_dir = get_logs_path(root_path)
     crop_dir = os.path.join(export_dir, "Temp", "ann-export-output")
+
+    if not os.path.exists(crop_dir):
+        logging.warning(f"Directory {crop_dir} does not exist")
+        return
+
     # report_dir = os.path.join(export_dir, "Report")
     report_dir = os.path.join(export_dir, "Report", f"B-{args.netB}_M-{args.netM}")
     os.makedirs(report_dir, exist_ok=True)
 
     wsi_ids = os.listdir(crop_dir)
-    logs_path = get_logs_path(ROOT_DIR)
-    subdir = "test-res"
+    if len(wsi_ids) == 0:
+        logging.warning("No WSI IDs found in the export directory")
+        return
 
     wsi_dict = {
         'WSI-ID': [],

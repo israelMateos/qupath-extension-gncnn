@@ -1,5 +1,6 @@
 """Apply thresholding to an image and save the result as a GeoJSON file."""
 import argparse
+import logging
 import os
 
 import cv2
@@ -52,9 +53,13 @@ def contours2geojson(contours, pixel_size, output_path):
         polygons.append(polygon)
     
     # 2. Remove small polygons
-    polygons = [polygon for polygon in polygons if polygon.area * pixel_size**2 > MIN_AREA_GLOMERULUS_UM]
+    for polygon in polygons:
+        if polygon.area * pixel_size**2 < MIN_AREA_GLOMERULUS_UM:
+            logging.info(f'Removing small polygon with area {polygon.area * pixel_size**2} um^2')
+            polygons.remove(polygon)
 
     # 3. Convert polygons to GeoJSON
+    logging.info(f'Saving {len(polygons)} tissue polygons to {output_path}')
     poly2geojson(polygons, 'Tissue', [255, 0, 0], output_path)
 
 
@@ -81,7 +86,10 @@ def main():
         contours = get_original_contours(contours, downsample=args.undersampling)
 
         # Remove contours with less than 3 points
-        contours = [contour for contour in contours if len(contour) >= 3]
+        for contour in contours:
+            if len(contour) < 3:
+                logging.warning(f'Contour with less than 3 points found in {img_path}')
+                contours.remove(contour)
 
         # Save as GeoJSON for QuPath
         path_to_geojson = os.path.join(annotation_dir, 'annotations.geojson')
