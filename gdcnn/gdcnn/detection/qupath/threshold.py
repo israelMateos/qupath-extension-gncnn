@@ -6,7 +6,7 @@ import cv2
 import shapely.geometry
 
 from gdcnn.detection.qupath.config import MIN_AREA_GLOMERULUS_UM
-from shapely2geojson import poly2geojson
+from gdcnn.detection.qupath.shapely2geojson import poly2geojson
 
 def thresholding(img_path):
     # 1. Median filtering

@@ -13,6 +13,8 @@ import qupath.lib.gui.extensions.GitHubProject;
 import qupath.lib.gui.extensions.QuPathExtension;
 import qupath.lib.gui.prefs.PathPrefs;
 
+import qupath.ext.ui.GDCnnCommand;
+
 /**
  * QuPath extension to detect and classify glomeruli using deep learning.
  * 
@@ -67,70 +69,15 @@ public class GDCnnExtension implements QuPathExtension, GitHubProject {
 	 */
 	private void addMenuItems(QuPathGUI qupath) {
 		var menu = qupath.getMenu("Extensions>" + EXTENSION_NAME, true);
-		MenuItem thresholdItem = new MenuItem("Threshold foreground");
-		MenuItem tileItem = new MenuItem("Tile WSIs");
-		MenuItem detectionItem = new MenuItem("Run detection");
-		MenuItem exportItem = new MenuItem("Export annotations");
-		MenuItem classificationItem = new MenuItem("Run classification");
-		MenuItem allItem = new MenuItem("Run all");
+		MenuItem menuItem = new MenuItem("Open " + EXTENSION_NAME);
 
-		GDCnn gdcnn = new GDCnn(qupath);
-
-		thresholdItem.setOnAction(e -> {
-			try {
-				gdcnn.thresholdForeground();
-			} catch (Exception ex) {
-				logger.error("Error thresholding foreground", ex);
-			}
-		});
-		tileItem.setOnAction(e -> {
-			try {
-				gdcnn.tileWSIs();
-			} catch (Exception ex) {
-				logger.error("Error tiling WSIs", ex);
-			}
-		});
-		detectionItem.setOnAction(e -> {
-			try {
-				gdcnn.detectGlomeruli();
-			} catch (Exception ex) {
-				logger.error("Error running detection", ex);
-			}
-		});
-		exportItem.setOnAction(e -> {
-			try {
-				gdcnn.exportAnnotations();
-			} catch (Exception ex) {
-				logger.error("Error exporting annotations", ex);
-			}
-		});
-		classificationItem.setOnAction(e -> {
-			try {
-				gdcnn.classifyGlomeruli();
-			} catch (Exception ex) {
-				logger.error("Error running classification", ex);
-			}
-		});
-		allItem.setOnAction(e -> {
-			try {
-				gdcnn.thresholdForeground();
-				gdcnn.tileWSIs();
-				gdcnn.detectGlomeruli();
-				gdcnn.exportAnnotations();
-				gdcnn.classifyGlomeruli();
-			} catch (Exception ex) {
-				logger.error("Error running all tasks", ex);
-			}
+		menuItem.setOnAction(e -> {
+			new GDCnnCommand(qupath).run();
 		});
 
-		thresholdItem.disableProperty().bind(enableExtensionProperty.not());
-		tileItem.disableProperty().bind(enableExtensionProperty.not());
-		detectionItem.disableProperty().bind(enableExtensionProperty.not());
-		exportItem.disableProperty().bind(enableExtensionProperty.not());
-		classificationItem.disableProperty().bind(enableExtensionProperty.not());
-		allItem.disableProperty().bind(enableExtensionProperty.not());
+		menuItem.disableProperty().bind(enableExtensionProperty.not());
 
-		menu.getItems().addAll(thresholdItem, tileItem, detectionItem, exportItem, classificationItem, allItem);
+		menu.getItems().add(menuItem);
 	}
 
 	@Override
