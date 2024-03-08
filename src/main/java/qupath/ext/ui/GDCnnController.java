@@ -1,40 +1,112 @@
-package qupath.ext.gdcnn;
+package qupath.ext.ui;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.controlsfx.control.CheckListView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
+import qupath.ext.gdcnn.AnnotationExportTask;
+import qupath.ext.gdcnn.ClassificationTask;
+import qupath.ext.gdcnn.DetectionTask;
+import qupath.ext.gdcnn.ThresholdTask;
+import qupath.ext.gdcnn.TilerTask;
+import qupath.fx.dialogs.Dialogs;
+import qupath.lib.common.GeneralTools;
 import qupath.lib.common.ThreadTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
 import qupath.lib.projects.Project;
-import qupath.fx.dialogs.Dialogs;
+import qupath.lib.projects.ProjectImageEntry;
 
-/**
- * Glomeruli detection and classification using deep learning
- * 
- * @author Israel Mateos Aparicio
- */
-public class GDCnn {
+public class GDCnnController {
 
-    private static final Logger logger = LoggerFactory.getLogger(GDCnn.class);
-
-    private ExecutorService pool = Executors.newSingleThreadExecutor(ThreadTools.createThreadFactory("GDCnn", true));
-
-    private final int TOTAL_TASKS = 4;
-
-    private int completedTasks = 0;
+    private static final Logger logger = LoggerFactory.getLogger(GDCnnController.class);
 
     private QuPathGUI qupath;
+	
+	@FXML
+	private Button selectAllImgsBtn;
+	@FXML
+	private Button runAllBtn;
+	@FXML
+	private Button runDetectionBtn;
+	@FXML
+	private Button runClassificationBtn;
+	@FXML
+	private ProgressIndicator progressInd;
+	@FXML
+	private Label progressLabel;
+	@FXML
+	private Button viewResultsBtn;
+	@FXML
+	private CheckListView<String> imgsCheckList;
 
-    public GDCnn(QuPathGUI qupath) {
-        this.qupath = qupath;
+    private final ExecutorService pool = Executors.newSingleThreadExecutor(ThreadTools.createThreadFactory("GDCnn", true));
+
+	// TODO: Use the number of tasks to change the progress indicator
+    private final int TOTAL_TASKS = 5;
+    private int completedTasks = 0;
+
+    @FXML
+    private void initialize() {
+        logger.info("Initializing...");
+
+        this.qupath = QuPathGUI.getInstance();
     }
+	
+	@FXML
+	private void runAll() {
+		try {
+			thresholdForeground();
+			tileWSIs();
+			detectGlomeruli();
+			exportAnnotations();
+			classifyGlomeruli();
+		} catch (IOException e) {
+			logger.error("Error running all tasks", e);
+			Dialogs.showErrorMessage("Error running all tasks", e);
+		}	
+	}
+	
+	@FXML
+	private void runDetection() {
+		try {
+			thresholdForeground();
+			tileWSIs();
+			detectGlomeruli();
+		} catch (IOException e) {
+			logger.error("Error running detection", e);
+			Dialogs.showErrorMessage("Error running detection", e);
+		}
+	}
+	
+	@FXML
+	private void runClassification() {
+		try {
+			exportAnnotations();
+			classifyGlomeruli();
+		} catch (IOException e) {
+			logger.error("Error running classification", e);
+			Dialogs.showErrorMessage("Error running classification", e);
+		}
+	}
+	
+	@FXML
+	private void viewResults() {
+		
+	}
 
     /**
      * Submits a task to the thread pool to run in the background
@@ -130,4 +202,30 @@ public class GDCnn {
             qupath.getViewer().setImageData(null);
         }
     }
+
+	public void setImgsCheckListElements() {
+		ObservableList<String> imgsCheckListItems = FXCollections.observableArrayList();
+        Project<BufferedImage> project = qupath.getProject();
+		if (project != null) {
+			// Add all images in the project to the list
+        	List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
+
+			for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
+				String imageName = GeneralTools.stripExtension(imageEntry.getImageName());
+				imgsCheckListItems.add(imageName);
+			}
+		} else {
+			// Add the current image to the list
+            ImageData<BufferedImage> imageData = qupath.getImageData();
+            if (imageData != null) {
+				String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
+				imgsCheckListItems.add(imageName);
+			} else {
+				logger.error("No project or image is open");
+			}
+		}
+
+		imgsCheckList.setItems(imgsCheckListItems);
+	}
+	
 }
