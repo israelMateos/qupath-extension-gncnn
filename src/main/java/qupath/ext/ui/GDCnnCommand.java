@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import qupath.fx.dialogs.Dialogs;
 import qupath.fx.utils.FXUtils;
@@ -66,6 +67,7 @@ public class GDCnnCommand implements Runnable {
         stage.setTitle("GDCnn");
         stage.setScene(scene);
         stage.setResizable(false);
+        stage.initModality(Modality.WINDOW_MODAL);
 
         root.heightProperty().addListener((v, o, n) -> handleStageHeightChange());
 
