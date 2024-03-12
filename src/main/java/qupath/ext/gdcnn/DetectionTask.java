@@ -10,6 +10,7 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import qupath.ext.env.VirtualEnvironment;
 import qupath.lib.common.GeneralTools;
@@ -32,14 +33,18 @@ public class DetectionTask extends Task<Void> {
 
     private QuPathGUI qupath;
 
+    private ObservableList<String> selectedImages;
+
     private String modelName;
 
     private String trainConfig;
 
     private int undersampling;
 
-    public DetectionTask(QuPathGUI quPath, String modelName, String trainConfig, int undersampling) {
+    public DetectionTask(QuPathGUI quPath, ObservableList<String> selectedImages, String modelName, String trainConfig,
+            int undersampling) {
         this.qupath = quPath;
+        this.selectedImages = selectedImages;
         this.modelName = modelName;
         this.trainConfig = trainConfig;
         this.undersampling = undersampling;
@@ -130,13 +135,16 @@ public class DetectionTask extends Task<Void> {
     public void detectGlomeruliProject(Project<BufferedImage> project, String outputBaseDir)
             throws IOException, InterruptedException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
-        logger.info("Running detection for {} images", imageEntryList.size());
+        logger.info("Running detection for {} images", selectedImages.size());
+        // Only process the selected images
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
-            detectGlomeruli(imageData, outputBaseDir);
-            imageEntry.saveImageData(imageData);
+            if (selectedImages.contains(GeneralTools.stripExtension(imageData.getServer().getMetadata().getName()))) {
+                detectGlomeruli(imageData, outputBaseDir);
+                imageEntry.saveImageData(imageData);
+            }
         }
-        logger.info("Detection for {} images in the project finished", imageEntryList.size());
+        logger.info("Detection for {} images in the project finished", selectedImages.size());
     }
 
 }

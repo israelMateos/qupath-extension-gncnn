@@ -10,6 +10,7 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import qupath.ext.env.VirtualEnvironment;
 import qupath.lib.common.GeneralTools;
@@ -35,12 +36,15 @@ public class ThresholdTask extends Task<Void> {
 
     private QuPathGUI qupath;
 
+    private ObservableList<String> selectedImages;
+
     private int downsample;
 
     private String imageExtension;
 
-    public ThresholdTask(QuPathGUI quPath, int downsample, String imageExtension) {
+    public ThresholdTask(QuPathGUI quPath, ObservableList<String> selectedImages, int downsample, String imageExtension) {
         this.qupath = quPath;
+        this.selectedImages = selectedImages;
         this.downsample = downsample;
         this.imageExtension = imageExtension;
     }
@@ -50,7 +54,7 @@ public class ThresholdTask extends Task<Void> {
         Project<BufferedImage> project = qupath.getProject();
         String outputBaseDir = QP.PROJECT_BASE_DIR;
         if (project != null) {
-            thresholdForegroundProject(project, outputBaseDir);
+            thresholdForegroundProject(project, selectedImages, outputBaseDir);
         } else {
             ImageData<BufferedImage> imageData = qupath.getImageData();
             if (imageData != null) {
@@ -140,20 +144,25 @@ public class ThresholdTask extends Task<Void> {
      * annotations to each image hierarchy
      * 
      * @param project
+     * @param selectedImages
      * @param outputBaseDir
      * @throws InterruptedException
      * @throws IOException
      */
-    public void thresholdForegroundProject(Project<BufferedImage> project, String outputBaseDir)
+    public void thresholdForegroundProject(Project<BufferedImage> project, ObservableList<String> selectedImages, String outputBaseDir)
             throws IOException, InterruptedException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
-        logger.info("Running detection for {} images", imageEntryList.size());
+        logger.info("Running tissue detection for {} images", selectedImages.size());
+        // Only process the selected images
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
-            thresholdForeground(imageData, outputBaseDir);
-            imageEntry.saveImageData(imageData);
+            if (selectedImages.contains(GeneralTools.stripExtension(imageData.getServer().getMetadata().getName()))) {
+                thresholdForeground(imageData, outputBaseDir);
+                imageEntry.saveImageData(imageData);
+            }
         }
-        logger.info("Detection for {} images in the project finished", imageEntryList.size());
+
+        logger.info("Tissue detection for {} images in the project finished", selectedImages.size());
     }
 
 }

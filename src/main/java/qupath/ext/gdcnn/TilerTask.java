@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Paths;
+
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 
 import java.util.List;
@@ -30,6 +32,8 @@ public class TilerTask extends Task<Void> {
 
     private QuPathGUI qupath;
 
+    private ObservableList<String> selectedImages;
+
     private int tileSize;
 
     private int tileOverlap;
@@ -38,8 +42,10 @@ public class TilerTask extends Task<Void> {
 
     private String imageExtension;
 
-    public TilerTask(QuPathGUI quPath, int tileSize, int tileOverlap, double downsample, String imageExtension) {
+    public TilerTask(QuPathGUI quPath, ObservableList<String> selectedImages, int tileSize, int tileOverlap,
+            double downsample, String imageExtension) {
         this.qupath = quPath;
+        this.selectedImages = selectedImages;
         this.tileSize = tileSize;
         this.tileOverlap = tileOverlap;
         this.downsample = downsample;
@@ -106,15 +112,18 @@ public class TilerTask extends Task<Void> {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
 
         logger.info("Tiling {} images in the project [size={},overlap={}]",
-                imageEntryList.size(), tileSize, tileOverlap);
+                selectedImages.size(), tileSize, tileOverlap);
         // For each image, tile it and save the tiles in a temporary folder
+        // Only process the selected images
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
-            tileWSI(imageData, outputBaseDir);
-            imageEntry.saveImageData(imageData);
+            if (selectedImages.contains(GeneralTools.stripExtension(imageData.getServer().getMetadata().getName()))) {
+                tileWSI(imageData, outputBaseDir);
+                imageEntry.saveImageData(imageData);
+            }
         }
 
-        logger.info("Tiling images in the project finished");
+        logger.info("Tiling {} images in the project finished", selectedImages.size());
     }
 
 }

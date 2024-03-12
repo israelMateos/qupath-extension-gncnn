@@ -10,6 +10,7 @@ import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javax.imageio.ImageIO;
 import qupath.lib.common.GeneralTools;
@@ -32,12 +33,16 @@ public class AnnotationExportTask extends Task<Void> {
 
     private QuPathGUI qupath;
 
+    private ObservableList<String> selectedImages;
+
     private int padding;
 
     private double downsample;
 
-    public AnnotationExportTask(QuPathGUI quPath, int padding, double downsample) {
+    public AnnotationExportTask(QuPathGUI quPath, ObservableList<String> selectedImages, int padding,
+            double downsample) {
         this.qupath = quPath;
+        this.selectedImages = selectedImages;
         this.padding = padding;
         this.downsample = downsample;
     }
@@ -82,7 +87,7 @@ public class AnnotationExportTask extends Task<Void> {
         // Use only 'Glomerulus' annotations
         annotations.removeIf(annotation -> annotation.getPathClass() == null
                 || !annotation.getPathClass().getName().equals("Glomerulus"));
-        
+
         if (annotations.isEmpty()) {
             logger.info("No annotations found for {}", imageName);
             return;
@@ -124,12 +129,15 @@ public class AnnotationExportTask extends Task<Void> {
     public void exportAnnotationsProject(Project<BufferedImage> project, String outputBaseDir)
             throws IOException, InterruptedException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
-        logger.info("Exporting annotations for {} images in the project", imageEntryList.size());
+        logger.info("Exporting annotations for {} images in the project", selectedImages.size());
+        // Only process the selected images
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
-            exportAnnotations(imageData, outputBaseDir);
+            if (selectedImages.contains(GeneralTools.stripExtension(imageData.getServer().getMetadata().getName()))) {
+                exportAnnotations(imageData, outputBaseDir);
+            }
         }
-        logger.info("Exporting annotations for {} images in the project finished", imageEntryList.size());
+        logger.info("Exporting annotations for {} images in the project finished", selectedImages.size());
     }
 
 }

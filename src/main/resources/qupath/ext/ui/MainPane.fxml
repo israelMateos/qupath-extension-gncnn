@@ -40,7 +40,7 @@
             </CheckListView>
             <HBox alignment="CENTER_RIGHT" prefHeight="25.0" prefWidth="200.0">
                <children>
-                  <Button fx:id="selectAllImgsBtn" mnemonicParsing="false" text="Select all" />
+                  <Button fx:id="selectAllImgsBtn" mnemonicParsing="false" onAction="#selectAllImgs" text="Select all" />
                </children>
                <VBox.margin>
                   <Insets right="8.0" />

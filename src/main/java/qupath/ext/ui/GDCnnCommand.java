@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import qupath.fx.dialogs.Dialogs;
 import qupath.fx.utils.FXUtils;
@@ -54,10 +55,11 @@ public class GDCnnCommand implements Runnable {
             throw new IOException("Cannot find URL for MainPane FXML");
         }
 
-        // We need to use the ExtensionClassLoader to load the FXML, since it's in a different module
+        // We need to use the ExtensionClassLoader to load the FXML, since it's in a
+        // different module
         var loader = new FXMLLoader(url);
         loader.setClassLoader(this.getClass().getClassLoader());
-        GridPane root = (GridPane)loader.load();
+        GridPane root = (GridPane) loader.load();
         Scene scene = new Scene(root);
         controller = loader.getController();
 
@@ -66,6 +68,7 @@ public class GDCnnCommand implements Runnable {
         stage.setTitle("GDCnn");
         stage.setScene(scene);
         stage.setResizable(false);
+        stage.initModality(Modality.WINDOW_MODAL);
 
         root.heightProperty().addListener((v, o, n) -> handleStageHeightChange());
 
@@ -76,8 +79,8 @@ public class GDCnnCommand implements Runnable {
 
     private void handleStageHeightChange() {
         stage.sizeToScene();
-        // This fixes a bug where the stage would migrate to the corner of a screen if it is
-        // resized, hidden, then shown again
+        // This fixes a bug where the stage would migrate to the corner of a screen if
+        // it is resized, hidden, then shown again
         if (stage.isShowing() && Double.isFinite(stage.getX()) && Double.isFinite(stage.getY()))
             FXUtils.retainWindowPosition(stage);
     }
