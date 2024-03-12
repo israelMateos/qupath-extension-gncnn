@@ -96,12 +96,13 @@ public class GDCnnController {
             return;
         } else {
             logger.info("Running all tasks");
+            ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
             try {
-                thresholdForeground();
-                tileWSIs();
-                detectGlomeruli();
-                exportAnnotations();
-                classifyGlomeruli();
+                thresholdForeground(selectedImages);
+                tileWSIs(selectedImages);
+                detectGlomeruli(selectedImages);
+                exportAnnotations(selectedImages);
+                classifyGlomeruli(selectedImages);
             } catch (IOException e) {
                 logger.error("Error running all tasks", e);
                 Dialogs.showErrorMessage("Error running all tasks", e);
@@ -119,10 +120,11 @@ public class GDCnnController {
             return;
         } else {
             logger.info("Running detection pipeline");
+            ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
             try {
-                thresholdForeground();
-                tileWSIs();
-                detectGlomeruli();
+                thresholdForeground(selectedImages);
+                tileWSIs(selectedImages);
+                detectGlomeruli(selectedImages);
             } catch (IOException e) {
                 logger.error("Error running detection", e);
                 Dialogs.showErrorMessage("Error running detection", e);
@@ -140,9 +142,10 @@ public class GDCnnController {
             return;
         } else {
             logger.info("Running classification pipeline");
+            ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
             try {
-                exportAnnotations();
-                classifyGlomeruli();
+                exportAnnotations(selectedImages);
+                classifyGlomeruli(selectedImages);
             } catch (IOException e) {
                 logger.error("Error running classification", e);
                 Dialogs.showErrorMessage("Error running classification", e);
@@ -214,6 +217,14 @@ public class GDCnnController {
         imgsCheckList.setItems(imgsCheckListItems);
     }
 
+    @FXML
+    /**
+     * Selects all the images in the check list
+     */
+    private void selectAllImgs() {
+        imgsCheckList.getCheckModel().checkAll();
+    }
+
     /**
      * Submits a task to the thread pool to run in the background
      * 
@@ -254,45 +265,50 @@ public class GDCnnController {
     /**
      * Apply the threshold to separate the foreground from the background
      * 
+     * @param selectedImages
      * @throws IOException
      */
-    public void thresholdForeground() throws IOException {
-        submitTask(new ThresholdTask(qupath, 20, ".jpeg"));
+    public void thresholdForeground(ObservableList<String> selectedImages) throws IOException {
+        submitTask(new ThresholdTask(qupath, selectedImages, 20, ".jpeg"));
     }
 
     /**
      * Tiles each WSI and saves them in a temporary folder
      * 
+     * @param selectedImages
      * @throws IOException // In case there is an issue reading the image
      */
-    public void tileWSIs() throws IOException {
-        submitTask(new TilerTask(qupath, 4096, 2048, 1, ".jpeg"));
+    public void tileWSIs(ObservableList<String> selectedImages) throws IOException {
+        submitTask(new TilerTask(qupath, selectedImages, 4096, 2048, 1, ".jpeg"));
     }
 
     /**
      * Detects glomeruli in the WSI patches
      * 
+     * @param selectedImages
      * @throws IOException
      */
-    public void detectGlomeruli() throws IOException {
-        submitTask(new DetectionTask(qupath, "cascade_R_50_FPN_1x", "external", 1));
+    public void detectGlomeruli(ObservableList<String> selectedImages) throws IOException {
+        submitTask(new DetectionTask(qupath, selectedImages, "cascade_R_50_FPN_1x", "external", 1));
     }
 
     /**
      * Exports the annotations of each WSI to images
      * 
+     * @param selectedImages
      */
-    public void exportAnnotations() {
-        submitTask(new AnnotationExportTask(qupath, 300, 1));
+    public void exportAnnotations(ObservableList<String> selectedImages) {
+        submitTask(new AnnotationExportTask(qupath, selectedImages, 300, 1));
     }
 
     /**
      * Classifies annotated glomeruli
      * 
+     * @param selectedImages
      * @throws IOException
      */
-    public void classifyGlomeruli() throws IOException {
-        submitTask(new ClassificationTask(qupath, "swin_transformer"));
+    public void classifyGlomeruli(ObservableList<String> selectedImages) throws IOException {
+        submitTask(new ClassificationTask(qupath, selectedImages, "swin_transformer"));
     }
 
 }

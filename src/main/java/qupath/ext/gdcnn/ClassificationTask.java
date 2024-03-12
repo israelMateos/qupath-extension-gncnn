@@ -17,6 +17,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import qupath.ext.env.VirtualEnvironment;
 import qupath.lib.common.GeneralTools;
@@ -47,10 +48,13 @@ public class ClassificationTask extends Task<Void> {
 
     private QuPathGUI qupath;
 
+    private ObservableList<String> selectedImages;
+
     private String modelName;
 
-    public ClassificationTask(QuPathGUI quPath, String modelName) {
+    public ClassificationTask(QuPathGUI quPath, ObservableList<String> selectedImages, String modelName) {
         this.qupath = quPath;
+        this.selectedImages = selectedImages;
         this.modelName = modelName;
     }
 
@@ -96,7 +100,8 @@ public class ClassificationTask extends Task<Void> {
         VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName());
 
         // This is the list of commands after the 'python' call
-        List<String> arguments = Arrays.asList(TaskPaths.CLASSIFICATION_COMMAND, "-e", QP.buildFilePath(outputBaseDir), "--netB",
+        List<String> arguments = Arrays.asList(TaskPaths.CLASSIFICATION_COMMAND, "-e", QP.buildFilePath(outputBaseDir),
+                "--netB",
                 modelName);
         venv.setArguments(arguments);
 
@@ -164,13 +169,16 @@ public class ClassificationTask extends Task<Void> {
     public void classifyGlomeruliProject(Project<BufferedImage> project, String outputBaseDir)
             throws IOException, InterruptedException, NumberFormatException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
-        logger.info("Running classification for {} images", imageEntryList.size());
+        logger.info("Running classification for {} images", selectedImages.size());
+        // Only process the selected images
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
-            classifyGlomeruli(imageData, outputBaseDir);
-            imageEntry.saveImageData(imageData);
+            if (selectedImages.contains(GeneralTools.stripExtension(imageData.getServer().getMetadata().getName()))) {
+                classifyGlomeruli(imageData, outputBaseDir);
+                imageEntry.saveImageData(imageData);
+            }
         }
-        logger.info("Classification for {} images in the project finished", imageEntryList.size());
+        logger.info("Classification for {} images in the project finished", selectedImages.size());
     }
 
 }
