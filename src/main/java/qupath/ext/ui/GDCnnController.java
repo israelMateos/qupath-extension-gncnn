@@ -2,9 +2,9 @@ package qupath.ext.ui;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.List;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -12,6 +12,7 @@ import org.controlsfx.control.CheckListView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -23,8 +24,8 @@ import javafx.scene.image.ImageView;
 import qupath.ext.tasks.AnnotationExportTask;
 import qupath.ext.tasks.ClassificationTask;
 import qupath.ext.tasks.GlomerulusDetectionTask;
-import qupath.ext.tasks.TissueDetectionTask;
 import qupath.ext.tasks.TilerTask;
+import qupath.ext.tasks.TissueDetectionTask;
 import qupath.fx.dialogs.Dialogs;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.common.ThreadTools;
@@ -83,7 +84,13 @@ public class GDCnnController {
     private void initialize() {
         logger.info("Initializing...");
 
-        this.qupath = QuPathGUI.getInstance();
+        qupath = QuPathGUI.getInstance();
+
+        setUpInterfaceElements();
+
+        // runAllBtn.disableProperty().bind(
+        // Bindings.isNull(imgsCheckList.checkModelProperty())
+        // );
     }
 
     @FXML
@@ -159,6 +166,14 @@ public class GDCnnController {
 
     }
 
+    @FXML
+    /**
+     * Selects all the images in the check list
+     */
+    private void selectAllImgs() {
+        imgsCheckList.getCheckModel().checkAll();
+    }
+
     /**
      * Returns true if an image or project is open, false otherwise
      * 
@@ -192,7 +207,7 @@ public class GDCnnController {
     /**
      * Puts the project images in the check list
      */
-    public void setImgsCheckListElements() {
+    private void setImgsCheckListElements() {
         ObservableList<String> imgsCheckListItems = FXCollections.observableArrayList();
         Project<BufferedImage> project = qupath.getProject();
         if (project != null) {
@@ -217,12 +232,22 @@ public class GDCnnController {
         imgsCheckList.setItems(imgsCheckListItems);
     }
 
-    @FXML
     /**
-     * Selects all the images in the check list
+     * Sets up the interface elements
      */
-    private void selectAllImgs() {
-        imgsCheckList.getCheckModel().checkAll();
+    public void setUpInterfaceElements() {
+        boolean disable = !isImageOrProjectOpen();
+        imgsCheckList.setDisable(disable);
+        selectAllImgsBtn.setDisable(disable);
+        runAllBtn.setDisable(disable);
+        runDetectionBtn.setDisable(disable);
+        runClassificationBtn.setDisable(disable);
+        viewResultsBtn.setDisable(disable);
+        if (disable) {
+            Dialogs.showErrorMessage("No image or project open", "Please open an image or project to run the tasks");
+        } else {
+            setImgsCheckListElements();
+        }
     }
 
     /**

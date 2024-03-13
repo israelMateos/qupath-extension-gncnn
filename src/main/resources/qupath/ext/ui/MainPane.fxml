@@ -33,27 +33,27 @@
                   <Insets />
                </VBox.margin>
             </Label>
-            <CheckListView fx:id="imgsCheckList" prefHeight="110.0" prefWidth="300.0">
+            <CheckListView fx:id="imgsCheckList" disable="true" prefHeight="110.0" prefWidth="300.0">
                <VBox.margin>
                   <Insets left="8.0" right="8.0" />
                </VBox.margin>
             </CheckListView>
             <HBox alignment="CENTER_RIGHT" prefHeight="25.0" prefWidth="200.0">
                <children>
-                  <Button fx:id="selectAllImgsBtn" mnemonicParsing="false" onAction="#selectAllImgs" text="Select all" />
+                  <Button fx:id="selectAllImgsBtn" disable="true" mnemonicParsing="false" onAction="#selectAllImgs" text="Select all" />
                </children>
                <VBox.margin>
                   <Insets right="8.0" />
                </VBox.margin>
             </HBox>
             <Separator prefWidth="200.0" />
-            <Button fx:id="runAllBtn" mnemonicParsing="false" onAction="#runAll" text="Run Detection + Classification" />
+            <Button fx:id="runAllBtn" disable="true" mnemonicParsing="false" onAction="#runAll" text="Run Detection + Classification" />
             <Label alignment="TOP_LEFT" text="or" />
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="200.0" spacing="8.0">
                <children>
-                  <Button fx:id="runDetectionBtn" mnemonicParsing="false" onAction="#runDetection" text="Run Detection" />
+                  <Button fx:id="runDetectionBtn" disable="true" mnemonicParsing="false" onAction="#runDetection" text="Run Detection" />
                   <Label alignment="TOP_LEFT" text="and" />
-                  <Button fx:id="runClassificationBtn" mnemonicParsing="false" onAction="#runClassification" text="Run Classification" />
+                  <Button fx:id="runClassificationBtn" disable="true" mnemonicParsing="false" onAction="#runClassification" text="Run Classification" />
                </children>
             </HBox>
             <StackPane prefHeight="45.0" prefWidth="200.0">
@@ -80,7 +80,7 @@
                </children>
             </StackPane>
             <Separator prefWidth="200.0" />
-            <Button fx:id="viewResultsBtn" mnemonicParsing="false" onAction="#viewResults" text="View results" />
+            <Button fx:id="viewResultsBtn" disable="true" mnemonicParsing="false" onAction="#viewResults" text="View results" />
          </children>
       </VBox>
    </children>

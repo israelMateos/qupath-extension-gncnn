@@ -72,8 +72,6 @@ public class GDCnnCommand implements Runnable {
 
         root.heightProperty().addListener((v, o, n) -> handleStageHeightChange());
 
-        controller.setImgsCheckListElements();
-
         return stage;
     }
 
