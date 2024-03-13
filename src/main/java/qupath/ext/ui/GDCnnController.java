@@ -20,11 +20,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
-import qupath.ext.gdcnn.AnnotationExportTask;
-import qupath.ext.gdcnn.ClassificationTask;
-import qupath.ext.gdcnn.DetectionTask;
-import qupath.ext.gdcnn.ThresholdTask;
-import qupath.ext.gdcnn.TilerTask;
+import qupath.ext.tasks.AnnotationExportTask;
+import qupath.ext.tasks.ClassificationTask;
+import qupath.ext.tasks.GlomerulusDetectionTask;
+import qupath.ext.tasks.TissueDetectionTask;
+import qupath.ext.tasks.TilerTask;
 import qupath.fx.dialogs.Dialogs;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.common.ThreadTools;
@@ -236,7 +236,7 @@ public class GDCnnController {
             setProgressRunning(task.getClass().getSimpleName());
         });
         task.setOnSucceeded(e -> {
-            if (task instanceof DetectionTask || task instanceof ClassificationTask) {
+            if (task instanceof GlomerulusDetectionTask || task instanceof ClassificationTask) {
                 // If there is an image selected, select an object from the
                 // hierarchy and deselect it to refresh the viewer
                 ImageData<BufferedImage> currentImageData = qupath.getViewer().getImageData();
@@ -269,7 +269,7 @@ public class GDCnnController {
      * @throws IOException
      */
     public void thresholdForeground(ObservableList<String> selectedImages) throws IOException {
-        submitTask(new ThresholdTask(qupath, selectedImages, 20, ".jpeg"));
+        submitTask(new TissueDetectionTask(qupath, selectedImages, 20, ".jpeg"));
     }
 
     /**
@@ -289,7 +289,7 @@ public class GDCnnController {
      * @throws IOException
      */
     public void detectGlomeruli(ObservableList<String> selectedImages) throws IOException {
-        submitTask(new DetectionTask(qupath, selectedImages, "cascade_R_50_FPN_1x", "external", 1));
+        submitTask(new GlomerulusDetectionTask(qupath, selectedImages, "cascade_R_50_FPN_1x", "external", 1));
     }
 
     /**

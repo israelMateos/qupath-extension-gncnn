@@ -1,4 +1,4 @@
-package qupath.ext.gdcnn;
+package qupath.ext.tasks;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import qupath.ext.env.VirtualEnvironment;
+import qupath.ext.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
@@ -27,9 +28,9 @@ import qupath.lib.scripting.QP;
  * Class to detect glomeruli in the WSI patches, and add the detected objects to
  * the image hierarchy
  */
-public class DetectionTask extends Task<Void> {
+public class GlomerulusDetectionTask extends Task<Void> {
 
-    private static final Logger logger = LoggerFactory.getLogger(DetectionTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlomerulusDetectionTask.class);
 
     private QuPathGUI qupath;
 
@@ -41,7 +42,7 @@ public class DetectionTask extends Task<Void> {
 
     private int undersampling;
 
-    public DetectionTask(QuPathGUI quPath, ObservableList<String> selectedImages, String modelName, String trainConfig,
+    public GlomerulusDetectionTask(QuPathGUI quPath, ObservableList<String> selectedImages, String modelName, String trainConfig,
             int undersampling) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;

@@ -1,4 +1,4 @@
-package qupath.ext.gdcnn;
+package qupath.ext.tasks;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import qupath.ext.env.VirtualEnvironment;
+import qupath.ext.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
@@ -30,9 +31,9 @@ import qupath.lib.scripting.QP;
  * Class to process the images using a thresholding method in order to separate
  * foreground from background
  */
-public class ThresholdTask extends Task<Void> {
+public class TissueDetectionTask extends Task<Void> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ThresholdTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(TissueDetectionTask.class);
 
     private QuPathGUI qupath;
 
@@ -42,7 +43,7 @@ public class ThresholdTask extends Task<Void> {
 
     private String imageExtension;
 
-    public ThresholdTask(QuPathGUI quPath, ObservableList<String> selectedImages, int downsample, String imageExtension) {
+    public TissueDetectionTask(QuPathGUI quPath, ObservableList<String> selectedImages, int downsample, String imageExtension) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;
         this.downsample = downsample;

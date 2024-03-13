@@ -1,4 +1,4 @@
-package qupath.ext.gdcnn;
+package qupath.ext.utils;
 
 import java.io.File;
 

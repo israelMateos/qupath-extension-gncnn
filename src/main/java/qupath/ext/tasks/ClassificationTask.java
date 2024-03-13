@@ -1,4 +1,4 @@
-package qupath.ext.gdcnn;
+package qupath.ext.tasks;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -20,6 +20,7 @@ import org.apache.commons.csv.CSVRecord;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import qupath.ext.env.VirtualEnvironment;
+import qupath.ext.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.common.ColorTools;
 import qupath.lib.gui.QuPathGUI;

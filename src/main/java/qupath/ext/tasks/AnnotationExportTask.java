@@ -1,4 +1,4 @@
-package qupath.ext.gdcnn;
+package qupath.ext.tasks;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javax.imageio.ImageIO;
+
+import qupath.ext.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;

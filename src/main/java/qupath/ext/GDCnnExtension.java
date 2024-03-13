@@ -1,4 +1,4 @@
-package qupath.ext.gdcnn;
+package qupath.ext;
 
 import org.controlsfx.control.PropertySheet;
 import org.slf4j.Logger;

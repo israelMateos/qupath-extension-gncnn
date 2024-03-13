@@ -1,4 +1,4 @@
-package qupath.ext.gdcnn;
+package qupath.ext.tasks;
 
 import qupath.lib.common.GeneralTools;
 import qupath.lib.scripting.QP;

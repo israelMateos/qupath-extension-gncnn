@@ -1,4 +1,4 @@
-package qupath.ext.gdcnn;
+package qupath.ext.tasks;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +13,7 @@ import javafx.concurrent.Task;
 import java.util.List;
 
 import qupath.lib.gui.QuPathGUI;
+import qupath.ext.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.writers.TileExporter;
