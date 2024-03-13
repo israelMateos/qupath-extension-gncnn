@@ -13,6 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -77,6 +80,9 @@ public class GDCnnController {
         }
     };
 
+    // selectedImagesProperty is True if there are images selected in the check
+    private BooleanProperty selectedImagesProperty = new SimpleBooleanProperty();
+
     @FXML
     /**
      * Initializes the controller
@@ -87,10 +93,15 @@ public class GDCnnController {
         qupath = QuPathGUI.getInstance();
 
         setUpInterfaceElements();
+        bindButtonsToSelectedImages();
+    }
 
-        // runAllBtn.disableProperty().bind(
-        // Bindings.isNull(imgsCheckList.checkModelProperty())
-        // );
+    private void bindButtonsToSelectedImages() {
+        BooleanBinding selectedImagesBinding = Bindings.isEmpty(imgsCheckList.getCheckModel().getCheckedItems());
+        runAllBtn.disableProperty().bind(selectedImagesBinding);
+        runDetectionBtn.disableProperty().bind(selectedImagesBinding);
+        runClassificationBtn.disableProperty().bind(selectedImagesBinding);
+        viewResultsBtn.disableProperty().bind(selectedImagesBinding);
     }
 
     @FXML
@@ -243,9 +254,7 @@ public class GDCnnController {
         runDetectionBtn.setDisable(disable);
         runClassificationBtn.setDisable(disable);
         viewResultsBtn.setDisable(disable);
-        if (disable) {
-            Dialogs.showErrorMessage("No image or project open", "Please open an image or project to run the tasks");
-        } else {
+        if (!disable) {
             setImgsCheckListElements();
         }
     }
