@@ -78,7 +78,7 @@ public class AnnotationExportTask extends Task<Void> {
      * @throws InterruptedException
      * @throws IOException
      */
-    public void exportAnnotations(ImageData<BufferedImage> imageData, String outputBaseDir)
+    private void exportAnnotations(ImageData<BufferedImage> imageData, String outputBaseDir)
             throws IOException, InterruptedException {
         ImageServer<BufferedImage> server = imageData.getServer();
         String imageName = server.getMetadata().getName();
@@ -128,7 +128,7 @@ public class AnnotationExportTask extends Task<Void> {
      * @throws InterruptedException
      * @throws IOException
      */
-    public void exportAnnotationsProject(Project<BufferedImage> project, String outputBaseDir)
+    private void exportAnnotationsProject(Project<BufferedImage> project, String outputBaseDir)
             throws IOException, InterruptedException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
         logger.info("Exporting annotations for {} images in the project", selectedImages.size());

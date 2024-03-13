@@ -94,7 +94,7 @@ public class GlomerulusDetectionTask extends Task<Void> {
      * @throws InterruptedException
      * @throws IOException
      */
-    public void detectGlomeruli(ImageData<BufferedImage> imageData, String outputBaseDir)
+    private void detectGlomeruli(ImageData<BufferedImage> imageData, String outputBaseDir)
             throws IOException, InterruptedException {
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
         VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName());
@@ -133,7 +133,7 @@ public class GlomerulusDetectionTask extends Task<Void> {
      * @throws InterruptedException
      * @throws IOException
      */
-    public void detectGlomeruliProject(Project<BufferedImage> project, String outputBaseDir)
+    private void detectGlomeruliProject(Project<BufferedImage> project, String outputBaseDir)
             throws IOException, InterruptedException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
         logger.info("Running detection for {} images", selectedImages.size());

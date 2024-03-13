@@ -105,7 +105,7 @@ public class GDCnnController {
             logger.info("Running all tasks");
             ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
             try {
-                thresholdForeground(selectedImages);
+                detectTissue(selectedImages);
                 tileWSIs(selectedImages);
                 detectGlomeruli(selectedImages);
                 exportAnnotations(selectedImages);
@@ -129,7 +129,7 @@ public class GDCnnController {
             logger.info("Running detection pipeline");
             ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
             try {
-                thresholdForeground(selectedImages);
+                detectTissue(selectedImages);
                 tileWSIs(selectedImages);
                 detectGlomeruli(selectedImages);
             } catch (IOException e) {
@@ -235,7 +235,7 @@ public class GDCnnController {
     /**
      * Sets up the interface elements
      */
-    public void setUpInterfaceElements() {
+    private void setUpInterfaceElements() {
         boolean disable = !isImageOrProjectOpen();
         imgsCheckList.setDisable(disable);
         selectAllImgsBtn.setDisable(disable);
@@ -293,7 +293,7 @@ public class GDCnnController {
      * @param selectedImages
      * @throws IOException
      */
-    public void thresholdForeground(ObservableList<String> selectedImages) throws IOException {
+    private void detectTissue(ObservableList<String> selectedImages) throws IOException {
         submitTask(new TissueDetectionTask(qupath, selectedImages, 20, ".jpeg"));
     }
 
@@ -303,7 +303,7 @@ public class GDCnnController {
      * @param selectedImages
      * @throws IOException // In case there is an issue reading the image
      */
-    public void tileWSIs(ObservableList<String> selectedImages) throws IOException {
+    private void tileWSIs(ObservableList<String> selectedImages) throws IOException {
         submitTask(new TilerTask(qupath, selectedImages, 4096, 2048, 1, ".jpeg"));
     }
 
@@ -313,7 +313,7 @@ public class GDCnnController {
      * @param selectedImages
      * @throws IOException
      */
-    public void detectGlomeruli(ObservableList<String> selectedImages) throws IOException {
+    private void detectGlomeruli(ObservableList<String> selectedImages) throws IOException {
         submitTask(new GlomerulusDetectionTask(qupath, selectedImages, "cascade_R_50_FPN_1x", "external", 1));
     }
 
@@ -322,7 +322,7 @@ public class GDCnnController {
      * 
      * @param selectedImages
      */
-    public void exportAnnotations(ObservableList<String> selectedImages) {
+    private void exportAnnotations(ObservableList<String> selectedImages) {
         submitTask(new AnnotationExportTask(qupath, selectedImages, 300, 1));
     }
 
@@ -332,7 +332,7 @@ public class GDCnnController {
      * @param selectedImages
      * @throws IOException
      */
-    public void classifyGlomeruli(ObservableList<String> selectedImages) throws IOException {
+    private void classifyGlomeruli(ObservableList<String> selectedImages) throws IOException {
         submitTask(new ClassificationTask(qupath, selectedImages, "swin_transformer"));
     }
 

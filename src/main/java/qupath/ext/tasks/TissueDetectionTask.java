@@ -55,7 +55,7 @@ public class TissueDetectionTask extends Task<Void> {
         Project<BufferedImage> project = qupath.getProject();
         String outputBaseDir = QP.PROJECT_BASE_DIR;
         if (project != null) {
-            thresholdForegroundProject(project, selectedImages, outputBaseDir);
+            detectTissueProject(project, selectedImages, outputBaseDir);
         } else {
             ImageData<BufferedImage> imageData = qupath.getImageData();
             if (imageData != null) {
@@ -63,7 +63,7 @@ public class TissueDetectionTask extends Task<Void> {
                 // Take substring from the first slash after file: to the last slash
                 outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
                         outputBaseDir.lastIndexOf("/"));
-                thresholdForeground(imageData, outputBaseDir);
+                detectTissue(imageData, outputBaseDir);
             } else {
                 logger.error("No image or project is open");
             }
@@ -85,7 +85,7 @@ public class TissueDetectionTask extends Task<Void> {
         return null;
     }
 
-    public void exportLowResolutionImage(ImageData<BufferedImage> imageData, String outputBaseDir) throws IOException {
+    private void exportLowResolutionImage(ImageData<BufferedImage> imageData, String outputBaseDir) throws IOException {
         ImageServer<BufferedImage> server = imageData.getServer();
         String imageName = GeneralTools.stripExtension(server.getMetadata().getName());
         String outputPath = TaskPaths.getLowResOutputDir(outputBaseDir, imageName);
@@ -109,7 +109,7 @@ public class TissueDetectionTask extends Task<Void> {
      * @throws InterruptedException
      * @throws IOException
      */
-    public void thresholdForeground(ImageData<BufferedImage> imageData, String outputBaseDir)
+    private void detectTissue(ImageData<BufferedImage> imageData, String outputBaseDir)
             throws IOException, InterruptedException {
         exportLowResolutionImage(imageData, outputBaseDir);
 
@@ -150,7 +150,7 @@ public class TissueDetectionTask extends Task<Void> {
      * @throws InterruptedException
      * @throws IOException
      */
-    public void thresholdForegroundProject(Project<BufferedImage> project, ObservableList<String> selectedImages, String outputBaseDir)
+    private void detectTissueProject(Project<BufferedImage> project, ObservableList<String> selectedImages, String outputBaseDir)
             throws IOException, InterruptedException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
         logger.info("Running tissue detection for {} images", selectedImages.size());
@@ -158,7 +158,7 @@ public class TissueDetectionTask extends Task<Void> {
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
             if (selectedImages.contains(GeneralTools.stripExtension(imageData.getServer().getMetadata().getName()))) {
-                thresholdForeground(imageData, outputBaseDir);
+                detectTissue(imageData, outputBaseDir);
                 imageEntry.saveImageData(imageData);
             }
         }

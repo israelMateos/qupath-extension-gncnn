@@ -17,8 +17,8 @@ public class TaskPaths {
     public static final String LOWRES_OUTPUT_FOLDER = "lowres-output";
     public static final String THRESHOLD_OUTPUT_FOLDER = "threshold-output";
     public static final String TILER_OUTPUT_FOLDER = "tiler-output";
-    public static final String ANN_EXPORT_OUTPUT_FOLDER = "ann-export-output";
     public static final String SEGMENT_OUTPUT_FOLDER = "segment-output";
+    private static final String ANN_EXPORT_OUTPUT_FOLDER = "ann-export-output";
 
     private static final String LOWRES_IMAGES_FOLDER = "Images";
     private static final String THRESHOLD_ANNOTATIONS_FOLDER = "Annotations";

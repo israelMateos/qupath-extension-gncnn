@@ -96,7 +96,7 @@ public class ClassificationTask extends Task<Void> {
      * @throws InterruptedException
      * @throws IOException
      */
-    public void runClassification(String outputBaseDir)
+    private void runClassification(String outputBaseDir)
             throws IOException, InterruptedException {
         VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName());
 
@@ -167,7 +167,7 @@ public class ClassificationTask extends Task<Void> {
      * @throws IOException
      * @throws NumberFormatException
      */
-    public void classifyGlomeruliProject(Project<BufferedImage> project, String outputBaseDir)
+    private void classifyGlomeruliProject(Project<BufferedImage> project, String outputBaseDir)
             throws IOException, InterruptedException, NumberFormatException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
         logger.info("Running classification for {} images", selectedImages.size());
