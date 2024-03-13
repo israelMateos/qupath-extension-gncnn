@@ -96,6 +96,12 @@ public class VirtualEnvironment {
 
         ProcessBuilder pb = new ProcessBuilder(shell).redirectErrorStream(true);
 
+        // Check if the thread has been interrupted before starting the process
+        if (Thread.interrupted()) {
+            logger.warn("Thread interrupted");
+            return;
+        }
+
         Process p = pb.start();
 
         Thread t = new Thread(Thread.currentThread().getName() + "-" + p.hashCode()) {
@@ -115,7 +121,16 @@ public class VirtualEnvironment {
         t.setDaemon(true);
         t.start();
 
-        p.waitFor();
+        try {
+            p.waitFor();
+            // If the thread is interrupted while running the command, stop the
+            // process and the thread
+        } catch (InterruptedException e) {
+            logger.warn("Thread interrupted");
+            p.destroy();
+            t.interrupt();
+            throw e;
+        }
 
         logger.info("Virtual Environment Runner Finished");
 
@@ -125,5 +140,12 @@ public class VirtualEnvironment {
             logger.error("Runner '{}' exited with value {}. Please check output above for indications of the problem.",
                     name, exitValue);
         }
+    }
+
+    /**
+     * Interrupts the thread running the command
+     */
+    public void interrupt() {
+        Thread.currentThread().interrupt();
     }
 }

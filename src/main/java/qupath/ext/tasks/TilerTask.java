@@ -55,22 +55,29 @@ public class TilerTask extends Task<Void> {
 
     @Override
     protected Void call() throws Exception {
-        Project<BufferedImage> project = qupath.getProject();
-        String outputBaseDir = QP.PROJECT_BASE_DIR;
-        if (project != null) {
-            tileWSIProject(project, outputBaseDir);
-        } else {
-            ImageData<BufferedImage> imageData = qupath.getImageData();
-            if (imageData != null) {
-                outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
-                // Take substring from the first slash after file: to the last slash
-                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
-                        outputBaseDir.lastIndexOf("/"));
-                tileWSI(imageData, outputBaseDir);
+        try {
+            Project<BufferedImage> project = qupath.getProject();
+            String outputBaseDir = QP.PROJECT_BASE_DIR;
+            if (project != null) {
+                tileWSIProject(project, outputBaseDir);
             } else {
-                logger.error("No image or project is open");
+                ImageData<BufferedImage> imageData = qupath.getImageData();
+                if (imageData != null) {
+                    outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
+                    // Take substring from the first slash after file: to the last slash
+                    outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
+                            outputBaseDir.lastIndexOf("/"));
+                    tileWSI(imageData, outputBaseDir);
+                } else {
+                    logger.error("No image or project is open");
+                }
             }
+        } catch (IOException e) {
+            logger.error("Error with I/O of files: {}", e.getMessage(), e);
+        } catch (InterruptedException e) {
+            logger.error("Thread interrupted: {}", e.getMessage(), e);
         }
+
         return null;
     }
 
@@ -80,10 +87,18 @@ public class TilerTask extends Task<Void> {
      * @param imageData
      * @param outputBaseDir
      * @throws IOException
+     * @throws InterruptedException
      */
-    private void tileWSI(ImageData<BufferedImage> imageData, String outputBaseDir) throws IOException {
+    private void tileWSI(ImageData<BufferedImage> imageData, String outputBaseDir)
+            throws IOException, InterruptedException {
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
         String outputPath = TaskPaths.getTilerOutputDir(outputBaseDir, imageName);
+
+        // Check if the thread has been interrupted before starting the tiling
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
+
         // Create the output folder if it does not exist
         Utils.createFolder(outputPath);
         logger.info("Tiling {} [size={},overlap={}]", imageName, tileSize, tileOverlap);
@@ -100,6 +115,11 @@ public class TilerTask extends Task<Void> {
         imageData.getHierarchy().getAnnotationObjects().stream()
                 .filter(annotation -> annotation.getPathClass().getName().equals("Tissue"))
                 .forEach(annotation -> imageData.getHierarchy().removeObject(annotation, false));
+
+        // Check if the thread has been interrupted after tiling the image
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
     }
 
     /**
@@ -108,8 +128,10 @@ public class TilerTask extends Task<Void> {
      * @param project
      * @param outputBaseDir
      * @throws IOException
+     * @throws InterruptedException
      */
-    private void tileWSIProject(Project<BufferedImage> project, String outputBaseDir) throws IOException {
+    private void tileWSIProject(Project<BufferedImage> project, String outputBaseDir)
+            throws IOException, InterruptedException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
 
         logger.info("Tiling {} images in the project [size={},overlap={}]",

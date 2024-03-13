@@ -51,22 +51,29 @@ public class AnnotationExportTask extends Task<Void> {
 
     @Override
     protected Void call() throws Exception {
-        Project<BufferedImage> project = qupath.getProject();
-        String outputBaseDir = QP.PROJECT_BASE_DIR;
-        if (project != null) {
-            exportAnnotationsProject(project, outputBaseDir);
-        } else {
-            ImageData<BufferedImage> imageData = qupath.getImageData();
-            if (imageData != null) {
-                outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
-                // Take substring from the first slash after file: to the last slash
-                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
-                        outputBaseDir.lastIndexOf("/"));
-                exportAnnotations(imageData, outputBaseDir);
+        try {
+            Project<BufferedImage> project = qupath.getProject();
+            String outputBaseDir = QP.PROJECT_BASE_DIR;
+            if (project != null) {
+                exportAnnotationsProject(project, outputBaseDir);
             } else {
-                logger.error("No image or project is open");
+                ImageData<BufferedImage> imageData = qupath.getImageData();
+                if (imageData != null) {
+                    outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
+                    // Take substring from the first slash after file: to the last slash
+                    outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
+                            outputBaseDir.lastIndexOf("/"));
+                    exportAnnotations(imageData, outputBaseDir);
+                } else {
+                    logger.error("No image or project is open");
+                }
             }
+        } catch (IOException e) {
+            logger.error("Error with I/O of files: {}", e.getMessage(), e);
+        } catch (InterruptedException e) {
+            logger.error("Thread interrupted: {}", e.getMessage(), e);
         }
+
         return null;
     }
 
@@ -100,6 +107,10 @@ public class AnnotationExportTask extends Task<Void> {
 
         logger.info("Exporting {} annotations for {}", annotations.size(), imageName);
         for (PathObject annotation : annotations) {
+            if (Thread.interrupted()) {
+                throw new InterruptedException();
+            }
+
             ROI roi = annotation.getROI();
             String className = annotation.getPathClass().getName();
             String annotationId = annotation.getID().toString();

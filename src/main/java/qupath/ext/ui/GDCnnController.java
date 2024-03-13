@@ -12,12 +12,12 @@ import org.controlsfx.control.CheckListView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -70,18 +70,23 @@ public class GDCnnController {
     private final ExecutorService pool = Executors
             .newSingleThreadExecutor(ThreadTools.createThreadFactory("GDCnn", true));
 
-    private static final LinkedHashMap<String, String> PROGRESS_MESSAGES = new LinkedHashMap<String, String>() {
+    private final LinkedHashMap<String, String> PROGRESS_MESSAGES = new LinkedHashMap<String, String>() {
         {
-            put("ThresholdTask", "Detecting tissue...");
+            put("TissueDetectionTask", "Detecting tissue...");
             put("TilerTask", "Tiling images...");
-            put("DetectionTask", "Detecting glomeruli... (this may take a while)");
+            put("GlomerulusDetectionTask", "Detecting glomeruli... (this may take a while)");
             put("AnnotationExportTask", "Exporting glomerular annotations...");
             put("ClassificationTask", "Classifying glomeruli...");
         }
     };
 
-    // selectedImagesProperty is True if there are images selected in the check
-    private BooleanProperty selectedImagesProperty = new SimpleBooleanProperty();
+    private final ObservableSet<Task<?>> currentTasks = FXCollections.observableSet();
+
+    private final BooleanBinding taskRunning = Bindings.isNotEmpty(currentTasks);
+
+    public final boolean isTaskRunning() {
+        return taskRunning.get();
+    }
 
     @FXML
     /**
@@ -266,7 +271,7 @@ public class GDCnnController {
      */
     private void submitTask(Task<?> task) {
         task.setOnRunning(e -> {
-            logger.info("Task running");
+            logger.trace("Task running");
             setProgressRunning(task.getClass().getSimpleName());
         });
         task.setOnSucceeded(e -> {
@@ -294,6 +299,19 @@ public class GDCnnController {
             Dialogs.showErrorMessage("Task failed", e.getSource().getException());
         });
         pool.submit(task);
+        currentTasks.add(task);
+        task.stateProperty().addListener((Observable o) -> {
+            if (task.isDone()) {
+                currentTasks.remove(task);
+            }
+        });
+    }
+
+    /**
+     * Cancels all the tasks in the thread pool
+     */
+    public void cancelAllTasks() {
+        pool.shutdownNow();
     }
 
     /**

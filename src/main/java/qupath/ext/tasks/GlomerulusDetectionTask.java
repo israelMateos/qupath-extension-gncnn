@@ -42,7 +42,8 @@ public class GlomerulusDetectionTask extends Task<Void> {
 
     private int undersampling;
 
-    public GlomerulusDetectionTask(QuPathGUI quPath, ObservableList<String> selectedImages, String modelName, String trainConfig,
+    public GlomerulusDetectionTask(QuPathGUI quPath, ObservableList<String> selectedImages, String modelName,
+            String trainConfig,
             int undersampling) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;
@@ -53,34 +54,40 @@ public class GlomerulusDetectionTask extends Task<Void> {
 
     @Override
     protected Void call() throws Exception {
-        Project<BufferedImage> project = qupath.getProject();
-        String outputBaseDir = QP.PROJECT_BASE_DIR;
-        if (project != null) {
-            detectGlomeruliProject(project, outputBaseDir);
-        } else {
-            ImageData<BufferedImage> imageData = qupath.getImageData();
-            if (imageData != null) {
-                outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
-                // Take substring from the first slash after file: to the last slash
-                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
-                        outputBaseDir.lastIndexOf("/"));
-                detectGlomeruli(imageData, outputBaseDir);
+        try {
+            Project<BufferedImage> project = qupath.getProject();
+            String outputBaseDir = QP.PROJECT_BASE_DIR;
+            if (project != null) {
+                detectGlomeruliProject(project, outputBaseDir);
             } else {
-                logger.error("No image or project is open");
+                ImageData<BufferedImage> imageData = qupath.getImageData();
+                if (imageData != null) {
+                    outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
+                    // Take substring from the first slash after file: to the last slash
+                    outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
+                            outputBaseDir.lastIndexOf("/"));
+                    detectGlomeruli(imageData, outputBaseDir);
+                } else {
+                    logger.error("No image or project is open");
+                }
             }
+
+            // Tiles are not needed anymore
+            File tilerOutputFolder = new File(
+                    QP.buildFilePath(outputBaseDir, TaskPaths.TMP_FOLDER, TaskPaths.TILER_OUTPUT_FOLDER));
+            if (tilerOutputFolder.exists())
+                Utils.deleteFolder(tilerOutputFolder);
+
+            // Detections are already added to the image hierarchy, so they are not needed
+            File segmentOutputFolder = new File(
+                    QP.buildFilePath(outputBaseDir, TaskPaths.TMP_FOLDER, TaskPaths.SEGMENT_OUTPUT_FOLDER));
+            if (segmentOutputFolder.exists())
+                Utils.deleteFolder(segmentOutputFolder);
+        } catch (IOException e) {
+            logger.error("Error with I/O of files: {}", e.getMessage(), e);
+        } catch (InterruptedException e) {
+            logger.error("Thread interrupted: {}", e.getMessage(), e);
         }
-
-        // Tiles are not needed anymore
-        File tilerOutputFolder = new File(
-                QP.buildFilePath(outputBaseDir, TaskPaths.TMP_FOLDER, TaskPaths.TILER_OUTPUT_FOLDER));
-        if (tilerOutputFolder.exists())
-            Utils.deleteFolder(tilerOutputFolder);
-
-        // Detections are already added to the image hierarchy, so they are not needed
-        File segmentOutputFolder = new File(
-                QP.buildFilePath(outputBaseDir, TaskPaths.TMP_FOLDER, TaskPaths.SEGMENT_OUTPUT_FOLDER));
-        if (segmentOutputFolder.exists())
-            Utils.deleteFolder(segmentOutputFolder);
 
         return null;
     }
@@ -109,6 +116,11 @@ public class GlomerulusDetectionTask extends Task<Void> {
                 "--pixel-size", Double.toString(pixelSize));
         venv.setArguments(arguments);
 
+        // Check if the thread has been interrupted before starting the process
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
+
         // Run the command
         logger.info("Running detection for {}", imageName);
         venv.runCommand();
@@ -117,6 +129,12 @@ public class GlomerulusDetectionTask extends Task<Void> {
         // Read the annotations from the GeoJSON file
         String geoJSONPath = TaskPaths.getDetectionResultsPath(outputBaseDir, imageName);
         List<PathObject> detectedObjects = PathIO.readObjects(Paths.get(geoJSONPath));
+
+        // Check if the thread has been interrupted before adding the detected
+        // objects to the image hierarchy
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
 
         // Add the detected objects to the image hierarchy
         PathObjectHierarchy hierarchy = imageData.getHierarchy();
