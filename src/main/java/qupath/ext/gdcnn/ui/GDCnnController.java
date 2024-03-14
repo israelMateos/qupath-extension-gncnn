@@ -3,6 +3,7 @@ package qupath.ext.gdcnn.ui;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -25,6 +26,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
+import javafx.stage.Stage;
 import qupath.ext.gdcnn.tasks.AnnotationExportTask;
 import qupath.ext.gdcnn.tasks.ClassificationTask;
 import qupath.ext.gdcnn.tasks.GlomerulusDetectionTask;
@@ -44,11 +46,16 @@ import qupath.lib.projects.Project;
 import qupath.lib.projects.ProjectImageEntry;
 import qupath.lib.scripting.QP;
 
+/**
+ * Controller for the GDCnn extension main UI
+ */
 public class GDCnnController {
 
     private static final Logger logger = LoggerFactory.getLogger(GDCnnController.class);
 
     private QuPathGUI qupath;
+
+    private Stage stage;
 
     @FXML
     private Button selectAllImgsBtn;
@@ -105,6 +112,18 @@ public class GDCnnController {
         bindButtonsToSelectedImages();
     }
 
+    /**
+     * Sets the GDCnn window stage
+     * 
+     * @param stage
+     */
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
+    /**
+     * Binds the buttons to the selected images in the check list
+     */
     private void bindButtonsToSelectedImages() {
         BooleanBinding selectedImagesBinding = Bindings.isEmpty(imgsCheckList.getCheckModel().getCheckedItems());
         runAllBtn.disableProperty().bind(selectedImagesBinding);
@@ -168,14 +187,40 @@ public class GDCnnController {
             Dialogs.showErrorMessage("No image or project open", "Please open an image or project to run the tasks");
             return;
         } else {
-            logger.info("Running classification pipeline");
             ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
+            List<String> imgsWithGlomeruli;
+            boolean continueClassification = false;
             try {
-                exportAnnotations(selectedImages);
-                classifyGlomeruli(selectedImages);
+                imgsWithGlomeruli = getImgsWithGlomeruli(selectedImages);
             } catch (IOException e) {
-                logger.error("Error running classification", e);
-                Dialogs.showErrorMessage("Error running classification", e);
+                logger.error("Error checking \"Glomerulus\" annotations", e);
+                Dialogs.showErrorMessage("Error checking \"Glomerulus\" annotations", e);
+                return;
+            }
+            if (imgsWithGlomeruli.isEmpty()) {
+                // If all the selected images don't have "Glomerulus" annotations, show
+                // an error message
+                Dialogs.showErrorMessage("No \"Glomerulus\" annotations",
+                        "There are no \"Glomerulus\" annotations in the selected images.\nPlease run the detection pipeline first or annotate them manually.");
+                return;
+            } else if (imgsWithGlomeruli.size() < selectedImages.size()) {
+                // If there are less images with "Glomerulus" annotations than the
+                // selected images, show a warning message
+                ClassificationWarningPane warningPane = new ClassificationWarningPane(stage);
+                continueClassification = warningPane.show(imgsWithGlomeruli);
+            }
+
+            if (continueClassification) {
+                logger.info("Running classification pipeline");
+                try {
+                    exportAnnotations(imgsWithGlomeruli);
+                    classifyGlomeruli(imgsWithGlomeruli);
+                } catch (IOException e) {
+                    logger.error("Error running classification", e);
+                    Dialogs.showErrorMessage("Error running classification", e);
+                }
+            } else {
+                logger.info("Classification cancelled");
             }
         }
     }
@@ -266,6 +311,60 @@ public class GDCnnController {
         if (!disable) {
             setImgsCheckListElements();
         }
+    }
+
+    /**
+     * Checks if there are "Glomerulus" annotations in the selected images, and
+     * returns the images with "Glomerulus" annotations
+     * 
+     * @param selectedImages
+     * @return The images with "Glomerulus" annotations
+     * @throws IOException
+     */
+    private List<String> getImgsWithGlomeruli(ObservableList<String> selectedImages) throws IOException {
+        List<String> imgsWithGlomeruli = new ArrayList<String>();
+
+        Project<BufferedImage> project = qupath.getProject();
+        if (project != null) {
+            // Check for glomerulus annotations in the selected images
+            List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
+            for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
+                String imageName = GeneralTools.stripExtension(imageEntry.getImageName());
+                if (selectedImages.contains(imageName)) {
+                    ImageData<BufferedImage> imageData = imageEntry.readImageData();
+                    PathObjectHierarchy hierarchy = imageData.getHierarchy();
+                    Collection<PathObject> annotations = hierarchy.getAnnotationObjects();
+
+                    for (PathObject annotation : annotations) {
+                        if (annotation.getPathClass() != null
+                                && annotation.getPathClass().getName().equals("Glomerulus")) {
+                            imgsWithGlomeruli.add(imageName);
+                            break;
+                        }
+                    }
+                }
+            }
+        } else {
+            // Check for glomerulus annotations in the current image
+            ImageData<BufferedImage> imageData = qupath.getImageData();
+            if (imageData != null) {
+                String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
+                PathObjectHierarchy hierarchy = imageData.getHierarchy();
+                Collection<PathObject> annotations = hierarchy.getAnnotationObjects();
+
+                for (PathObject annotation : annotations) {
+                    if (annotation.getPathClass() != null
+                            && annotation.getPathClass().getName().equals("Glomerulus")) {
+                        imgsWithGlomeruli.add(imageName);
+                        break;
+                    }
+                }
+            } else {
+                logger.error("No project or image is open");
+            }
+        }
+
+        return imgsWithGlomeruli;
     }
 
     /**
@@ -362,7 +461,7 @@ public class GDCnnController {
      * 
      * @param selectedImages
      */
-    private void exportAnnotations(ObservableList<String> selectedImages) {
+    private void exportAnnotations(List<String> selectedImages) {
         submitTask(new AnnotationExportTask(qupath, selectedImages, 300, 1));
     }
 
@@ -372,7 +471,7 @@ public class GDCnnController {
      * @param selectedImages
      * @throws IOException
      */
-    private void classifyGlomeruli(ObservableList<String> selectedImages) throws IOException {
+    private void classifyGlomeruli(List<String> selectedImages) throws IOException {
         submitTask(new ClassificationTask(qupath, selectedImages, "swin_transformer"));
     }
 

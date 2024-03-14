@@ -9,7 +9,6 @@ import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javax.imageio.ImageIO;
 
@@ -34,13 +33,13 @@ public class AnnotationExportTask extends Task<Void> {
 
     private QuPathGUI qupath;
 
-    private ObservableList<String> selectedImages;
+    private List<String> selectedImages;
 
     private int padding;
 
     private double downsample;
 
-    public AnnotationExportTask(QuPathGUI quPath, ObservableList<String> selectedImages, int padding,
+    public AnnotationExportTask(QuPathGUI quPath, List<String> selectedImages, int padding,
             double downsample) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;

@@ -92,6 +92,8 @@ public class GDCnnCommand implements Runnable {
             }
         });
 
+        controller.setStage(stage);
+
         root.heightProperty().addListener((v, o, n) -> handleStageHeightChange());
 
         return stage;

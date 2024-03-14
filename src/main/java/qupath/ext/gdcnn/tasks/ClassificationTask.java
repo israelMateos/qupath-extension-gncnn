@@ -16,7 +16,6 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import qupath.ext.gdcnn.env.VirtualEnvironment;
 import qupath.ext.gdcnn.utils.Utils;
@@ -48,11 +47,11 @@ public class ClassificationTask extends Task<Void> {
 
     private QuPathGUI qupath;
 
-    private ObservableList<String> selectedImages;
+    private List<String> selectedImages;
 
     private String modelName;
 
-    public ClassificationTask(QuPathGUI quPath, ObservableList<String> selectedImages, String modelName) {
+    public ClassificationTask(QuPathGUI quPath, List<String> selectedImages, String modelName) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;
         this.modelName = modelName;
