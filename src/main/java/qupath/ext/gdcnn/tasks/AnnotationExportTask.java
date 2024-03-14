@@ -1,20 +1,18 @@
-package qupath.ext.tasks;
+package qupath.ext.gdcnn.tasks;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Collection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javax.imageio.ImageIO;
 
-import qupath.ext.utils.Utils;
+import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
@@ -35,13 +33,13 @@ public class AnnotationExportTask extends Task<Void> {
 
     private QuPathGUI qupath;
 
-    private ObservableList<String> selectedImages;
+    private List<String> selectedImages;
 
     private int padding;
 
     private double downsample;
 
-    public AnnotationExportTask(QuPathGUI quPath, ObservableList<String> selectedImages, int padding,
+    public AnnotationExportTask(QuPathGUI quPath, List<String> selectedImages, int padding,
             double downsample) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;
@@ -51,22 +49,25 @@ public class AnnotationExportTask extends Task<Void> {
 
     @Override
     protected Void call() throws Exception {
-        Project<BufferedImage> project = qupath.getProject();
-        String outputBaseDir = QP.PROJECT_BASE_DIR;
-        if (project != null) {
-            exportAnnotationsProject(project, outputBaseDir);
-        } else {
-            ImageData<BufferedImage> imageData = qupath.getImageData();
-            if (imageData != null) {
-                outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
-                // Take substring from the first slash after file: to the last slash
-                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
-                        outputBaseDir.lastIndexOf("/"));
-                exportAnnotations(imageData, outputBaseDir);
+        try {
+            Project<BufferedImage> project = qupath.getProject();
+            String outputBaseDir = Utils.getBaseDir(qupath);
+            if (project != null) {
+                exportAnnotationsProject(project, outputBaseDir);
             } else {
-                logger.error("No image or project is open");
+                ImageData<BufferedImage> imageData = qupath.getImageData();
+                if (imageData != null) {
+                    exportAnnotations(imageData, outputBaseDir);
+                } else {
+                    logger.error("No image or project is open");
+                }
             }
+        } catch (IOException e) {
+            logger.error("Error with I/O of files: {}", e.getMessage(), e);
+        } catch (InterruptedException e) {
+            logger.error("Thread interrupted: {}", e.getMessage(), e);
         }
+
         return null;
     }
 
@@ -78,7 +79,7 @@ public class AnnotationExportTask extends Task<Void> {
      * @throws InterruptedException
      * @throws IOException
      */
-    public void exportAnnotations(ImageData<BufferedImage> imageData, String outputBaseDir)
+    private void exportAnnotations(ImageData<BufferedImage> imageData, String outputBaseDir)
             throws IOException, InterruptedException {
         ImageServer<BufferedImage> server = imageData.getServer();
         String imageName = server.getMetadata().getName();
@@ -100,6 +101,10 @@ public class AnnotationExportTask extends Task<Void> {
 
         logger.info("Exporting {} annotations for {}", annotations.size(), imageName);
         for (PathObject annotation : annotations) {
+            if (Thread.interrupted()) {
+                throw new InterruptedException();
+            }
+
             ROI roi = annotation.getROI();
             String className = annotation.getPathClass().getName();
             String annotationId = annotation.getID().toString();
@@ -128,7 +133,7 @@ public class AnnotationExportTask extends Task<Void> {
      * @throws InterruptedException
      * @throws IOException
      */
-    public void exportAnnotationsProject(Project<BufferedImage> project, String outputBaseDir)
+    private void exportAnnotationsProject(Project<BufferedImage> project, String outputBaseDir)
             throws IOException, InterruptedException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
         logger.info("Exporting annotations for {} images in the project", selectedImages.size());

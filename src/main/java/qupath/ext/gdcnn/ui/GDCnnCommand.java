@@ -1,4 +1,4 @@
-package qupath.ext.ui;
+package qupath.ext.gdcnn.ui;
 
 import java.io.IOException;
 import java.net.URL;
@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -70,9 +73,28 @@ public class GDCnnCommand implements Runnable {
         stage.setResizable(false);
         stage.initModality(Modality.WINDOW_MODAL);
 
-        root.heightProperty().addListener((v, o, n) -> handleStageHeightChange());
+        stage.setOnCloseRequest(e -> {
+            // If a task is running, show an 'Are you sure?' dialog with
+            // a warning message and option to cancel all tasks
+            if (controller.isTaskRunning()) {
+                Alert alert = new Alert(AlertType.CONFIRMATION);
+                alert.setTitle("GDCnn");
+                alert.setHeaderText("Are you sure you want to close GDCnn?");
+                alert.setContentText("There are tasks running. Closing GDCnn will cancel all tasks.");
+                // If closing, cancel all tasks; if not, consume the event
+                alert.showAndWait().filter(r -> r != null && r.getButtonData().equals(ButtonData.OK_DONE))
+                        .ifPresent(r -> {
+                            logger.info("Cancelling all tasks");
+                            controller.cancelAllTasks();
+                            stage.close();
+                        });
+                e.consume();
+            }
+        });
 
-        controller.setImgsCheckListElements();
+        controller.setStage(stage);
+
+        root.heightProperty().addListener((v, o, n) -> handleStageHeightChange());
 
         return stage;
     }

@@ -1,4 +1,4 @@
-package qupath.ext.tasks;
+package qupath.ext.gdcnn.tasks;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import qupath.ext.env.VirtualEnvironment;
-import qupath.ext.utils.Utils;
+import qupath.ext.gdcnn.env.VirtualEnvironment;
+import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
@@ -43,7 +43,8 @@ public class TissueDetectionTask extends Task<Void> {
 
     private String imageExtension;
 
-    public TissueDetectionTask(QuPathGUI quPath, ObservableList<String> selectedImages, int downsample, String imageExtension) {
+    public TissueDetectionTask(QuPathGUI quPath, ObservableList<String> selectedImages, int downsample,
+            String imageExtension) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;
         this.downsample = downsample;
@@ -51,41 +52,43 @@ public class TissueDetectionTask extends Task<Void> {
     }
 
     @Override
-    protected Void call() throws Exception {
-        Project<BufferedImage> project = qupath.getProject();
-        String outputBaseDir = QP.PROJECT_BASE_DIR;
-        if (project != null) {
-            thresholdForegroundProject(project, selectedImages, outputBaseDir);
-        } else {
-            ImageData<BufferedImage> imageData = qupath.getImageData();
-            if (imageData != null) {
-                outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
-                // Take substring from the first slash after file: to the last slash
-                outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
-                        outputBaseDir.lastIndexOf("/"));
-                thresholdForeground(imageData, outputBaseDir);
+    protected Void call() throws IOException, InterruptedException {
+        try {
+            Project<BufferedImage> project = qupath.getProject();
+            String outputBaseDir = Utils.getBaseDir(qupath);
+            if (project != null) {
+                detectTissueProject(project, selectedImages, outputBaseDir);
             } else {
-                logger.error("No image or project is open");
+                ImageData<BufferedImage> imageData = qupath.getImageData();
+                if (imageData != null) {
+                    detectTissue(imageData, outputBaseDir);
+                } else {
+                    logger.error("No image or project is open");
+                }
             }
+
+            // Low-resolution images are not needed anymore
+            File lowresOutputFolder = new File(
+                    QP.buildFilePath(outputBaseDir, TaskPaths.TMP_FOLDER, TaskPaths.LOWRES_OUTPUT_FOLDER));
+            if (lowresOutputFolder.exists())
+                Utils.deleteFolder(lowresOutputFolder);
+
+            // Tissue detections are already added to the image hierarchy, so they
+            // are not needed
+            File thresholdOutputFolder = new File(
+                    QP.buildFilePath(outputBaseDir, TaskPaths.TMP_FOLDER, TaskPaths.THRESHOLD_OUTPUT_FOLDER));
+            if (thresholdOutputFolder.exists())
+                Utils.deleteFolder(thresholdOutputFolder);
+        } catch (IOException e) {
+            logger.error("Error with I/O of files: {}", e.getMessage(), e);
+        } catch (InterruptedException e) {
+            logger.error("Thread interrupted: {}", e.getMessage(), e);
         }
-
-        // Low-resolution images are not needed anymore
-        File lowresOutputFolder = new File(
-                QP.buildFilePath(outputBaseDir, TaskPaths.TMP_FOLDER, TaskPaths.LOWRES_OUTPUT_FOLDER));
-        if (lowresOutputFolder.exists())
-            Utils.deleteFolder(lowresOutputFolder);
-
-        // Tissue detections are already added to the image hierarchy, so they
-        // are not needed
-        File thresholdOutputFolder = new File(
-                QP.buildFilePath(outputBaseDir, TaskPaths.TMP_FOLDER, TaskPaths.THRESHOLD_OUTPUT_FOLDER));
-        if (thresholdOutputFolder.exists())
-            Utils.deleteFolder(thresholdOutputFolder);
 
         return null;
     }
 
-    public void exportLowResolutionImage(ImageData<BufferedImage> imageData, String outputBaseDir) throws IOException {
+    private void exportLowResolutionImage(ImageData<BufferedImage> imageData, String outputBaseDir) throws IOException {
         ImageServer<BufferedImage> server = imageData.getServer();
         String imageName = GeneralTools.stripExtension(server.getMetadata().getName());
         String outputPath = TaskPaths.getLowResOutputDir(outputBaseDir, imageName);
@@ -109,8 +112,15 @@ public class TissueDetectionTask extends Task<Void> {
      * @throws InterruptedException
      * @throws IOException
      */
-    public void thresholdForeground(ImageData<BufferedImage> imageData, String outputBaseDir)
+    private void detectTissue(ImageData<BufferedImage> imageData, String outputBaseDir)
             throws IOException, InterruptedException {
+
+        // Check if the thread has been interrupted before exporting the
+        // low-resolution image
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
+
         exportLowResolutionImage(imageData, outputBaseDir);
 
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
@@ -124,6 +134,11 @@ public class TissueDetectionTask extends Task<Void> {
                 Double.toString(pixelSize));
         venv.setArguments(arguments);
 
+        // Check if the thread has been interrupted before starting the process
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
+
         // Run the command
         logger.info("Running thresholding algorithm for {}", imageName);
         venv.runCommand();
@@ -132,6 +147,12 @@ public class TissueDetectionTask extends Task<Void> {
         // Read the annotations from the GeoJSON file
         String geoJSONPath = TaskPaths.getThresholdResultsPath(outputBaseDir, imageName);
         List<PathObject> detectedObjects = PathIO.readObjects(Paths.get(geoJSONPath));
+
+        // Check if the thread has been interrupted before adding the detected
+        // objects to the image hierarchy
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
 
         // Add the detected objects to the image hierarchy
         PathObjectHierarchy hierarchy = imageData.getHierarchy();
@@ -150,7 +171,8 @@ public class TissueDetectionTask extends Task<Void> {
      * @throws InterruptedException
      * @throws IOException
      */
-    public void thresholdForegroundProject(Project<BufferedImage> project, ObservableList<String> selectedImages, String outputBaseDir)
+    private void detectTissueProject(Project<BufferedImage> project, ObservableList<String> selectedImages,
+            String outputBaseDir)
             throws IOException, InterruptedException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
         logger.info("Running tissue detection for {} images", selectedImages.size());
@@ -158,7 +180,7 @@ public class TissueDetectionTask extends Task<Void> {
         for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
             ImageData<BufferedImage> imageData = imageEntry.readImageData();
             if (selectedImages.contains(GeneralTools.stripExtension(imageData.getServer().getMetadata().getName()))) {
-                thresholdForeground(imageData, outputBaseDir);
+                detectTissue(imageData, outputBaseDir);
                 imageEntry.saveImageData(imageData);
             }
         }

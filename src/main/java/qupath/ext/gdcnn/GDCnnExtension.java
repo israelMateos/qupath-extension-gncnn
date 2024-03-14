@@ -1,4 +1,4 @@
-package qupath.ext;
+package qupath.ext.gdcnn;
 
 import org.controlsfx.control.PropertySheet;
 import org.slf4j.Logger;
@@ -13,7 +13,7 @@ import qupath.lib.gui.extensions.GitHubProject;
 import qupath.lib.gui.extensions.QuPathExtension;
 import qupath.lib.gui.prefs.PathPrefs;
 
-import qupath.ext.ui.GDCnnCommand;
+import qupath.ext.gdcnn.ui.GDCnnCommand;
 
 /**
  * QuPath extension to detect and classify glomeruli using deep learning.
