@@ -1,4 +1,4 @@
-package qupath.ext.ui;
+package qupath.ext.gdcnn.ui;
 
 import java.io.IOException;
 import java.net.URL;
@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.layout.GridPane;
@@ -83,11 +82,12 @@ public class GDCnnCommand implements Runnable {
                 alert.setHeaderText("Are you sure you want to close GDCnn?");
                 alert.setContentText("There are tasks running. Closing GDCnn will cancel all tasks.");
                 // If closing, cancel all tasks; if not, consume the event
-                alert.showAndWait().filter(r -> r != null && r.getButtonData().equals(ButtonData.OK_DONE)).ifPresent(r -> {
-                    logger.info("Cancelling all tasks");
-                    controller.cancelAllTasks();
-                    stage.close();
-                });
+                alert.showAndWait().filter(r -> r != null && r.getButtonData().equals(ButtonData.OK_DONE))
+                        .ifPresent(r -> {
+                            logger.info("Cancelling all tasks");
+                            controller.cancelAllTasks();
+                            stage.close();
+                        });
                 e.consume();
             }
         });

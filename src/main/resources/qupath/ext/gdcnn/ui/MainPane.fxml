@@ -9,7 +9,7 @@
 <?import org.controlsfx.control.CheckListView?>
 <?import java.lang.*?>
 
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="420.0" minWidth="300.0" prefHeight="420.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="qupath.ext.ui.GDCnnController">
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="420.0" minWidth="300.0" prefHeight="420.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="qupath.ext.gdcnn.ui.GDCnnController">
   <columnConstraints>
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
   </columnConstraints>

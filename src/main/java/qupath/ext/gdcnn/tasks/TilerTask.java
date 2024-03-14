@@ -1,11 +1,10 @@
-package qupath.ext.tasks;
+package qupath.ext.gdcnn.tasks;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.nio.file.Paths;
 
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -13,13 +12,12 @@ import javafx.concurrent.Task;
 import java.util.List;
 
 import qupath.lib.gui.QuPathGUI;
-import qupath.ext.utils.Utils;
+import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.writers.TileExporter;
 import qupath.lib.projects.Project;
 import qupath.lib.projects.ProjectImageEntry;
-import qupath.lib.scripting.QP;
 
 /**
  * Class to tile the WSI into the given size patches and save them in a
@@ -57,16 +55,12 @@ public class TilerTask extends Task<Void> {
     protected Void call() throws Exception {
         try {
             Project<BufferedImage> project = qupath.getProject();
-            String outputBaseDir = QP.PROJECT_BASE_DIR;
+            String outputBaseDir = Utils.getBaseDir(qupath);
             if (project != null) {
                 tileWSIProject(project, outputBaseDir);
             } else {
                 ImageData<BufferedImage> imageData = qupath.getImageData();
                 if (imageData != null) {
-                    outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
-                    // Take substring from the first slash after file: to the last slash
-                    outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
-                            outputBaseDir.lastIndexOf("/"));
                     tileWSI(imageData, outputBaseDir);
                 } else {
                     logger.error("No image or project is open");

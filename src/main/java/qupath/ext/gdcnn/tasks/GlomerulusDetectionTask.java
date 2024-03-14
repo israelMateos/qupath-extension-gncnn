@@ -1,4 +1,4 @@
-package qupath.ext.tasks;
+package qupath.ext.gdcnn.tasks;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import qupath.ext.env.VirtualEnvironment;
-import qupath.ext.utils.Utils;
+import qupath.ext.gdcnn.env.VirtualEnvironment;
+import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
@@ -56,16 +56,12 @@ public class GlomerulusDetectionTask extends Task<Void> {
     protected Void call() throws Exception {
         try {
             Project<BufferedImage> project = qupath.getProject();
-            String outputBaseDir = QP.PROJECT_BASE_DIR;
+            String outputBaseDir = Utils.getBaseDir(qupath);
             if (project != null) {
                 detectGlomeruliProject(project, outputBaseDir);
             } else {
                 ImageData<BufferedImage> imageData = qupath.getImageData();
                 if (imageData != null) {
-                    outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
-                    // Take substring from the first slash after file: to the last slash
-                    outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
-                            outputBaseDir.lastIndexOf("/"));
                     detectGlomeruli(imageData, outputBaseDir);
                 } else {
                     logger.error("No image or project is open");

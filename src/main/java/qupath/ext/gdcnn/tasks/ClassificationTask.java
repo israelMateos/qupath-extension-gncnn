@@ -1,10 +1,9 @@
-package qupath.ext.tasks;
+package qupath.ext.gdcnn.tasks;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -19,8 +18,8 @@ import org.apache.commons.csv.CSVRecord;
 
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import qupath.ext.env.VirtualEnvironment;
-import qupath.ext.utils.Utils;
+import qupath.ext.gdcnn.env.VirtualEnvironment;
+import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.common.ColorTools;
 import qupath.lib.gui.QuPathGUI;
@@ -63,17 +62,13 @@ public class ClassificationTask extends Task<Void> {
     protected Void call() throws Exception {
         try {
             Project<BufferedImage> project = qupath.getProject();
-            String outputBaseDir = QP.PROJECT_BASE_DIR;
+            String outputBaseDir = Utils.getBaseDir(qupath);
             if (project != null) {
                 runClassification(outputBaseDir);
                 classifyGlomeruliProject(project, outputBaseDir);
             } else {
                 ImageData<BufferedImage> imageData = qupath.getImageData();
                 if (imageData != null) {
-                    outputBaseDir = Paths.get(imageData.getServer().getPath()).toString();
-                    // Take substring from the first slash after file: to the last slash
-                    outputBaseDir = outputBaseDir.substring(outputBaseDir.indexOf("file:") + 5,
-                            outputBaseDir.lastIndexOf("/"));
                     runClassification(outputBaseDir);
                     classifyGlomeruli(imageData, outputBaseDir);
                 } else {

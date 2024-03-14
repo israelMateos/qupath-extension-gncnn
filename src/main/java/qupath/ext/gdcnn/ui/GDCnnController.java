@@ -1,7 +1,8 @@
-package qupath.ext.ui;
+package qupath.ext.gdcnn.ui;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.File;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,11 +25,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
-import qupath.ext.tasks.AnnotationExportTask;
-import qupath.ext.tasks.ClassificationTask;
-import qupath.ext.tasks.GlomerulusDetectionTask;
-import qupath.ext.tasks.TilerTask;
-import qupath.ext.tasks.TissueDetectionTask;
+import qupath.ext.gdcnn.tasks.AnnotationExportTask;
+import qupath.ext.gdcnn.tasks.ClassificationTask;
+import qupath.ext.gdcnn.tasks.GlomerulusDetectionTask;
+import qupath.ext.gdcnn.tasks.TaskPaths;
+import qupath.ext.gdcnn.tasks.TilerTask;
+import qupath.ext.gdcnn.tasks.TissueDetectionTask;
+import qupath.ext.gdcnn.utils.Utils;
 import qupath.fx.dialogs.Dialogs;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.common.ThreadTools;
@@ -39,6 +42,7 @@ import qupath.lib.objects.hierarchy.PathObjectHierarchy;
 import qupath.lib.objects.hierarchy.events.PathObjectSelectionModel;
 import qupath.lib.projects.Project;
 import qupath.lib.projects.ProjectImageEntry;
+import qupath.lib.scripting.QP;
 
 public class GDCnnController {
 
@@ -289,10 +293,10 @@ public class GDCnnController {
                         selectionModel.clearSelection();
                     }
                 }
-                logger.info("Task succeeded");
-                Dialogs.showInfoNotification("Task succeeded", task.getClass().getSimpleName() + " succeeded");
-                setProgressDone();
             }
+            logger.info("Task succeeded");
+            Dialogs.showInfoNotification("Task succeeded", task.getClass().getSimpleName() + " succeeded");
+            setProgressDone();
         });
         task.setOnFailed(e -> {
             logger.error("Task failed", e.getSource().getException());
@@ -311,7 +315,16 @@ public class GDCnnController {
      * Cancels all the tasks in the thread pool
      */
     public void cancelAllTasks() {
+        logger.info("Cancelling all tasks");
         pool.shutdownNow();
+
+        // Clean the temporary files
+        logger.info("Cleaning temporary files");
+        String outputBaseDir = Utils.getBaseDir(qupath);
+        File tempFolder = new File(QP.buildFilePath(outputBaseDir, TaskPaths.TMP_FOLDER));
+        if (tempFolder.exists()) {
+            Utils.deleteFolder(tempFolder);
+        }
     }
 
     /**
