@@ -368,6 +368,25 @@ public class GDCnnController {
     }
 
     /**
+     * If dealing with a project and one of the selected images is selected in
+     * the viewer, removes the image data from the viewer to fix a bug where the
+     * annotations are not updated in the viewer although they are updated in
+     * the hierarchy
+     * @param selectedImages
+     * @throws IOException
+     */
+    private void refreshViewer(List<String> selectedImages) throws IOException {
+        Project<BufferedImage> project = qupath.getProject();
+        ImageData<BufferedImage> currentImageData = qupath.getViewer().getImageData();
+        if (project != null && currentImageData != null) {
+            String currentImageName = GeneralTools.stripExtension(currentImageData.getServer().getMetadata().getName());
+            if (selectedImages.contains(currentImageName)) {
+                qupath.getViewer().setImageData(null);
+            }
+        }
+    }
+
+    /**
      * Submits a task to the thread pool to run in the background
      * 
      * @param task
@@ -453,6 +472,7 @@ public class GDCnnController {
      * @throws IOException
      */
     private void detectGlomeruli(ObservableList<String> selectedImages) throws IOException {
+        refreshViewer(selectedImages);
         submitTask(new GlomerulusDetectionTask(qupath, selectedImages, "cascade_R_50_FPN_1x", "external", 1));
     }
 
@@ -472,6 +492,7 @@ public class GDCnnController {
      * @throws IOException
      */
     private void classifyGlomeruli(List<String> selectedImages) throws IOException {
+        refreshViewer(selectedImages);
         submitTask(new ClassificationTask(qupath, selectedImages, "swin_transformer"));
     }
 
