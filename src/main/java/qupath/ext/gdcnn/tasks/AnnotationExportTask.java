@@ -3,15 +3,15 @@ package qupath.ext.gdcnn.tasks;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.concurrent.Task;
-import javax.imageio.ImageIO;
-
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;

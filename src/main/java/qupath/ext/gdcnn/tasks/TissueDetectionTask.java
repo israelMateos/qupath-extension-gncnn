@@ -4,8 +4,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +57,7 @@ public class TissueDetectionTask extends Task<Void> {
             Project<BufferedImage> project = qupath.getProject();
             String outputBaseDir = Utils.getBaseDir(qupath);
             if (project != null) {
-                detectTissueProject(project, selectedImages, outputBaseDir);
+                detectTissueProject(project, outputBaseDir);
             } else {
                 ImageData<BufferedImage> imageData = qupath.getImageData();
                 if (imageData != null) {
@@ -166,13 +166,11 @@ public class TissueDetectionTask extends Task<Void> {
      * annotations to each image hierarchy
      * 
      * @param project
-     * @param selectedImages
      * @param outputBaseDir
      * @throws InterruptedException
      * @throws IOException
      */
-    private void detectTissueProject(Project<BufferedImage> project, ObservableList<String> selectedImages,
-            String outputBaseDir)
+    private void detectTissueProject(Project<BufferedImage> project, String outputBaseDir)
             throws IOException, InterruptedException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
         logger.info("Running tissue detection for {} images", selectedImages.size());

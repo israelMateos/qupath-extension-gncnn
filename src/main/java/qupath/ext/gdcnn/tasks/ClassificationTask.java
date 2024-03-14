@@ -6,21 +6,20 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.LinkedHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javafx.concurrent.Task;
 import qupath.ext.gdcnn.env.VirtualEnvironment;
 import qupath.ext.gdcnn.utils.Utils;
-import qupath.lib.common.GeneralTools;
 import qupath.lib.common.ColorTools;
+import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
 import qupath.lib.objects.PathObject;
@@ -38,7 +37,7 @@ public class ClassificationTask extends Task<Void> {
 
     private static final Logger logger = LoggerFactory.getLogger(ClassificationTask.class);
 
-    private static final LinkedHashMap<String, Integer> CLASS_COLORS = new LinkedHashMap<String, Integer>() {
+    private static final HashMap<String, Integer> CLASS_COLORS = new HashMap<String, Integer>() {
         {
             put("NoSclerotic", ColorTools.GREEN);
             put("Sclerotic", ColorTools.RED);

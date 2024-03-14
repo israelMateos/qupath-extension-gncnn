@@ -1,19 +1,17 @@
 package qupath.ext.gdcnn.tasks;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-
-import java.util.List;
-
-import qupath.lib.gui.QuPathGUI;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.GeneralTools;
+import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.writers.TileExporter;
 import qupath.lib.projects.Project;

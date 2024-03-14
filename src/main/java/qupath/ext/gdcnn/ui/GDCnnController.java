@@ -1,11 +1,11 @@
 package qupath.ext.gdcnn.ui;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -81,7 +81,7 @@ public class GDCnnController {
     private final ExecutorService pool = Executors
             .newSingleThreadExecutor(ThreadTools.createThreadFactory("GDCnn", true));
 
-    private final LinkedHashMap<String, String> PROGRESS_MESSAGES = new LinkedHashMap<String, String>() {
+    private final HashMap<String, String> PROGRESS_MESSAGES = new HashMap<String, String>() {
         {
             put("TissueDetectionTask", "Detecting tissue...");
             put("TilerTask", "Tiling images...");
