@@ -47,7 +47,7 @@
                <children>
                   <HBox alignment="CENTER" prefHeight="25.0" spacing="8.0">
                      <children>
-                        <ProgressIndicator fx:id="progressInd" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="25.0" visible="false" />
+                        <ProgressIndicator fx:id="progressInd" minHeight="-Infinity" minWidth="-Infinity" visible="false" progress="0" />
                         <Label fx:id="progressLabel" alignment="TOP_LEFT" text="Detecting glomeruli... (this may take a while)" textAlignment="CENTER" visible="false" wrapText="true" />
                      </children>
                   </HBox>

@@ -76,7 +76,7 @@ public class GDCnnCommand implements Runnable {
         stage.setOnCloseRequest(e -> {
             // If a task is running, show an 'Are you sure?' dialog with
             // a warning message and option to cancel all tasks
-            if (controller.isTaskRunning()) {
+            if (controller.isRunning()) {
                 Alert alert = new Alert(AlertType.CONFIRMATION);
                 alert.setTitle("GDCnn");
                 alert.setHeaderText("Are you sure you want to close GDCnn?");
