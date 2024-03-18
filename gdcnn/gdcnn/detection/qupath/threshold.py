@@ -12,7 +12,7 @@ from gdcnn.detection.qupath.shapely2geojson import poly2geojson
 def thresholding(img_path):
     # 1. Median filtering
     img = cv2.imread(img_path)
-    img = cv2.medianBlur(img, 15)
+    img = cv2.medianBlur(img, 11)
 
     # 2. Get saturation channel of HSV
     img = cv2.imread(img_path)
@@ -23,11 +23,8 @@ def thresholding(img_path):
     _, img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
     # 4. Closing
-    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (15, 15))
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
-
-    # 5. Opening
-    img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
 
     return img
 
@@ -53,14 +50,16 @@ def contours2geojson(contours, pixel_size, output_path):
         polygons.append(polygon)
     
     # 2. Remove small polygons
+    final_polygons = []
     for polygon in polygons:
         if polygon.area * pixel_size**2 < MIN_AREA_GLOMERULUS_UM:
             logging.info(f'Removing small polygon with area {polygon.area * pixel_size**2} um^2')
-            polygons.remove(polygon)
+            continue
+        final_polygons.append(polygon)
 
     # 3. Convert polygons to GeoJSON
-    logging.info(f'Saving {len(polygons)} tissue polygons to {output_path}')
-    poly2geojson(polygons, 'Tissue', [255, 0, 0], output_path)
+    logging.info(f'Saving {len(final_polygons)} tissue polygons to {output_path}')
+    poly2geojson(final_polygons, 'Tissue', [255, 0, 0], output_path)
 
 
 def main():
@@ -86,14 +85,16 @@ def main():
         contours = get_original_contours(contours, downsample=args.undersampling)
 
         # Remove contours with less than 3 points
+        final_contours = []
         for contour in contours:
             if len(contour) < 3:
                 logging.warning(f'Contour with less than 3 points found in {img_path}')
-                contours.remove(contour)
+                continue
+            final_contours.append(contour)
 
         # Save as GeoJSON for QuPath
         path_to_geojson = os.path.join(annotation_dir, 'annotations.geojson')
-        contours2geojson(contours, args.pixel_size, path_to_geojson)
+        contours2geojson(final_contours, args.pixel_size, path_to_geojson)
 
 
 if __name__ == '__main__':
