@@ -23,7 +23,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableSet;
 import javafx.concurrent.Task;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.fx.dialogs.Dialogs;
@@ -57,7 +56,7 @@ public class TaskManager {
         }
     };
 
-    private final ObservableSet<Task<?>> currentTasks = FXCollections.observableSet();
+    private final ObservableList<Task<?>> currentTasks = FXCollections.observableArrayList();
 
     private final BooleanProperty runningProperty = new SimpleBooleanProperty(false);
 
@@ -112,7 +111,7 @@ public class TaskManager {
         if (currentTasks.isEmpty()) {
             return null;
         }
-        return currentTasks.iterator().next().getClass().getSimpleName();
+        return currentTasks.get(0).getClass().getSimpleName();
     }
 
     /**
@@ -150,19 +149,22 @@ public class TaskManager {
             logger.error("Task failed", e.getSource().getException());
             Dialogs.showErrorMessage("Task failed", e.getSource().getException());
         });
-        pool.submit(task);
-        currentTasks.add(task);
         task.stateProperty().addListener((Observable o) -> {
             if (task.isDone()) {
                 currentTasks.remove(task);
             }
         });
+        pool.submit(task);
+        currentTasks.add(task);
     }
 
     /**
      * Cancels all the tasks in the thread pool
+     * 
+     * @param selectedImages
+     * @throws IOException
      */
-    public void cancelAllTasks() {
+    public void cancelAllTasks(ObservableList<String> selectedImages) throws IOException {
         logger.info("Cancelling all tasks");
         pool.shutdownNow();
 
@@ -172,6 +174,40 @@ public class TaskManager {
         File tempFolder = new File(QP.buildFilePath(outputBaseDir, TaskPaths.TMP_FOLDER));
         if (tempFolder.exists()) {
             Utils.deleteFolder(tempFolder);
+        }
+
+        // Clean the temporary annotations, i.e. "Tissue"
+        logger.info("Cleaning temporary annotations");
+        Project<BufferedImage> project = qupath.getProject();
+        if (project != null) {
+            // Check for "Tissue" annotations in selected images
+            List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
+            for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
+                String imageName = GeneralTools.stripExtension(imageEntry.getImageName());
+                if (selectedImages.contains(imageName)) {
+                    ImageData<BufferedImage> imageData = imageEntry.readImageData();
+
+                    // Remove all "Tissue" annotations in the image hierarchy
+                    imageData.getHierarchy().getAnnotationObjects().stream()
+                            .filter(annotation -> annotation.getPathClass().getName().equals("Tissue"))
+                            .forEach(annotation -> imageData.getHierarchy().removeObject(annotation, false));
+
+                    imageEntry.saveImageData(imageData);
+                    logger.info("Removed 'Tissue' annotations from {}", imageEntry.getImageName());
+                }
+            }
+        } else {
+            // Check for "Tissue" annotations in the current image
+            ImageData<BufferedImage> imageData = qupath.getImageData();
+            if (imageData != null) {
+                // Remove all "Tissue" annotations in the image hierarchy
+                imageData.getHierarchy().getAnnotationObjects().stream()
+                        .filter(annotation -> annotation.getPathClass().getName().equals("Tissue"))
+                        .forEach(annotation -> imageData.getHierarchy().removeObject(annotation, false));
+                logger.info("Removed 'Tissue' annotations from {}", imageData.getServer().getMetadata().getName());
+            } else {
+                logger.error("No project or image is open");
+            }
         }
     }
 
@@ -240,6 +276,8 @@ public class TaskManager {
 
         progressProperty.set(0);
         progressStep = 1.0 / 5.0; // 5 tasks in total
+        logger.info("Progress step: {}", progressStep);
+        logger.info("Progress set to: {}", progressProperty.get());
 
         detectTissue(selectedImages);
         tileWSIs(selectedImages);
@@ -259,6 +297,8 @@ public class TaskManager {
 
         progressProperty.set(0);
         progressStep = 1.0 / 3.0; // 3 tasks in total
+        logger.info("Progress step: {}", progressStep);
+        logger.info("Progress set to: {}", progressProperty.get());
 
         detectTissue(selectedImages);
         tileWSIs(selectedImages);
@@ -273,6 +313,8 @@ public class TaskManager {
 
         progressProperty.set(0);
         progressStep = 1.0 / 2.0; // 2 tasks in total
+        logger.info("Progress step: {}", progressStep);
+        logger.info("Progress set to: {}", progressProperty.get());
 
         exportAnnotations(imgsWithGlomeruli);
         classifyGlomeruli(imgsWithGlomeruli);

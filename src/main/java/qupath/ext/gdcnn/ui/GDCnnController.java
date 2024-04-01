@@ -89,7 +89,13 @@ public class GDCnnController {
     }
 
     public void cancelAllTasks() {
-        taskManager.cancelAllTasks();
+        ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
+        try {
+            taskManager.cancelAllTasks(selectedImages);
+        } catch (IOException e) {
+            logger.error("Error cancelling all tasks", e);
+            Dialogs.showErrorMessage("Error cancelling all tasks", e);
+        }
     }
 
     /**
