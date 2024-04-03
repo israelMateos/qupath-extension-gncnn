@@ -3,6 +3,7 @@ package qupath.ext.gdcnn.ui;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.controlsfx.control.CheckListView;
 import org.slf4j.Logger;
@@ -223,8 +224,11 @@ public class GDCnnController {
             } else if (imgsWithGlomeruli.size() < selectedImages.size()) {
                 // If there are less images with "Glomerulus" annotations than the
                 // selected images, show a warning message
+                List<String> imgsWithoutGlomeruli = selectedImages.stream()
+                        .filter(img -> !imgsWithGlomeruli.contains(img))
+                        .collect(Collectors.toList());
                 ClassificationWarningPane warningPane = new ClassificationWarningPane(stage);
-                continueClassification = warningPane.show(imgsWithGlomeruli);
+                continueClassification = warningPane.show(imgsWithGlomeruli, imgsWithoutGlomeruli);
             }
 
             if (continueClassification) {

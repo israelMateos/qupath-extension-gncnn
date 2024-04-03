@@ -31,10 +31,10 @@ public class ClassificationWarningPane {
         this.ownerStage = ownerStage;
     }
 
-    public boolean show(List<String> images) {
+    public boolean show(List<String> imgsWithGlomeruli, List<String> imgsWithoutGlomeruli) {
         if (stage == null) {
             try {
-                stage = createStage(images);
+                stage = createStage(imgsWithGlomeruli, imgsWithoutGlomeruli);
                 stage.showAndWait();
                 return controller.continueClassification();
             } catch (IOException e) {
@@ -47,7 +47,7 @@ public class ClassificationWarningPane {
         }
     }
 
-    private Stage createStage(List<String> images) throws IOException {
+    private Stage createStage(List<String> imgsWithGlomeruli, List<String> imgsWithoutGlomeruli) throws IOException {
         URL url = getClass().getResource("ClassificationWarningPane.fxml");
         if (url == null) {
             throw new IOException("Cannot find URL for MainPane FXML");
@@ -67,7 +67,7 @@ public class ClassificationWarningPane {
         stage.setScene(new Scene(root));
         stage.setTitle("Warning");
 
-        controller.setImages(images);
+        controller.setImages(imgsWithGlomeruli, imgsWithoutGlomeruli);
 
         return stage;
     }
