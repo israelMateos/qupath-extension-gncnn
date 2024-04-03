@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import qupath.ext.gdcnn.env.VirtualEnvironment;
+import qupath.ext.gdcnn.listeners.ProgressListener;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
@@ -42,14 +43,16 @@ public class GlomerulusDetectionTask extends Task<Void> {
 
     private int undersampling;
 
+    private ProgressListener progressListener;
+
     public GlomerulusDetectionTask(QuPathGUI quPath, ObservableList<String> selectedImages, String modelName,
-            String trainConfig,
-            int undersampling) {
+            String trainConfig, int undersampling, ProgressListener progressListener) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;
         this.modelName = modelName;
         this.trainConfig = trainConfig;
         this.undersampling = undersampling;
+        this.progressListener = progressListener;
     }
 
     @Override
@@ -136,6 +139,9 @@ public class GlomerulusDetectionTask extends Task<Void> {
         PathObjectHierarchy hierarchy = imageData.getHierarchy();
         hierarchy.addObjects(detectedObjects);
         logger.info("Added {} detected objects to {}", detectedObjects.size(), imageName);
+
+        // Update progress
+        progressListener.updateProgress();
     }
 
     /**

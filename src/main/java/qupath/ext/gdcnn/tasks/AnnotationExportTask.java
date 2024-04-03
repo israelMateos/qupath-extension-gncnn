@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.concurrent.Task;
+import qupath.ext.gdcnn.listeners.ProgressListener;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
@@ -39,12 +40,15 @@ public class AnnotationExportTask extends Task<Void> {
 
     private double downsample;
 
-    public AnnotationExportTask(QuPathGUI quPath, List<String> selectedImages, int padding,
-            double downsample) {
+    private ProgressListener progressListener;
+
+    public AnnotationExportTask(QuPathGUI quPath, List<String> selectedImages, int padding, double downsample,
+            ProgressListener progressListener) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;
         this.padding = padding;
         this.downsample = downsample;
+        this.progressListener = progressListener;
     }
 
     @Override
@@ -123,6 +127,9 @@ public class AnnotationExportTask extends Task<Void> {
             ImageIO.write(img, "PNG", outputFile);
         }
         logger.info("Exporting annotations for {} finished", imageName);
+
+        // Update progress
+        progressListener.updateProgress();
     }
 
     /**

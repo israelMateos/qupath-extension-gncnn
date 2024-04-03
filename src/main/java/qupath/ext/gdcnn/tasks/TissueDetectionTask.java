@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import qupath.ext.gdcnn.env.VirtualEnvironment;
+import qupath.ext.gdcnn.listeners.ProgressListener;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
@@ -43,12 +44,15 @@ public class TissueDetectionTask extends Task<Void> {
 
     private String imageExtension;
 
+    private ProgressListener progressListener;
+
     public TissueDetectionTask(QuPathGUI quPath, ObservableList<String> selectedImages, int downsample,
-            String imageExtension) {
+            String imageExtension, ProgressListener progressListener) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;
         this.downsample = downsample;
         this.imageExtension = imageExtension;
+        this.progressListener = progressListener;
     }
 
     @Override
@@ -158,6 +162,9 @@ public class TissueDetectionTask extends Task<Void> {
         PathObjectHierarchy hierarchy = imageData.getHierarchy();
         hierarchy.addObjects(detectedObjects);
         logger.info("Added {} detected objects to {}", detectedObjects.size(), imageName);
+
+        // Update progress
+        progressListener.updateProgress();
     }
 
     /**

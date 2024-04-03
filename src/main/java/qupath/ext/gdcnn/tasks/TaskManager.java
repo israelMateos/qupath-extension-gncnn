@@ -24,6 +24,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import qupath.ext.gdcnn.listeners.ProgressListener;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.fx.dialogs.Dialogs;
 import qupath.lib.common.GeneralTools;
@@ -65,6 +66,8 @@ public class TaskManager {
     private final DoubleProperty progressProperty = new SimpleDoubleProperty(0);
 
     private final StringProperty messageProperty = new SimpleStringProperty("");
+
+    private ProgressListener progressListener;
 
     private double progressStep = 0;
 
@@ -136,14 +139,8 @@ public class TaskManager {
                     }
                 }
             }
-
             logger.info("Task succeeded");
             Dialogs.showInfoNotification("Task succeeded", task.getClass().getSimpleName() + " succeeded");
-
-            logger.info("Previous progress: {}", progressProperty.get());
-            logger.info("New calculated progress: {}", progressProperty.get() + progressStep);
-            progressProperty.set(progressProperty.get() + progressStep);
-            logger.info("Progress set to: {}", progressProperty.get());
         });
         task.setOnFailed(e -> {
             logger.error("Task failed", e.getSource().getException());
@@ -274,16 +271,16 @@ public class TaskManager {
     public void runAll(ObservableList<String> selectedImages) throws IOException {
         logger.info("Running all tasks");
 
-        progressProperty.set(0);
-        progressStep = 1.0 / 5.0; // 5 tasks in total
-        logger.info("Progress step: {}", progressStep);
-        logger.info("Progress set to: {}", progressProperty.get());
+        progressStep = 1.0 / (5.0 * selectedImages.size()); // 5 tasks in total
 
-        detectTissue(selectedImages);
-        tileWSIs(selectedImages);
-        detectGlomeruli(selectedImages);
-        exportAnnotations(selectedImages);
-        classifyGlomeruli(selectedImages);
+        progressListener = new ProgressListener(progressStep);
+        progressProperty.bind(progressListener.progressProperty());
+
+        detectTissue(selectedImages, progressListener);
+        tileWSIs(selectedImages, progressListener);
+        detectGlomeruli(selectedImages, progressListener);
+        exportAnnotations(selectedImages, progressListener);
+        classifyGlomeruli(selectedImages, progressListener);
     }
 
     /**
@@ -295,14 +292,14 @@ public class TaskManager {
     public void runDetection(ObservableList<String> selectedImages) throws IOException {
         logger.info("Running detection pipeline");
 
-        progressProperty.set(0);
-        progressStep = 1.0 / 3.0; // 3 tasks in total
-        logger.info("Progress step: {}", progressStep);
-        logger.info("Progress set to: {}", progressProperty.get());
+        progressStep = 1.0 / (3.0 * selectedImages.size()); // 3 tasks in total
 
-        detectTissue(selectedImages);
-        tileWSIs(selectedImages);
-        detectGlomeruli(selectedImages);
+        progressListener = new ProgressListener(progressStep);
+        progressProperty.bind(progressListener.progressProperty());
+
+        detectTissue(selectedImages, progressListener);
+        tileWSIs(selectedImages, progressListener);
+        detectGlomeruli(selectedImages, progressListener);
     }
 
     /**
@@ -311,61 +308,69 @@ public class TaskManager {
     public void runClassification(List<String> imgsWithGlomeruli) throws IOException {
         logger.info("Running classification pipeline");
 
-        progressProperty.set(0);
-        progressStep = 1.0 / 2.0; // 2 tasks in total
-        logger.info("Progress step: {}", progressStep);
-        logger.info("Progress set to: {}", progressProperty.get());
+        progressStep = 1.0 / (2.0 * imgsWithGlomeruli.size()); // 2 tasks in total
 
-        exportAnnotations(imgsWithGlomeruli);
-        classifyGlomeruli(imgsWithGlomeruli);
+        progressListener = new ProgressListener(progressStep);
+        progressProperty.bind(progressListener.progressProperty());
+
+        exportAnnotations(imgsWithGlomeruli, progressListener);
+        classifyGlomeruli(imgsWithGlomeruli, progressListener);
     }
 
     /**
      * Apply the threshold to separate the foreground from the background
      * 
      * @param selectedImages
+     * @param progressListener
      * @throws IOException
      */
-    private void detectTissue(ObservableList<String> selectedImages) throws IOException {
-        submitTask(new TissueDetectionTask(qupath, selectedImages, 20, ".jpeg"));
+    private void detectTissue(ObservableList<String> selectedImages, ProgressListener progressListener)
+            throws IOException {
+        submitTask(new TissueDetectionTask(qupath, selectedImages, 20, ".jpeg", progressListener));
     }
 
     /**
      * Tiles each WSI and saves them in a temporary folder
      * 
      * @param selectedImages
+     * @param progressListener
      * @throws IOException // In case there is an issue reading the image
      */
-    private void tileWSIs(ObservableList<String> selectedImages) throws IOException {
-        submitTask(new TilerTask(qupath, selectedImages, 4096, 2048, 1, ".jpeg"));
+    private void tileWSIs(ObservableList<String> selectedImages, ProgressListener progressListener) throws IOException {
+        submitTask(new TilerTask(qupath, selectedImages, 4096, 2048, 1, ".jpeg", progressListener));
     }
 
     /**
      * Detects glomeruli in the WSI patches
      * 
      * @param selectedImages
+     * @param progressListener
      * @throws IOException
      */
-    private void detectGlomeruli(ObservableList<String> selectedImages) throws IOException {
-        submitTask(new GlomerulusDetectionTask(qupath, selectedImages, "cascade_R_50_FPN_1x", "external", 1));
+    private void detectGlomeruli(ObservableList<String> selectedImages, ProgressListener progressListener)
+            throws IOException {
+        submitTask(new GlomerulusDetectionTask(qupath, selectedImages, "cascade_R_50_FPN_1x", "external", 1,
+                progressListener));
     }
 
     /**
      * Exports the annotations of each WSI to images
      * 
      * @param selectedImages
+     * @param progressListener
      */
-    private void exportAnnotations(List<String> selectedImages) {
-        submitTask(new AnnotationExportTask(qupath, selectedImages, 300, 1));
+    private void exportAnnotations(List<String> selectedImages, ProgressListener progressListener) {
+        submitTask(new AnnotationExportTask(qupath, selectedImages, 300, 1, progressListener));
     }
 
     /**
      * Classifies annotated glomeruli
      * 
      * @param selectedImages
+     * @param progressListener
      * @throws IOException
      */
-    private void classifyGlomeruli(List<String> selectedImages) throws IOException {
-        submitTask(new ClassificationTask(qupath, selectedImages, "swin_transformer"));
+    private void classifyGlomeruli(List<String> selectedImages, ProgressListener progressListener) throws IOException {
+        submitTask(new ClassificationTask(qupath, selectedImages, "swin_transformer", progressListener));
     }
 }

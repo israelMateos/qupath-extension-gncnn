@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import javafx.concurrent.Task;
 import qupath.ext.gdcnn.env.VirtualEnvironment;
+import qupath.ext.gdcnn.listeners.ProgressListener;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.ColorTools;
 import qupath.lib.common.GeneralTools;
@@ -30,8 +31,7 @@ import qupath.lib.scripting.QP;
 
 /**
  * Class to classify glomeruli in the WSI patches, and update the detected
- * objects
- * in the image hierarchy
+ * objects in the image hierarchy
  */
 public class ClassificationTask extends Task<Void> {
 
@@ -50,10 +50,14 @@ public class ClassificationTask extends Task<Void> {
 
     private String modelName;
 
-    public ClassificationTask(QuPathGUI quPath, List<String> selectedImages, String modelName) {
+    private ProgressListener progressListener;
+
+    public ClassificationTask(QuPathGUI quPath, List<String> selectedImages, String modelName,
+            ProgressListener progressListener) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;
         this.modelName = modelName;
+        this.progressListener = progressListener;
     }
 
     @Override
@@ -171,6 +175,8 @@ public class ClassificationTask extends Task<Void> {
                 }
             }
         }
+        // Update progress
+        progressListener.updateProgress();
     }
 
     /**
