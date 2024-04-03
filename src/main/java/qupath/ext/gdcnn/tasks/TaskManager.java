@@ -86,8 +86,12 @@ public class TaskManager {
             return "";
         }, currentTasks));
 
-        // Bind the done property to the progress property
-        doneProperty.bind(progressProperty.greaterThanOrEqualTo(0.999));
+        // Bind the done property to the progress and running properties
+        // The task is done when the progress is greater than or equal to 0.999
+        // and there are no running tasks
+        doneProperty.bind(Bindings.createBooleanBinding(() -> {
+            return progressProperty.get() >= 0.999 && !runningProperty.get();
+        }, progressProperty, runningProperty));
     }
 
     public BooleanProperty doneProperty() {

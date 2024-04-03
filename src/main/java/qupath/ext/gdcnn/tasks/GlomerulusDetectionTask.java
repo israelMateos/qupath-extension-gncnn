@@ -139,6 +139,11 @@ public class GlomerulusDetectionTask extends Task<Void> {
         PathObjectHierarchy hierarchy = imageData.getHierarchy();
         hierarchy.addObjects(detectedObjects);
         logger.info("Added {} detected objects to {}", detectedObjects.size(), imageName);
+
+        // Update progress
+        if (progressListener.getProgress() >= 0.99) {
+            progressListener.updateProgress();
+        }
     }
 
     /**

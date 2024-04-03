@@ -27,7 +27,15 @@ public class ProgressListener {
     }
 
     public void updateProgress(double currentProgress, double partialProgressStep) {
-        progress.set(currentProgress + progressStep * partialProgressStep);
+        double newProgress = currentProgress + progressStep * partialProgressStep;
+        // If the new progress rounds to 1.0, set it to 0.99 to avoid the
+        // progress indicator to be full
+        // This fixes a bug when detecting glomeruli and not classifying them
+        if (newProgress >= 0.994) {
+            progress.set(0.99);
+        } else {
+            progress.set(newProgress);
+        }
         logger.info("Progress: " + progress.get());
     }
 
