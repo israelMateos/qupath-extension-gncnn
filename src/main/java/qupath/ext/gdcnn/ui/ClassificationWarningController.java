@@ -19,7 +19,9 @@ public class ClassificationWarningController {
     private static final Logger logger = LoggerFactory.getLogger(ClassificationWarningController.class);
 
     @FXML
-    private ListView<String> imgsListView;
+    private ListView<String> glomeruliImgsListView;
+    @FXML
+    private ListView<String> noGlomeruliImgsListView;
     @FXML
     private Button cancelBtn;
     @FXML
@@ -40,12 +42,14 @@ public class ClassificationWarningController {
     }
 
     /**
-     * Sets the list of images which will not be classified
+     * Sets the list of images which will and will not be classified
      * 
-     * @param imgs List of images which will not be classified
+     * @param imgsWithGlomeruli    List of images which will be classified
+     * @param imgsWithoutGlomeruli List of images which will not be classified
      */
-    public void setImages(List<String> imgs) {
-        imgsListView.setItems(FXCollections.observableArrayList(imgs));
+    public void setImages(List<String> imgsWithGlomeruli, List<String> imgsWithoutGlomeruli) {
+        glomeruliImgsListView.setItems(FXCollections.observableArrayList(imgsWithGlomeruli));
+        noGlomeruliImgsListView.setItems(FXCollections.observableArrayList(imgsWithoutGlomeruli));
     }
 
     @FXML

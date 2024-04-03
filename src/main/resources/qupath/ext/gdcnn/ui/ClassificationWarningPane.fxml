@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.GridPane?>
 
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="303.0" prefWidth="482.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="qupath.ext.gdcnn.ui.ClassificationWarningController">
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="554.0" prefWidth="482.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="qupath.ext.gdcnn.ui.ClassificationWarningController">
   <columnConstraints>
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
   </columnConstraints>
@@ -22,7 +22,13 @@
                   <Insets />
                </VBox.margin>
             </Label>
-            <ListView fx:id="imgsListView" prefHeight="200.0" prefWidth="450.0">
+            <ListView fx:id="glomeruliImgsListView" prefHeight="200.0" prefWidth="450.0">
+               <VBox.margin>
+                  <Insets left="8.0" right="8.0" />
+               </VBox.margin>
+            </ListView>
+            <Label alignment="CENTER_LEFT" prefHeight="35.0" text="On the other hand, the following selected images do not have any &quot;Glomerulus&quot; annotations:" wrapText="true" />
+            <ListView fx:id="noGlomeruliImgsListView" prefHeight="200.0" prefWidth="450.0">
                <VBox.margin>
                   <Insets left="8.0" right="8.0" />
                </VBox.margin>
