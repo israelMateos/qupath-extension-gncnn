@@ -4,8 +4,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import qupath.ext.gdcnn.env.VirtualEnvironment;
+import qupath.ext.gdcnn.listeners.ProgressListener;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
@@ -43,12 +44,15 @@ public class TissueDetectionTask extends Task<Void> {
 
     private String imageExtension;
 
+    private ProgressListener progressListener;
+
     public TissueDetectionTask(QuPathGUI quPath, ObservableList<String> selectedImages, int downsample,
-            String imageExtension) {
+            String imageExtension, ProgressListener progressListener) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;
         this.downsample = downsample;
         this.imageExtension = imageExtension;
+        this.progressListener = progressListener;
     }
 
     @Override
@@ -57,7 +61,7 @@ public class TissueDetectionTask extends Task<Void> {
             Project<BufferedImage> project = qupath.getProject();
             String outputBaseDir = Utils.getBaseDir(qupath);
             if (project != null) {
-                detectTissueProject(project, selectedImages, outputBaseDir);
+                detectTissueProject(project, outputBaseDir);
             } else {
                 ImageData<BufferedImage> imageData = qupath.getImageData();
                 if (imageData != null) {
@@ -124,7 +128,7 @@ public class TissueDetectionTask extends Task<Void> {
         exportLowResolutionImage(imageData, outputBaseDir);
 
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
-        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName());
+        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), progressListener);
 
         double pixelSize = imageData.getServer().getPixelCalibration().getAveragedPixelSizeMicrons();
 
@@ -158,6 +162,9 @@ public class TissueDetectionTask extends Task<Void> {
         PathObjectHierarchy hierarchy = imageData.getHierarchy();
         hierarchy.addObjects(detectedObjects);
         logger.info("Added {} detected objects to {}", detectedObjects.size(), imageName);
+
+        // Update progress
+        progressListener.updateProgress();
     }
 
     /**
@@ -166,13 +173,11 @@ public class TissueDetectionTask extends Task<Void> {
      * annotations to each image hierarchy
      * 
      * @param project
-     * @param selectedImages
      * @param outputBaseDir
      * @throws InterruptedException
      * @throws IOException
      */
-    private void detectTissueProject(Project<BufferedImage> project, ObservableList<String> selectedImages,
-            String outputBaseDir)
+    private void detectTissueProject(Project<BufferedImage> project, String outputBaseDir)
             throws IOException, InterruptedException {
         List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
         logger.info("Running tissue detection for {} images", selectedImages.size());

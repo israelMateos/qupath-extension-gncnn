@@ -1,19 +1,18 @@
 package qupath.ext.gdcnn.tasks;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-
-import java.util.List;
-
-import qupath.lib.gui.QuPathGUI;
+import qupath.ext.gdcnn.listeners.ProgressListener;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.GeneralTools;
+import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.writers.TileExporter;
 import qupath.lib.projects.Project;
@@ -41,14 +40,17 @@ public class TilerTask extends Task<Void> {
 
     private String imageExtension;
 
+    private ProgressListener progressListener;
+
     public TilerTask(QuPathGUI quPath, ObservableList<String> selectedImages, int tileSize, int tileOverlap,
-            double downsample, String imageExtension) {
+            double downsample, String imageExtension, ProgressListener progressListener) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;
         this.tileSize = tileSize;
         this.tileOverlap = tileOverlap;
         this.downsample = downsample;
         this.imageExtension = imageExtension;
+        this.progressListener = progressListener;
     }
 
     @Override
@@ -114,6 +116,9 @@ public class TilerTask extends Task<Void> {
         if (Thread.interrupted()) {
             throw new InterruptedException();
         }
+
+        // Update progress
+        progressListener.updateProgress();
     }
 
     /**
