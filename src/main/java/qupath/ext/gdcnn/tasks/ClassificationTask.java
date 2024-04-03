@@ -102,7 +102,7 @@ public class ClassificationTask extends Task<Void> {
      */
     private void runClassification(String outputBaseDir)
             throws IOException, InterruptedException {
-        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName());
+        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), progressListener);
 
         // This is the list of commands after the 'python' call
         List<String> arguments = Arrays.asList(TaskPaths.CLASSIFICATION_COMMAND, "-e", QP.buildFilePath(outputBaseDir),

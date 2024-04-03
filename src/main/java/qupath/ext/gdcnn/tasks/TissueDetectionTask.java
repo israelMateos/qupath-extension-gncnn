@@ -128,7 +128,7 @@ public class TissueDetectionTask extends Task<Void> {
         exportLowResolutionImage(imageData, outputBaseDir);
 
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
-        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName());
+        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), progressListener);
 
         double pixelSize = imageData.getServer().getPixelCalibration().getAveragedPixelSizeMicrons();
 

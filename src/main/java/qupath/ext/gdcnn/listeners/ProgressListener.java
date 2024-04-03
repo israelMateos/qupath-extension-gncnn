@@ -22,7 +22,12 @@ public class ProgressListener {
     }
 
     public void updateProgress() {
-        progress.set(Math.round((progress.get() + progressStep) * 100.0) / 100.0);
+        progress.set(progress.get() + progressStep);
+        logger.info("Progress: " + progress.get());
+    }
+
+    public void updateProgress(double currentProgress, double partialProgressStep) {
+        progress.set(currentProgress + progressStep * partialProgressStep);
         logger.info("Progress: " + progress.get());
     }
 

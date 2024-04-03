@@ -87,7 +87,7 @@ public class TaskManager {
         }, currentTasks));
 
         // Bind the done property to the progress property
-        doneProperty.bind(progressProperty.greaterThanOrEqualTo(1));
+        doneProperty.bind(progressProperty.greaterThanOrEqualTo(0.999));
     }
 
     public BooleanProperty doneProperty() {

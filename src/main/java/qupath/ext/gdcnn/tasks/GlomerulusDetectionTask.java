@@ -103,7 +103,7 @@ public class GlomerulusDetectionTask extends Task<Void> {
     private void detectGlomeruli(ImageData<BufferedImage> imageData, String outputBaseDir)
             throws IOException, InterruptedException {
         String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
-        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName());
+        VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), progressListener);
 
         double pixelSize = imageData.getServer().getPixelCalibration().getAveragedPixelSizeMicrons();
 
@@ -139,9 +139,6 @@ public class GlomerulusDetectionTask extends Task<Void> {
         PathObjectHierarchy hierarchy = imageData.getHierarchy();
         hierarchy.addObjects(detectedObjects);
         logger.info("Added {} detected objects to {}", detectedObjects.size(), imageName);
-
-        // Update progress
-        progressListener.updateProgress();
     }
 
     /**
