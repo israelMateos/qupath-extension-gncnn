@@ -13,7 +13,10 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
@@ -57,6 +60,8 @@ public class GDCnnController {
     private Button viewResultsBtn;
     @FXML
     private CheckListView<String> imgsCheckList;
+    @FXML
+    private Button cancelBtn;
 
     private TaskManager taskManager;
 
@@ -71,6 +76,7 @@ public class GDCnnController {
         taskManager = new TaskManager(qupath);
 
         setUpInterfaceElements();
+        cancelBtn.disableProperty().bind(taskManager.runningProperty().not());
         bindButtonsToSelectedImages();
         bindProgress();
     }
@@ -88,6 +94,9 @@ public class GDCnnController {
         return taskManager.isRunning();
     }
 
+    /**
+     * Cancels all the tasks
+     */
     public void cancelAllTasks() {
         ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
         try {
@@ -96,6 +105,24 @@ public class GDCnnController {
             logger.error("Error cancelling all tasks", e);
             Dialogs.showErrorMessage("Error cancelling all tasks", e);
         }
+    }
+
+    @FXML
+    /**
+     * Shows a confirmation alert and cancels all the tasks if the user confirms
+     */
+    private void showCancelConfirmation() {
+        Alert alert = new Alert(AlertType.CONFIRMATION);
+        alert.setTitle("GDCnn");
+        alert.setHeaderText("Are you sure you want to close GDCnn?");
+        alert.setContentText("There are tasks running. Closing GDCnn will cancel all tasks.");
+        // If closing, cancel all tasks; if not, close the alert
+        alert.showAndWait().filter(r -> r != null && r.getButtonData().equals(ButtonData.OK_DONE))
+                .ifPresent(r -> {
+                    logger.info("Cancelling all tasks");
+                    cancelAllTasks();
+                });
+        alert.close();
     }
 
     /**

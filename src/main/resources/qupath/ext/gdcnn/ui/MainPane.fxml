@@ -64,7 +64,12 @@
                </children>
             </StackPane>
             <Separator />
-               <Button fx:id="viewResultsBtn" mnemonicParsing="false" onAction="#viewResults" text="View results" />
+            <HBox alignment="CENTER_RIGHT" spacing="8.0">
+               <children>
+                  <Button fx:id="cancelBtn" disable="true" mnemonicParsing="false" onAction="#showCancelConfirmation" text="Cancel" />
+                  <Button fx:id="viewResultsBtn" mnemonicParsing="false" onAction="#viewResults" text="View results" />
+               </children>
+            </HBox>
          </children>
          <GridPane.margin>
             <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
