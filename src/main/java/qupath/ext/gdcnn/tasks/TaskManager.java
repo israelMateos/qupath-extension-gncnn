@@ -168,6 +168,7 @@ public class TaskManager {
     public void cancelAllTasks(ObservableList<String> selectedImages) throws IOException {
         logger.info("Cancelling all tasks");
         pool.shutdownNow();
+        currentTasks.clear();
 
         // Clean the temporary files
         logger.info("Cleaning temporary files");
