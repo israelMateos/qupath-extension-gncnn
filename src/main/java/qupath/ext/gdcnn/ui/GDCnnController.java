@@ -150,7 +150,6 @@ public class GDCnnController {
         runAllBtn.disableProperty().bind(selectedImagesBinding);
         runDetectionBtn.disableProperty().bind(selectedImagesBinding);
         runClassificationBtn.disableProperty().bind(selectedImagesBinding);
-        viewResultsBtn.disableProperty().bind(selectedImagesBinding);
     }
 
     @FXML
