@@ -382,7 +382,7 @@ public class TaskManager {
                         } else if (annotation.getPathClass().getName().equals("Sclerotic")) {
                             nGlomeruli++;
                             sclerotic++;
-                        } else {
+                        } else if (annotation.getPathClass().getName().equals("NoSclerotic")) {
                             nGlomeruli++;
                             noSclerotic++;
                         }
@@ -390,11 +390,11 @@ public class TaskManager {
                 }
 
                 String mostPredictedClass = "";
-                if (nGlomeruli > noSclerotic && nGlomeruli > sclerotic) {
+                if (noClassified > noSclerotic && noClassified > sclerotic) {
                     mostPredictedClass = "Non-classified";
                 } else if (sclerotic > noSclerotic) {
                     mostPredictedClass = "Sclerotic";
-                } else {
+                } else if (noSclerotic > sclerotic) {
                     mostPredictedClass = "Non-sclerotic";
                 }
 
