@@ -258,7 +258,6 @@ public class GDCnnController {
             logger.info("Showing results");
             try {
                 ObservableList<ImageResult> results = taskManager.getResults();
-                logger.info("Results: " + results);
                 ResultsPane resultsPane = new ResultsPane(stage);
                 resultsPane.show(results);
             } catch (IOException e) {

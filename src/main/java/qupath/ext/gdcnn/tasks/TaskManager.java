@@ -1,18 +1,14 @@
 package qupath.ext.gdcnn.tasks;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +35,6 @@ import qupath.lib.common.ThreadTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.servers.ImageServer;
-import qupath.lib.images.writers.ImageWriterTools;
 import qupath.lib.objects.PathObject;
 import qupath.lib.objects.hierarchy.PathObjectHierarchy;
 import qupath.lib.objects.hierarchy.events.PathObjectSelectionModel;
@@ -281,18 +276,22 @@ public class TaskManager {
      * Returns a thumbnail of the image
      * 
      * @param imageData
-     * @param requestedPixelSize
+     * @param desiredSize
      * @return The thumbnail of the image
-     * @throws IOException 
+     * @throws IOException
      */
     // FIXME: This method is not working properly
-    private BufferedImage getThumbnail(ImageData<BufferedImage> imageData, double requestedPixelSize) throws IOException {
+    private BufferedImage getThumbnail(ImageData<BufferedImage> imageData, double desiredSize) throws IOException {
         ImageServer<BufferedImage> server = imageData.getServer();
 
-        // Calculate downsample factor depending on the requested pixel size
-        double downsample = requestedPixelSize / server.getPixelCalibration().getAveragedPixelSizeMicrons();
-        RegionRequest request = RegionRequest.createInstance(imageData.getServerPath(), downsample, 0, 0,
-                server.getWidth(), server.getHeight());
+        int width = server.getWidth();
+        int height = server.getHeight();
+
+        // Calculate downsample factor depending on the desired size
+        double downsample = Math.max(width / desiredSize, height / desiredSize);
+
+        RegionRequest request = RegionRequest.createInstance(imageData.getServerPath(), downsample, 0, 0, width,
+                height);
 
         BufferedImage img = server.readRegion(request);
 
@@ -349,8 +348,9 @@ public class TaskManager {
                     mostPredictedClass = "Non-sclerotic";
                 }
 
-                ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 20), null));
-                results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, noSclerotic, sclerotic, noClassified));
+                ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 200), null));
+                results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, noSclerotic,
+                        sclerotic, noClassified));
             }
         } else {
             // Check for glomerulus annotations in the current image
@@ -390,7 +390,8 @@ public class TaskManager {
                 }
 
                 ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 20), null));
-                results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, noSclerotic, sclerotic, noClassified));
+                results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, noSclerotic,
+                        sclerotic, noClassified));
             } else {
                 logger.error("No project or image is open");
             }
