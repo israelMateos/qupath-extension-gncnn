@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.GridPane?>
+
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="811.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="qupath.ext.gdcnn.ui.ClassificationWarningController">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+      <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="8.0">
+         <children>
+            <TableView fx:id="resultsTable" prefHeight="559.0" prefWidth="200.0">
+              <columns>
+                <TableColumn fx:id="thumbnail" prefWidth="145.0" text="Thumbnail" />
+                <TableColumn fx:id="image" prefWidth="260.0" text="Image" />
+                  <TableColumn fx:id="mostPredictedClass" prefWidth="170.0" text="Most predicted class" />
+                  <TableColumn fx:id="noSclerotic" minWidth="0.0" prefWidth="110.0" text="Non-sclerotic" />
+                  <TableColumn fx:id="sclerotic" minWidth="0.0" prefWidth="110.0" text="Sclerotic" />
+              </columns>
+            </TableView>
+            <HBox alignment="CENTER_RIGHT" prefHeight="25.0" spacing="8.0">
+               <children>
+                  <Button fx:id="saveBtn" mnemonicParsing="false" text="Save" />
+               </children>
+            </HBox>
+         </children>
+         <GridPane.margin>
+            <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+         </GridPane.margin>
+      </VBox>
+   </children>
+</GridPane>
