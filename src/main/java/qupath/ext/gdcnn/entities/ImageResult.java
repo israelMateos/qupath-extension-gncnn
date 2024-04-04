@@ -1,10 +1,10 @@
 package qupath.ext.gdcnn.entities;
 
-import java.awt.image.BufferedImage;
+import javafx.scene.image.ImageView;
 
 public class ImageResult {
     
-    private BufferedImage thumbnail;
+    private ImageView thumbnail;
 
     private String name;
 
@@ -18,7 +18,7 @@ public class ImageResult {
 
     private int noClassified;
 
-    public ImageResult(BufferedImage thumbnail, String name, String mostPredictedClass, int nGlomeruli, int noSclerotic, int sclerotic, int noClassified) {
+    public ImageResult(ImageView thumbnail, String name, String mostPredictedClass, int nGlomeruli, int noSclerotic, int sclerotic, int noClassified) {
         this.thumbnail = thumbnail;
         this.name = name;
         this.mostPredictedClass = mostPredictedClass;
@@ -28,7 +28,7 @@ public class ImageResult {
         this.noClassified = noClassified;
     }
 
-    public BufferedImage getThumbnail() {
+    public ImageView getThumbnail() {
         return thumbnail;
     }
 
@@ -56,7 +56,7 @@ public class ImageResult {
         return noClassified;
     }
 
-    public void setThumbnail(BufferedImage thumbnail) {
+    public void setThumbnail(ImageView thumbnail) {
         this.thumbnail = thumbnail;
     }
 

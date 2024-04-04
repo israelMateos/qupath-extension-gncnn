@@ -11,6 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.ImageView;
 import qupath.ext.gdcnn.entities.ImageResult;
 
 /**
@@ -23,7 +24,7 @@ public class ResultsController {
     @FXML
     private TableView<ImageResult> resultsTable;
     @FXML
-    private TableColumn<ImageResult, BufferedImage> thumbnailCol;  
+    private TableColumn<ImageResult, ImageView> thumbnailCol;
     @FXML
     private TableColumn<ImageResult, String> imageCol;
     @FXML
@@ -55,9 +56,10 @@ public class ResultsController {
      */
     private void bindValueFactories() {
         // Bindings
-        PropertyValueFactory<ImageResult, BufferedImage> thumbnailColFactory = new PropertyValueFactory<>("thumbnail");
+        PropertyValueFactory<ImageResult, ImageView> thumbnailColFactory = new PropertyValueFactory<>("thumbnail");
         PropertyValueFactory<ImageResult, String> imageColFactory = new PropertyValueFactory<>("name");
-        PropertyValueFactory<ImageResult, String> mostPredictedClassColFactory = new PropertyValueFactory<>("mostPredictedClass");
+        PropertyValueFactory<ImageResult, String> mostPredictedClassColFactory = new PropertyValueFactory<>(
+                "mostPredictedClass");
         PropertyValueFactory<ImageResult, Integer> nGlomeruliColFactory = new PropertyValueFactory<>("nGlomeruli");
         PropertyValueFactory<ImageResult, Integer> noScleroticColFactory = new PropertyValueFactory<>("noSclerotic");
         PropertyValueFactory<ImageResult, Integer> scleroticColFactory = new PropertyValueFactory<>("sclerotic");
@@ -75,6 +77,7 @@ public class ResultsController {
 
     /**
      * Fills the table with the results
+     * 
      * @param results
      */
     public void fillTable(ObservableList<ImageResult> results) {

@@ -28,6 +28,8 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.image.ImageView;
 import qupath.ext.gdcnn.entities.ImageResult;
 import qupath.ext.gdcnn.listeners.ProgressListener;
 import qupath.ext.gdcnn.utils.Utils;
@@ -37,7 +39,7 @@ import qupath.lib.common.ThreadTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.servers.ImageServer;
-import qupath.lib.images.writers.JpegWriter;
+import qupath.lib.images.writers.ImageWriterTools;
 import qupath.lib.objects.PathObject;
 import qupath.lib.objects.hierarchy.PathObjectHierarchy;
 import qupath.lib.objects.hierarchy.events.PathObjectSelectionModel;
@@ -281,9 +283,10 @@ public class TaskManager {
      * @param imageData
      * @param requestedPixelSize
      * @return The thumbnail of the image
+     * @throws IOException 
      */
     // FIXME: This method is not working properly
-    private BufferedImage getThumbnail(ImageData<BufferedImage> imageData, double requestedPixelSize) {
+    private BufferedImage getThumbnail(ImageData<BufferedImage> imageData, double requestedPixelSize) throws IOException {
         ImageServer<BufferedImage> server = imageData.getServer();
 
         // Calculate downsample factor depending on the requested pixel size
@@ -291,20 +294,9 @@ public class TaskManager {
         RegionRequest request = RegionRequest.createInstance(imageData.getServerPath(), downsample, 0, 0,
                 server.getWidth(), server.getHeight());
 
-        // Write the image request to an output stream, and then read the image
-        // from the output stream to a BufferedImage using the JpegWriter and
-        // ImageIO classes
-        try (OutputStream os = new OutputStream() {
-            @Override
-            public void write(int b) {
-            }
-        }) {
-            new JpegWriter().writeImage(server, request, os);
-            return ImageIO.read(new ByteArrayInputStream(os.toString().getBytes()));
-        } catch (IOException e) {
-            logger.error("Error getting thumbnail", e);
-            return null;
-        }
+        BufferedImage img = server.readRegion(request);
+
+        return img;
     }
 
     /**
@@ -357,9 +349,8 @@ public class TaskManager {
                     mostPredictedClass = "Non-sclerotic";
                 }
 
-                results.add(new ImageResult(getThumbnail(imageData, 20), imageName, mostPredictedClass, nGlomeruli,
-                        noSclerotic,
-                        sclerotic, noClassified));
+                ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 20), null));
+                results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, noSclerotic, sclerotic, noClassified));
             }
         } else {
             // Check for glomerulus annotations in the current image
@@ -398,9 +389,8 @@ public class TaskManager {
                     mostPredictedClass = "Non-sclerotic";
                 }
 
-                results.add(new ImageResult(getThumbnail(imageData, 20), imageName, mostPredictedClass, nGlomeruli,
-                        noSclerotic,
-                        sclerotic, noClassified));
+                ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 20), null));
+                results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, noSclerotic, sclerotic, noClassified));
             } else {
                 logger.error("No project or image is open");
             }
