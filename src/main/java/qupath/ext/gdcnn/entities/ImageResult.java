@@ -40,7 +40,7 @@ public class ImageResult {
         return mostPredictedClass;
     }
 
-    public int getnGlomeruli() {
+    public int getNGlomeruli() {
         return nGlomeruli;
     }
 
@@ -68,7 +68,7 @@ public class ImageResult {
         this.mostPredictedClass = mostPredictedClass;
     }
 
-    public void setnGlomeruli(int nGlomeruli) {
+    public void setNGlomeruli(int nGlomeruli) {
         this.nGlomeruli = nGlomeruli;
     }
 
@@ -82,5 +82,18 @@ public class ImageResult {
 
     public void setNoClassified(int noClassified) {
         this.noClassified = noClassified;
+    }
+
+    @Override
+    public String toString() {
+        return "ImageResult{" +
+                "thumbnail=" + thumbnail +
+                ", name='" + name + '\'' +
+                ", mostPredictedClass='" + mostPredictedClass + '\'' +
+                ", nGlomeruli=" + nGlomeruli +
+                ", noSclerotic=" + noSclerotic +
+                ", sclerotic=" + sclerotic +
+                ", noClassified=" + noClassified +
+                '}';
     }
 }

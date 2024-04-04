@@ -22,6 +22,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
+import qupath.ext.gdcnn.entities.ImageResult;
 import qupath.ext.gdcnn.tasks.TaskManager;
 import qupath.fx.dialogs.Dialogs;
 import qupath.lib.common.GeneralTools;
@@ -247,9 +248,25 @@ public class GDCnnController {
     }
 
     @FXML
-    // TODO
+    /**
+     * Shows the results of the detection and classification of the glomeruli
+     */
     private void viewResults() {
-
+        if (!isImageOrProjectOpen()) {
+            Dialogs.showErrorMessage("No image or project open", "Please open an image or project to view the results");
+            return;
+        } else {
+            logger.info("Showing results");
+            try {
+                ObservableList<ImageResult> results = taskManager.getResults();
+                logger.info("Results: " + results);
+                ResultsPane resultsPane = new ResultsPane(stage);
+                resultsPane.show(results);
+            } catch (IOException e) {
+                logger.error("Error showing results", e);
+                Dialogs.showErrorMessage("Error showing results", e);
+            }
+        }
     }
 
     @FXML

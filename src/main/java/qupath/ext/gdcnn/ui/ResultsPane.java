@@ -2,11 +2,11 @@ package qupath.ext.gdcnn.ui;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
@@ -32,7 +32,7 @@ public class ResultsPane {
         this.ownerStage = ownerStage;
     }
 
-    public void show(List<ImageResult> results) {
+    public void show(ObservableList<ImageResult> results) {
         if (stage == null) {
             try {
                 stage = createStage(results);
@@ -45,7 +45,7 @@ public class ResultsPane {
         }
     }
 
-    private Stage createStage(List<ImageResult> results) throws IOException {
+    private Stage createStage(ObservableList<ImageResult> results) throws IOException {
         URL url = getClass().getResource("ResultsPane.fxml");
         if (url == null) {
             throw new IOException("Cannot find URL for ResultsPane FXML");
@@ -63,7 +63,7 @@ public class ResultsPane {
         stage.initOwner(ownerStage);
         stage.setResizable(true);
         stage.setScene(new Scene(root));
-        stage.setTitle("Warning");
+        stage.setTitle("Results");
 
         controller.fillTable(results);
 

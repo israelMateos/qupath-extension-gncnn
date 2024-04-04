@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.GridPane?>
 
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1051.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="qupath.ext.gdcnn.ui.ClassificationWarningController">
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1051.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="qupath.ext.gdcnn.ui.ResultsController">
   <columnConstraints>
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
   </columnConstraints>
@@ -19,13 +19,13 @@
          <children>
             <TableView fx:id="resultsTable" prefHeight="559.0" prefWidth="200.0">
               <columns>
-                <TableColumn fx:id="thumbnail" prefWidth="145.0" text="Thumbnail" />
-                <TableColumn fx:id="image" prefWidth="260.0" text="Image" />
-                  <TableColumn fx:id="mostPredictedClass" prefWidth="170.0" text="Most predicted class" />
-                  <TableColumn fx:id="nGlomeruli" minWidth="0.0" prefWidth="115.0" text="Glomeruli" />
-                  <TableColumn fx:id="noSclerotic" minWidth="0.0" prefWidth="115.0" text="Non-sclerotic" />
-                  <TableColumn fx:id="sclerotic" minWidth="0.0" prefWidth="115.0" text="Sclerotic" />
-                  <TableColumn fx:id="noClassified" minWidth="0.0" prefWidth="115.0" text="Non-classified" />
+                  <TableColumn fx:id="thumbnailCol" prefWidth="145.0" text="Thumbnail" />
+                  <TableColumn fx:id="imageCol" prefWidth="260.0" text="Image" />
+                  <TableColumn fx:id="mostPredictedClassCol" prefWidth="170.0" text="Most predicted class" />
+                  <TableColumn fx:id="nGlomeruliCol" minWidth="0.0" prefWidth="115.0" text="Glomeruli" />
+                  <TableColumn fx:id="noScleroticCol" minWidth="0.0" prefWidth="115.0" text="Non-sclerotic" />
+                  <TableColumn fx:id="scleroticCol" minWidth="0.0" prefWidth="115.0" text="Sclerotic" />
+                  <TableColumn fx:id="noClassifiedCol" minWidth="0.0" prefWidth="115.0" text="Non-classified" />
               </columns>
             </TableView>
             <HBox alignment="CENTER_RIGHT" prefHeight="25.0" spacing="8.0">

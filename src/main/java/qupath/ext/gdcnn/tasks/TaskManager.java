@@ -1,14 +1,18 @@
 package qupath.ext.gdcnn.tasks;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +28,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import qupath.ext.gdcnn.entities.ImageResult;
 import qupath.ext.gdcnn.listeners.ProgressListener;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.fx.dialogs.Dialogs;
@@ -31,11 +36,14 @@ import qupath.lib.common.GeneralTools;
 import qupath.lib.common.ThreadTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
+import qupath.lib.images.servers.ImageServer;
+import qupath.lib.images.writers.JpegWriter;
 import qupath.lib.objects.PathObject;
 import qupath.lib.objects.hierarchy.PathObjectHierarchy;
 import qupath.lib.objects.hierarchy.events.PathObjectSelectionModel;
 import qupath.lib.projects.Project;
 import qupath.lib.projects.ProjectImageEntry;
+import qupath.lib.regions.RegionRequest;
 import qupath.lib.scripting.QP;
 
 public class TaskManager {
@@ -265,6 +273,140 @@ public class TaskManager {
         }
 
         return imgsWithGlomeruli;
+    }
+
+    /**
+     * Returns a thumbnail of the image
+     * 
+     * @param imageData
+     * @param requestedPixelSize
+     * @return The thumbnail of the image
+     */
+    // FIXME: This method is not working properly
+    private BufferedImage getThumbnail(ImageData<BufferedImage> imageData, double requestedPixelSize) {
+        ImageServer<BufferedImage> server = imageData.getServer();
+
+        // Calculate downsample factor depending on the requested pixel size
+        double downsample = requestedPixelSize / server.getPixelCalibration().getAveragedPixelSizeMicrons();
+        RegionRequest request = RegionRequest.createInstance(imageData.getServerPath(), downsample, 0, 0,
+                server.getWidth(), server.getHeight());
+
+        // Write the image request to an output stream, and then read the image
+        // from the output stream to a BufferedImage using the JpegWriter and
+        // ImageIO classes
+        try (OutputStream os = new OutputStream() {
+            @Override
+            public void write(int b) {
+            }
+        }) {
+            new JpegWriter().writeImage(server, request, os);
+            return ImageIO.read(new ByteArrayInputStream(os.toString().getBytes()));
+        } catch (IOException e) {
+            logger.error("Error getting thumbnail", e);
+            return null;
+        }
+    }
+
+    /**
+     * Returns the results of the detection and classification of the glomeruli,
+     * including all images in the project (or the current image if no project
+     * exists)
+     * 
+     * @return The results of the detection and classification of the glomeruli
+     * @throws IOException
+     */
+    public ObservableList<ImageResult> getResults() throws IOException {
+        ObservableList<ImageResult> results = FXCollections.observableArrayList();
+
+        Project<BufferedImage> project = qupath.getProject();
+        if (project != null) {
+            // Check for glomerulus annotations in the selected images
+            List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
+            for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
+                String imageName = GeneralTools.stripExtension(imageEntry.getImageName());
+                ImageData<BufferedImage> imageData = imageEntry.readImageData();
+                PathObjectHierarchy hierarchy = imageData.getHierarchy();
+                Collection<PathObject> annotations = hierarchy.getAnnotationObjects();
+
+                int nGlomeruli = 0;
+                int noSclerotic = 0;
+                int sclerotic = 0;
+                int noClassified = 0;
+
+                for (PathObject annotation : annotations) {
+                    if (annotation.getPathClass() != null) {
+                        if (annotation.getPathClass().getName().equals("Glomerulus")) {
+                            nGlomeruli++;
+                            noClassified++;
+                        } else if (annotation.getPathClass().getName().equals("Sclerotic")) {
+                            nGlomeruli++;
+                            sclerotic++;
+                        } else if (annotation.getPathClass().getName().equals("NoSclerotic")) {
+                            nGlomeruli++;
+                            noSclerotic++;
+                        }
+                    }
+                }
+
+                String mostPredictedClass = "";
+                if (noClassified > noSclerotic && noClassified > sclerotic) {
+                    mostPredictedClass = "Non-classified";
+                } else if (sclerotic > noSclerotic) {
+                    mostPredictedClass = "Sclerotic";
+                } else if (noSclerotic > sclerotic) {
+                    mostPredictedClass = "Non-sclerotic";
+                }
+
+                results.add(new ImageResult(getThumbnail(imageData, 20), imageName, mostPredictedClass, nGlomeruli,
+                        noSclerotic,
+                        sclerotic, noClassified));
+            }
+        } else {
+            // Check for glomerulus annotations in the current image
+            ImageData<BufferedImage> imageData = qupath.getImageData();
+            if (imageData != null) {
+                String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
+                PathObjectHierarchy hierarchy = imageData.getHierarchy();
+                Collection<PathObject> annotations = hierarchy.getAnnotationObjects();
+
+                int nGlomeruli = 0;
+                int noSclerotic = 0;
+                int sclerotic = 0;
+                int noClassified = 0;
+
+                for (PathObject annotation : annotations) {
+                    if (annotation.getPathClass() != null) {
+                        if (annotation.getPathClass().getName().equals("Glomerulus")) {
+                            nGlomeruli++;
+                            noClassified++;
+                        } else if (annotation.getPathClass().getName().equals("Sclerotic")) {
+                            nGlomeruli++;
+                            sclerotic++;
+                        } else {
+                            nGlomeruli++;
+                            noSclerotic++;
+                        }
+                    }
+                }
+
+                String mostPredictedClass = "";
+                if (nGlomeruli > noSclerotic && nGlomeruli > sclerotic) {
+                    mostPredictedClass = "Non-classified";
+                } else if (sclerotic > noSclerotic) {
+                    mostPredictedClass = "Sclerotic";
+                } else {
+                    mostPredictedClass = "Non-sclerotic";
+                }
+
+                results.add(new ImageResult(getThumbnail(imageData, 20), imageName, mostPredictedClass, nGlomeruli,
+                        noSclerotic,
+                        sclerotic, noClassified));
+            } else {
+                logger.error("No project or image is open");
+            }
+        }
+
+        return results;
     }
 
     /**
