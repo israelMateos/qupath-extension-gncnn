@@ -55,45 +55,4 @@ public class ImageResult {
     public int getNoClassified() {
         return noClassified;
     }
-
-    public void setThumbnail(ImageView thumbnail) {
-        this.thumbnail = thumbnail;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setMostPredictedClass(String mostPredictedClass) {
-        this.mostPredictedClass = mostPredictedClass;
-    }
-
-    public void setNGlomeruli(int nGlomeruli) {
-        this.nGlomeruli = nGlomeruli;
-    }
-
-    public void setNoSclerotic(int noSclerotic) {
-        this.noSclerotic = noSclerotic;
-    }
-
-    public void setSclerotic(int sclerotic) {
-        this.sclerotic = sclerotic;
-    }
-
-    public void setNoClassified(int noClassified) {
-        this.noClassified = noClassified;
-    }
-
-    @Override
-    public String toString() {
-        return "ImageResult{" +
-                "thumbnail=" + thumbnail +
-                ", name='" + name + '\'' +
-                ", mostPredictedClass='" + mostPredictedClass + '\'' +
-                ", nGlomeruli=" + nGlomeruli +
-                ", noSclerotic=" + noSclerotic +
-                ", sclerotic=" + sclerotic +
-                ", noClassified=" + noClassified +
-                '}';
-    }
 }
