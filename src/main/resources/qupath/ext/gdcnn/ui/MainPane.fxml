@@ -28,8 +28,9 @@
             <Label alignment="TOP_LEFT" text="Select images">
             </Label>
             <CheckListView fx:id="imgsCheckList" disable="true" />
-            <HBox alignment="CENTER_RIGHT">
+            <HBox alignment="CENTER_RIGHT" spacing="8.0">
                <children>
+                  <Button fx:id="deselectAllImgsBtn" disable="true" mnemonicParsing="false" onAction="#deselectAllImgs" text="Deselect all" />
                   <Button fx:id="selectAllImgsBtn" disable="true" mnemonicParsing="false" onAction="#selectAllImgs" text="Select all" />
                </children>
             </HBox>
