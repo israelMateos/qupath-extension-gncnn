@@ -280,7 +280,6 @@ public class TaskManager {
      * @return The thumbnail of the image
      * @throws IOException
      */
-    // FIXME: This method is not working properly
     private BufferedImage getThumbnail(ImageData<BufferedImage> imageData, double desiredSize) throws IOException {
         ImageServer<BufferedImage> server = imageData.getServer();
 
@@ -303,10 +302,11 @@ public class TaskManager {
      * including all images in the project (or the current image if no project
      * exists)
      * 
+     * @param selectedImages
      * @return The results of the detection and classification of the glomeruli
      * @throws IOException
      */
-    public ObservableList<ImageResult> getResults() throws IOException {
+    public ObservableList<ImageResult> getResults(ObservableList<String> selectedImages) throws IOException {
         ObservableList<ImageResult> results = FXCollections.observableArrayList();
 
         Project<BufferedImage> project = qupath.getProject();
@@ -315,42 +315,44 @@ public class TaskManager {
             List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
             for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
                 String imageName = GeneralTools.stripExtension(imageEntry.getImageName());
-                ImageData<BufferedImage> imageData = imageEntry.readImageData();
-                PathObjectHierarchy hierarchy = imageData.getHierarchy();
-                Collection<PathObject> annotations = hierarchy.getAnnotationObjects();
+                if (selectedImages.contains(imageName)) {
+                    ImageData<BufferedImage> imageData = imageEntry.readImageData();
+                    PathObjectHierarchy hierarchy = imageData.getHierarchy();
+                    Collection<PathObject> annotations = hierarchy.getAnnotationObjects();
 
-                int nGlomeruli = 0;
-                int noSclerotic = 0;
-                int sclerotic = 0;
-                int noClassified = 0;
+                    int nGlomeruli = 0;
+                    int noSclerotic = 0;
+                    int sclerotic = 0;
+                    int noClassified = 0;
 
-                for (PathObject annotation : annotations) {
-                    if (annotation.getPathClass() != null) {
-                        if (annotation.getPathClass().getName().equals("Glomerulus")) {
-                            nGlomeruli++;
-                            noClassified++;
-                        } else if (annotation.getPathClass().getName().equals("Sclerotic")) {
-                            nGlomeruli++;
-                            sclerotic++;
-                        } else if (annotation.getPathClass().getName().equals("NoSclerotic")) {
-                            nGlomeruli++;
-                            noSclerotic++;
+                    for (PathObject annotation : annotations) {
+                        if (annotation.getPathClass() != null) {
+                            if (annotation.getPathClass().getName().equals("Glomerulus")) {
+                                nGlomeruli++;
+                                noClassified++;
+                            } else if (annotation.getPathClass().getName().equals("Sclerotic")) {
+                                nGlomeruli++;
+                                sclerotic++;
+                            } else if (annotation.getPathClass().getName().equals("NoSclerotic")) {
+                                nGlomeruli++;
+                                noSclerotic++;
+                            }
                         }
                     }
-                }
 
-                String mostPredictedClass = "";
-                if (noClassified > noSclerotic && noClassified > sclerotic) {
-                    mostPredictedClass = "Non-classified";
-                } else if (sclerotic > noSclerotic) {
-                    mostPredictedClass = "Sclerotic";
-                } else if (noSclerotic > sclerotic) {
-                    mostPredictedClass = "Non-sclerotic";
-                }
+                    String mostPredictedClass = "";
+                    if (noClassified > noSclerotic && noClassified > sclerotic) {
+                        mostPredictedClass = "Non-classified";
+                    } else if (sclerotic > noSclerotic) {
+                        mostPredictedClass = "Sclerotic";
+                    } else if (noSclerotic > sclerotic) {
+                        mostPredictedClass = "Non-sclerotic";
+                    }
 
-                ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 200), null));
-                results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, noSclerotic,
-                        sclerotic, noClassified));
+                    ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 200), null));
+                    results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, noSclerotic,
+                            sclerotic, noClassified));
+                }
             }
         } else {
             // Check for glomerulus annotations in the current image

@@ -1,7 +1,5 @@
 package qupath.ext.gdcnn.ui;
 
-import java.awt.image.BufferedImage;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

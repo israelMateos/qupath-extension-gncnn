@@ -150,6 +150,7 @@ public class GDCnnController {
         runAllBtn.disableProperty().bind(selectedImagesBinding);
         runDetectionBtn.disableProperty().bind(selectedImagesBinding);
         runClassificationBtn.disableProperty().bind(selectedImagesBinding);
+        viewResultsBtn.disableProperty().bind(selectedImagesBinding);
     }
 
     @FXML
@@ -257,7 +258,8 @@ public class GDCnnController {
         } else {
             logger.info("Showing results");
             try {
-                ObservableList<ImageResult> results = taskManager.getResults();
+                ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
+                ObservableList<ImageResult> results = taskManager.getResults(selectedImages);
                 ResultsPane resultsPane = new ResultsPane(stage);
                 resultsPane.show(results);
             } catch (IOException e) {
