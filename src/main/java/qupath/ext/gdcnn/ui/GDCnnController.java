@@ -43,6 +43,8 @@ public class GDCnnController {
     private Stage stage;
 
     @FXML
+    private Button deselectAllImgsBtn;
+    @FXML
     private Button selectAllImgsBtn;
     @FXML
     private Button runAllBtn;
@@ -271,6 +273,14 @@ public class GDCnnController {
 
     @FXML
     /**
+     * Deselects all the images in the check list
+     */
+    private void deselectAllImgs() {
+        imgsCheckList.getCheckModel().clearChecks();
+    }
+
+    @FXML
+    /**
      * Selects all the images in the check list
      */
     private void selectAllImgs() {
@@ -320,6 +330,7 @@ public class GDCnnController {
     private void setUpInterfaceElements() {
         boolean disable = !isImageOrProjectOpen();
         imgsCheckList.setDisable(disable);
+        deselectAllImgsBtn.setDisable(disable);
         selectAllImgsBtn.setDisable(disable);
         runAllBtn.setDisable(disable);
         runDetectionBtn.setDisable(disable);
