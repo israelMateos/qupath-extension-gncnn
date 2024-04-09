@@ -2,55 +2,53 @@ package qupath.ext.gdcnn.ui;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import qupath.ext.gdcnn.entities.ImageResult;
 
 /**
- * Pane to display a warning message when the classification is not possible.
+ * Pane to display the results of the detection and classification of glomeruli.
  * 
  * @author Israel Mateos Aparicio
  */
-public class ClassificationWarningPane {
+public class ResultsPane {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClassificationWarningPane.class);
+    private static final Logger logger = LoggerFactory.getLogger(ResultsPane.class);
 
     private final Stage ownerStage;
 
     private Stage stage;
-    private ClassificationWarningController controller;
+    private ResultsController controller;
 
-    public ClassificationWarningPane(Stage ownerStage) {
+    public ResultsPane(Stage ownerStage) {
         this.ownerStage = ownerStage;
     }
 
-    public boolean show(List<String> imgsWithGlomeruli, List<String> imgsWithoutGlomeruli) {
+    public void show(ObservableList<ImageResult> results) {
         if (stage == null) {
             try {
-                stage = createStage(imgsWithGlomeruli, imgsWithoutGlomeruli);
+                stage = createStage(results);
                 stage.showAndWait();
-                return controller.continueClassification();
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
-                return false;
             }
         } else {
             stage.showAndWait();
-            return controller.continueClassification();
         }
     }
 
-    private Stage createStage(List<String> imgsWithGlomeruli, List<String> imgsWithoutGlomeruli) throws IOException {
-        URL url = getClass().getResource("ClassificationWarningPane.fxml");
+    private Stage createStage(ObservableList<ImageResult> results) throws IOException {
+        URL url = getClass().getResource("ResultsPane.fxml");
         if (url == null) {
-            throw new IOException("Cannot find URL for ClassificationWarningPane FXML");
+            throw new IOException("Cannot find URL for ResultsPane FXML");
         }
 
         // We need to use the ExtensionClassLoader to load the FXML, since it's in a
@@ -63,11 +61,11 @@ public class ClassificationWarningPane {
         Stage stage = new Stage();
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(ownerStage);
-        stage.setResizable(false);
+        stage.setResizable(true);
         stage.setScene(new Scene(root));
-        stage.setTitle("Warning");
+        stage.setTitle("Results");
 
-        controller.setImages(imgsWithGlomeruli, imgsWithoutGlomeruli);
+        controller.fillTable(results);
 
         return stage;
     }
