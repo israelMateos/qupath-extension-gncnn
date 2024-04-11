@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.concurrent.Task;
-import qupath.ext.gdcnn.listeners.ProgressListener;
+import qupath.ext.gdcnn.entities.ProgressListener;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
@@ -105,6 +105,7 @@ public class AnnotationExportTask extends Task<Void> {
 
         logger.info("Exporting {} annotations for {}", annotations.size(), imageName);
         for (PathObject annotation : annotations) {
+            // TODO: Update progress with each annotation
             if (Thread.interrupted()) {
                 throw new InterruptedException();
             }

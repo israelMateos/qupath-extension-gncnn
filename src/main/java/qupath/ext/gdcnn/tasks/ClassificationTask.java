@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -16,8 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.concurrent.Task;
+import qupath.ext.gdcnn.entities.ProgressListener;
 import qupath.ext.gdcnn.env.VirtualEnvironment;
-import qupath.ext.gdcnn.listeners.ProgressListener;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.ColorTools;
 import qupath.lib.common.GeneralTools;
@@ -41,6 +42,18 @@ public class ClassificationTask extends Task<Void> {
         {
             put("NoSclerotic", ColorTools.GREEN);
             put("Sclerotic", ColorTools.RED);
+            put("ABMGN", ColorTools.BLUE);
+            put("ANCA", ColorTools.BLACK);
+            put("C3-GN", ColorTools.MAGENTA);
+            put("CryoglobulinemicGN", ColorTools.CYAN);
+            put("DDD", ColorTools.YELLOW);
+            put("Fibrillary", ColorTools.packRGB(225, 128, 128)); // Pink
+            put("IAGN", ColorTools.packRGB(75, 0, 130)); // Indigo
+            put("IgAN", ColorTools.packRGB(128, 0, 0)); // Brown
+            put("MPGN", ColorTools.packRGB(255, 165, 0)); // Orange
+            put("Membranous", ColorTools.packRGB(0, 128, 128)); // Teal
+            put("PGNMID", ColorTools.packRGB(128, 0, 128)); // Purple
+            put("SLEGN-IV", ColorTools.packRGB(64, 224, 208)); // Turquoise
         }
     };
 
@@ -48,15 +61,27 @@ public class ClassificationTask extends Task<Void> {
 
     private List<String> selectedImages;
 
-    private String modelName;
+    private String binaryModelName;
+
+    private String multiclassModelName;
 
     private ProgressListener progressListener;
 
-    public ClassificationTask(QuPathGUI quPath, List<String> selectedImages, String modelName,
+    public ClassificationTask(QuPathGUI quPath, List<String> selectedImages, String binaryModelName,
             ProgressListener progressListener) {
         this.qupath = quPath;
         this.selectedImages = selectedImages;
-        this.modelName = modelName;
+        this.binaryModelName = binaryModelName;
+        this.multiclassModelName = "None";
+        this.progressListener = progressListener;
+    }
+
+    public ClassificationTask(QuPathGUI quPath, List<String> selectedImages, String binaryModelName,
+            String multiclassModelName, ProgressListener progressListener) {
+        this.qupath = quPath;
+        this.selectedImages = selectedImages;
+        this.binaryModelName = binaryModelName;
+        this.multiclassModelName = multiclassModelName;
         this.progressListener = progressListener;
     }
 
@@ -105,9 +130,12 @@ public class ClassificationTask extends Task<Void> {
         VirtualEnvironment venv = new VirtualEnvironment(this.getClass().getSimpleName(), progressListener);
 
         // This is the list of commands after the 'python' call
-        List<String> arguments = Arrays.asList(TaskPaths.CLASSIFICATION_COMMAND, "-e", QP.buildFilePath(outputBaseDir),
-                "--netB",
-                modelName);
+        List<String> arguments = new ArrayList<String>();
+        arguments.addAll(Arrays.asList(TaskPaths.CLASSIFICATION_COMMAND, "-e", QP.buildFilePath(outputBaseDir),
+                "--netB", binaryModelName));
+        if (!multiclassModelName.equals("None")) {
+            arguments.addAll(Arrays.asList("--netM", multiclassModelName, "--multi"));
+        }
         venv.setArguments(arguments);
 
         // Check if the thread has been interrupted before starting the process
@@ -134,7 +162,8 @@ public class ClassificationTask extends Task<Void> {
     public void classifyGlomeruli(ImageData<BufferedImage> imageData, String outputBaseDir)
             throws IOException, InterruptedException, NumberFormatException {
         String imageName = imageData.getServer().getMetadata().getName();
-        String reportPath = QP.buildFilePath(outputBaseDir, "Report", "B-swin_transformer_M-None",
+        String reportPath = QP.buildFilePath(outputBaseDir, "Report",
+                "B-" + binaryModelName + "_M-" + multiclassModelName,
                 GeneralTools.stripExtension(imageName) + ".csv");
 
         Collection<PathObject> annotations = imageData.getHierarchy().getAnnotationObjects();

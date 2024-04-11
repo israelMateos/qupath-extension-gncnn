@@ -3,7 +3,6 @@ package qupath.ext.gdcnn.tasks;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -24,23 +23,18 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.ImageView;
-import qupath.ext.gdcnn.entities.ImageResult;
-import qupath.ext.gdcnn.listeners.ProgressListener;
+import qupath.ext.gdcnn.entities.ProgressListener;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.fx.dialogs.Dialogs;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.common.ThreadTools;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
-import qupath.lib.images.servers.ImageServer;
 import qupath.lib.objects.PathObject;
 import qupath.lib.objects.hierarchy.PathObjectHierarchy;
 import qupath.lib.objects.hierarchy.events.PathObjectSelectionModel;
 import qupath.lib.projects.Project;
 import qupath.lib.projects.ProjectImageEntry;
-import qupath.lib.regions.RegionRequest;
 import qupath.lib.scripting.QP;
 
 public class TaskManager {
@@ -219,196 +213,13 @@ public class TaskManager {
     }
 
     /**
-     * Checks if there are "Glomerulus" annotations in the selected images, and
-     * returns the images with "Glomerulus" annotations
-     * 
-     * @param selectedImages
-     * @return The images with "Glomerulus" annotations
-     * @throws IOException
-     */
-    public List<String> getImgsWithGlomeruli(ObservableList<String> selectedImages) throws IOException {
-        List<String> imgsWithGlomeruli = new ArrayList<String>();
-
-        Project<BufferedImage> project = qupath.getProject();
-        if (project != null) {
-            // Check for glomerulus annotations in the selected images
-            List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
-            for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
-                String imageName = GeneralTools.stripExtension(imageEntry.getImageName());
-                if (selectedImages.contains(imageName)) {
-                    ImageData<BufferedImage> imageData = imageEntry.readImageData();
-                    PathObjectHierarchy hierarchy = imageData.getHierarchy();
-                    Collection<PathObject> annotations = hierarchy.getAnnotationObjects();
-
-                    for (PathObject annotation : annotations) {
-                        if (annotation.getPathClass() != null
-                                && annotation.getPathClass().getName().equals("Glomerulus")) {
-                            imgsWithGlomeruli.add(imageName);
-                            break;
-                        }
-                    }
-                }
-            }
-        } else {
-            // Check for glomerulus annotations in the current image
-            ImageData<BufferedImage> imageData = qupath.getImageData();
-            if (imageData != null) {
-                String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
-                PathObjectHierarchy hierarchy = imageData.getHierarchy();
-                Collection<PathObject> annotations = hierarchy.getAnnotationObjects();
-
-                for (PathObject annotation : annotations) {
-                    if (annotation.getPathClass() != null
-                            && annotation.getPathClass().getName().equals("Glomerulus")) {
-                        imgsWithGlomeruli.add(imageName);
-                        break;
-                    }
-                }
-            } else {
-                logger.error("No project or image is open");
-            }
-        }
-
-        return imgsWithGlomeruli;
-    }
-
-    /**
-     * Returns a thumbnail of the image
-     * 
-     * @param imageData
-     * @param desiredSize
-     * @return The thumbnail of the image
-     * @throws IOException
-     */
-    private BufferedImage getThumbnail(ImageData<BufferedImage> imageData, double desiredSize) throws IOException {
-        ImageServer<BufferedImage> server = imageData.getServer();
-
-        int width = server.getWidth();
-        int height = server.getHeight();
-
-        // Calculate downsample factor depending on the desired size
-        double downsample = Math.max(width / desiredSize, height / desiredSize);
-
-        RegionRequest request = RegionRequest.createInstance(imageData.getServerPath(), downsample, 0, 0, width,
-                height);
-
-        BufferedImage img = server.readRegion(request);
-
-        return img;
-    }
-
-    /**
-     * Returns the results of the detection and classification of the glomeruli,
-     * including all images in the project (or the current image if no project
-     * exists)
-     * 
-     * @param selectedImages
-     * @return The results of the detection and classification of the glomeruli
-     * @throws IOException
-     */
-    public ObservableList<ImageResult> getResults(ObservableList<String> selectedImages) throws IOException {
-        ObservableList<ImageResult> results = FXCollections.observableArrayList();
-
-        Project<BufferedImage> project = qupath.getProject();
-        if (project != null) {
-            // Check for glomerulus annotations in the selected images
-            List<ProjectImageEntry<BufferedImage>> imageEntryList = project.getImageList();
-            for (ProjectImageEntry<BufferedImage> imageEntry : imageEntryList) {
-                String imageName = GeneralTools.stripExtension(imageEntry.getImageName());
-                if (selectedImages.contains(imageName)) {
-                    ImageData<BufferedImage> imageData = imageEntry.readImageData();
-                    PathObjectHierarchy hierarchy = imageData.getHierarchy();
-                    Collection<PathObject> annotations = hierarchy.getAnnotationObjects();
-
-                    int nGlomeruli = 0;
-                    int noSclerotic = 0;
-                    int sclerotic = 0;
-                    int noClassified = 0;
-
-                    for (PathObject annotation : annotations) {
-                        if (annotation.getPathClass() != null) {
-                            if (annotation.getPathClass().getName().equals("Glomerulus")) {
-                                nGlomeruli++;
-                                noClassified++;
-                            } else if (annotation.getPathClass().getName().equals("Sclerotic")) {
-                                nGlomeruli++;
-                                sclerotic++;
-                            } else if (annotation.getPathClass().getName().equals("NoSclerotic")) {
-                                nGlomeruli++;
-                                noSclerotic++;
-                            }
-                        }
-                    }
-
-                    String mostPredictedClass = "";
-                    if (noClassified > noSclerotic && noClassified > sclerotic) {
-                        mostPredictedClass = "Non-classified";
-                    } else if (sclerotic > noSclerotic) {
-                        mostPredictedClass = "Sclerotic";
-                    } else if (noSclerotic > sclerotic) {
-                        mostPredictedClass = "Non-sclerotic";
-                    }
-
-                    ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 200), null));
-                    results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, noSclerotic,
-                            sclerotic, noClassified));
-                }
-            }
-        } else {
-            // Check for glomerulus annotations in the current image
-            ImageData<BufferedImage> imageData = qupath.getImageData();
-            if (imageData != null) {
-                String imageName = GeneralTools.stripExtension(imageData.getServer().getMetadata().getName());
-                PathObjectHierarchy hierarchy = imageData.getHierarchy();
-                Collection<PathObject> annotations = hierarchy.getAnnotationObjects();
-
-                int nGlomeruli = 0;
-                int noSclerotic = 0;
-                int sclerotic = 0;
-                int noClassified = 0;
-
-                for (PathObject annotation : annotations) {
-                    if (annotation.getPathClass() != null) {
-                        if (annotation.getPathClass().getName().equals("Glomerulus")) {
-                            nGlomeruli++;
-                            noClassified++;
-                        } else if (annotation.getPathClass().getName().equals("Sclerotic")) {
-                            nGlomeruli++;
-                            sclerotic++;
-                        } else if (annotation.getPathClass().getName().equals("NoSclerotic")) {
-                            nGlomeruli++;
-                            noSclerotic++;
-                        }
-                    }
-                }
-
-                String mostPredictedClass = "";
-                if (noClassified > noSclerotic && noClassified > sclerotic) {
-                    mostPredictedClass = "Non-classified";
-                } else if (sclerotic > noSclerotic) {
-                    mostPredictedClass = "Sclerotic";
-                } else if (noSclerotic > sclerotic) {
-                    mostPredictedClass = "Non-sclerotic";
-                }
-
-                ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 20), null));
-                results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, noSclerotic,
-                        sclerotic, noClassified));
-            } else {
-                logger.error("No project or image is open");
-            }
-        }
-
-        return results;
-    }
-
-    /**
      * Runs the detection and classification of the glomeruli
      * 
      * @param selectedImages
+     * @param multiclass
      * @throws IOException
      */
-    public void runAll(ObservableList<String> selectedImages) throws IOException {
+    public void runAll(ObservableList<String> selectedImages, Boolean multiclass) throws IOException {
         logger.info("Running all tasks");
 
         progressStep = 1.0 / (5.0 * selectedImages.size()); // 5 tasks in total
@@ -420,7 +231,7 @@ public class TaskManager {
         tileWSIs(selectedImages, progressListener);
         detectGlomeruli(selectedImages, progressListener);
         exportAnnotations(selectedImages, progressListener);
-        classifyGlomeruli(selectedImages, progressListener);
+        classifyGlomeruli(selectedImages, multiclass, progressListener);
     }
 
     /**
@@ -444,8 +255,12 @@ public class TaskManager {
 
     /**
      * Runs the classification of the glomeruli
+     * 
+     * @param selectedImages
+     * @param multiclass
+     * @throws IOException
      */
-    public void runClassification(List<String> imgsWithGlomeruli) throws IOException {
+    public void runClassification(List<String> imgsWithGlomeruli, Boolean multiclass) throws IOException {
         logger.info("Running classification pipeline");
 
         progressStep = 1.0 / (2.0 * imgsWithGlomeruli.size()); // 2 tasks in total
@@ -454,7 +269,7 @@ public class TaskManager {
         progressProperty.bind(progressListener.progressProperty());
 
         exportAnnotations(imgsWithGlomeruli, progressListener);
-        classifyGlomeruli(imgsWithGlomeruli, progressListener);
+        classifyGlomeruli(imgsWithGlomeruli, multiclass, progressListener);
     }
 
     /**
@@ -507,10 +322,19 @@ public class TaskManager {
      * Classifies annotated glomeruli
      * 
      * @param selectedImages
+     * @param multiclass
      * @param progressListener
      * @throws IOException
      */
-    private void classifyGlomeruli(List<String> selectedImages, ProgressListener progressListener) throws IOException {
-        submitTask(new ClassificationTask(qupath, selectedImages, "swin_transformer", progressListener));
+    private void classifyGlomeruli(List<String> selectedImages, Boolean multiclass, ProgressListener progressListener)
+            throws IOException {
+        ClassificationTask classificationTask;
+        if (multiclass) {
+            classificationTask = new ClassificationTask(qupath, selectedImages, "swin_transformer", "convnext",
+                    progressListener);
+        } else {
+            classificationTask = new ClassificationTask(qupath, selectedImages, "swin_transformer", progressListener);
+        }
+        submitTask(classificationTask);
     }
 }

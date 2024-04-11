@@ -34,8 +34,31 @@ public class ResultsController {
     @FXML
     private TableColumn<ImageResult, Integer> scleroticCol;
     @FXML
+    private TableColumn<ImageResult, Integer> ABMGNCol;
+    @FXML
+    private TableColumn<ImageResult, Integer> ANCACol;
+    @FXML
+    private TableColumn<ImageResult, Integer> C3GNCol;
+    @FXML
+    private TableColumn<ImageResult, Integer> CryoglobulinemicGNCol;
+    @FXML
+    private TableColumn<ImageResult, Integer> DDDCol;
+    @FXML
+    private TableColumn<ImageResult, Integer> FibrillaryCol;
+    @FXML
+    private TableColumn<ImageResult, Integer> IAGNCol;
+    @FXML
+    private TableColumn<ImageResult, Integer> IgANCol;
+    @FXML
+    private TableColumn<ImageResult, Integer> MPGNCol;
+    @FXML
+    private TableColumn<ImageResult, Integer> MembranousCol;
+    @FXML
+    private TableColumn<ImageResult, Integer> PGNMIDCol;
+    @FXML
+    private TableColumn<ImageResult, Integer> SLEGNIVCol;
+    @FXML
     private TableColumn<ImageResult, Integer> noClassifiedCol;
-
     @FXML
     private Button saveBtn;
 
@@ -61,6 +84,19 @@ public class ResultsController {
         PropertyValueFactory<ImageResult, Integer> nGlomeruliColFactory = new PropertyValueFactory<>("nGlomeruli");
         PropertyValueFactory<ImageResult, Integer> noScleroticColFactory = new PropertyValueFactory<>("noSclerotic");
         PropertyValueFactory<ImageResult, Integer> scleroticColFactory = new PropertyValueFactory<>("sclerotic");
+        PropertyValueFactory<ImageResult, Integer> ABMGNColFactory = new PropertyValueFactory<>("ABMGN");
+        PropertyValueFactory<ImageResult, Integer> ANCAColFactory = new PropertyValueFactory<>("ANCA");
+        PropertyValueFactory<ImageResult, Integer> C3GNColFactory = new PropertyValueFactory<>("C3GN");
+        PropertyValueFactory<ImageResult, Integer> CryoglobulinemicGNColFactory = new PropertyValueFactory<>(
+                "CryoglobulinemicGN");
+        PropertyValueFactory<ImageResult, Integer> DDDColFactory = new PropertyValueFactory<>("DDD");
+        PropertyValueFactory<ImageResult, Integer> FibrillaryColFactory = new PropertyValueFactory<>("Fibrillary");
+        PropertyValueFactory<ImageResult, Integer> IAGNColFactory = new PropertyValueFactory<>("IAGN");
+        PropertyValueFactory<ImageResult, Integer> IgANColFactory = new PropertyValueFactory<>("IgAN");
+        PropertyValueFactory<ImageResult, Integer> MPGNColFactory = new PropertyValueFactory<>("MPGN");
+        PropertyValueFactory<ImageResult, Integer> MembranousColFactory = new PropertyValueFactory<>("Membranous");
+        PropertyValueFactory<ImageResult, Integer> PGNMIDColFactory = new PropertyValueFactory<>("PGNMID");
+        PropertyValueFactory<ImageResult, Integer> SLEGNIVColFactory = new PropertyValueFactory<>("SLEGNIV");
         PropertyValueFactory<ImageResult, Integer> noClassifiedColFactory = new PropertyValueFactory<>("noClassified");
 
         // Set value factories
@@ -70,6 +106,18 @@ public class ResultsController {
         nGlomeruliCol.setCellValueFactory(nGlomeruliColFactory);
         noScleroticCol.setCellValueFactory(noScleroticColFactory);
         scleroticCol.setCellValueFactory(scleroticColFactory);
+        ABMGNCol.setCellValueFactory(ABMGNColFactory);
+        ANCACol.setCellValueFactory(ANCAColFactory);
+        C3GNCol.setCellValueFactory(C3GNColFactory);
+        CryoglobulinemicGNCol.setCellValueFactory(CryoglobulinemicGNColFactory);
+        DDDCol.setCellValueFactory(DDDColFactory);
+        FibrillaryCol.setCellValueFactory(FibrillaryColFactory);
+        IAGNCol.setCellValueFactory(IAGNColFactory);
+        IgANCol.setCellValueFactory(IgANColFactory);
+        MPGNCol.setCellValueFactory(MPGNColFactory);
+        MembranousCol.setCellValueFactory(MembranousColFactory);
+        PGNMIDCol.setCellValueFactory(PGNMIDColFactory);
+        SLEGNIVCol.setCellValueFactory(SLEGNIVColFactory);
         noClassifiedCol.setCellValueFactory(noClassifiedColFactory);
     }
 

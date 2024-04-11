@@ -18,12 +18,14 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import qupath.ext.gdcnn.entities.ImageResult;
 import qupath.ext.gdcnn.tasks.TaskManager;
+import qupath.ext.gdcnn.utils.Utils;
 import qupath.fx.dialogs.Dialogs;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
@@ -46,6 +48,8 @@ public class GDCnnController {
     private Button deselectAllImgsBtn;
     @FXML
     private Button selectAllImgsBtn;
+    @FXML
+    private ChoiceBox<String> classificationChoiceBox;
     @FXML
     private Button runAllBtn;
     @FXML
@@ -79,9 +83,9 @@ public class GDCnnController {
         qupath = QuPathGUI.getInstance();
         taskManager = new TaskManager(qupath);
 
+        populateClassificationChoiceBox();
         setUpInterfaceElements();
-        cancelBtn.disableProperty().bind(taskManager.runningProperty().not());
-        bindButtonsToSelectedImages();
+        bindButtons();
         bindProgress();
     }
 
@@ -113,50 +117,6 @@ public class GDCnnController {
 
     @FXML
     /**
-     * Shows a confirmation alert and cancels all the tasks if the user confirms
-     */
-    private void showCancelConfirmation() {
-        Alert alert = new Alert(AlertType.CONFIRMATION);
-        alert.setTitle("GDCnn");
-        alert.setHeaderText("Are you sure you want to close GDCnn?");
-        alert.setContentText("There are tasks running. Closing GDCnn will cancel all tasks.");
-        // If closing, cancel all tasks; if not, close the alert
-        alert.showAndWait().filter(r -> r != null && r.getButtonData().equals(ButtonData.OK_DONE))
-                .ifPresent(r -> {
-                    logger.info("Cancelling all tasks");
-                    cancelAllTasks();
-                });
-        alert.close();
-    }
-
-    /**
-     * Binds the progress indicator percentage to the task progress, as well as
-     * the progress label to the task name
-     */
-    private void bindProgress() {
-        progressInd.progressProperty().bind(taskManager.progressProperty());
-        progressLabel.textProperty().bind(taskManager.messageProperty());
-
-        progressInd.visibleProperty().bind(taskManager.runningProperty());
-        progressLabel.visibleProperty().bind(taskManager.runningProperty());
-
-        tickIconImg.visibleProperty().bind(taskManager.doneProperty());
-        doneLabel.visibleProperty().bind(taskManager.doneProperty());
-    }
-
-    /**
-     * Binds the buttons to the selected images in the check list
-     */
-    private void bindButtonsToSelectedImages() {
-        BooleanBinding selectedImagesBinding = Bindings.isEmpty(imgsCheckList.getCheckModel().getCheckedItems());
-        runAllBtn.disableProperty().bind(selectedImagesBinding);
-        runDetectionBtn.disableProperty().bind(selectedImagesBinding);
-        runClassificationBtn.disableProperty().bind(selectedImagesBinding);
-        viewResultsBtn.disableProperty().bind(selectedImagesBinding);
-    }
-
-    @FXML
-    /**
      * Runs the detection and classification of the glomeruli
      */
     private void runAll() {
@@ -165,10 +125,13 @@ public class GDCnnController {
             return;
         } else {
             ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
+            // TODO: Multiclass classification for some images and binary classification for
+            // others may be useful
+            Boolean multiclass = isMulticlassClassification();
             logger.info("Running all tasks");
             try {
                 refreshViewer(selectedImages);
-                taskManager.runAll(selectedImages);
+                taskManager.runAll(selectedImages, multiclass);
             } catch (IOException e) {
                 logger.error("Error running all tasks", e);
                 Dialogs.showErrorMessage("Error running all tasks", e);
@@ -211,7 +174,7 @@ public class GDCnnController {
             boolean continueClassification = true;
 
             try {
-                imgsWithGlomeruli = taskManager.getImgsWithGlomeruli(selectedImages);
+                imgsWithGlomeruli = Utils.getImgsWithGlomeruli(qupath, selectedImages);
             } catch (IOException e) {
                 logger.error("Error checking \"Glomerulus\" annotations", e);
                 Dialogs.showErrorMessage("Error checking \"Glomerulus\" annotations", e);
@@ -236,9 +199,10 @@ public class GDCnnController {
 
             if (continueClassification) {
                 logger.info("Running classification pipeline");
+                Boolean multiclass = isMulticlassClassification();
                 try {
                     refreshViewer(imgsWithGlomeruli);
-                    taskManager.runClassification(imgsWithGlomeruli);
+                    taskManager.runClassification(imgsWithGlomeruli, multiclass);
                 } catch (IOException e) {
                     logger.error("Error running classification", e);
                     Dialogs.showErrorMessage("Error running classification", e);
@@ -261,7 +225,7 @@ public class GDCnnController {
             logger.info("Showing results");
             try {
                 ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
-                ObservableList<ImageResult> results = taskManager.getResults(selectedImages);
+                ObservableList<ImageResult> results = Utils.getResults(qupath, selectedImages);
                 ResultsPane resultsPane = new ResultsPane(stage);
                 resultsPane.show(results);
             } catch (IOException e) {
@@ -269,6 +233,24 @@ public class GDCnnController {
                 Dialogs.showErrorMessage("Error showing results", e);
             }
         }
+    }
+
+    @FXML
+    /**
+     * Shows a confirmation alert and cancels all the tasks if the user confirms
+     */
+    private void showCancelConfirmation() {
+        Alert alert = new Alert(AlertType.CONFIRMATION);
+        alert.setTitle("GDCnn");
+        alert.setHeaderText("Are you sure you want to close GDCnn?");
+        alert.setContentText("There are tasks running. Closing GDCnn will cancel all tasks.");
+        // If closing, cancel all tasks; if not, close the alert
+        alert.showAndWait().filter(r -> r != null && r.getButtonData().equals(ButtonData.OK_DONE))
+                .ifPresent(r -> {
+                    logger.info("Cancelling all tasks");
+                    cancelAllTasks();
+                });
+        alert.close();
     }
 
     @FXML
@@ -288,12 +270,58 @@ public class GDCnnController {
     }
 
     /**
+     * Binds the progress indicator percentage to the task progress, as well as
+     * the progress label to the task name
+     */
+    private void bindProgress() {
+        progressInd.progressProperty().bind(taskManager.progressProperty());
+        progressLabel.textProperty().bind(taskManager.messageProperty());
+
+        progressInd.visibleProperty().bind(taskManager.runningProperty());
+        progressLabel.visibleProperty().bind(taskManager.runningProperty());
+
+        tickIconImg.visibleProperty().bind(taskManager.doneProperty());
+        doneLabel.visibleProperty().bind(taskManager.doneProperty());
+    }
+
+    /**
+     * Binds the buttons to the selected images in the check list and the task
+     */
+    private void bindButtons() {
+        BooleanBinding selectedImagesBinding = Bindings.isEmpty(imgsCheckList.getCheckModel().getCheckedItems())
+                .or(taskManager.runningProperty());
+        runAllBtn.disableProperty().bind(selectedImagesBinding);
+        runDetectionBtn.disableProperty().bind(selectedImagesBinding);
+        runClassificationBtn.disableProperty().bind(selectedImagesBinding);
+        viewResultsBtn.disableProperty().bind(selectedImagesBinding);
+        cancelBtn.disableProperty().bind(taskManager.runningProperty().not());
+        classificationChoiceBox.disableProperty()
+                .bind(taskManager.runningProperty().or(Bindings.createBooleanBinding(() -> !isImageOrProjectOpen(),
+                        qupath.imageDataProperty(), qupath.projectProperty())));
+    }
+
+    private void populateClassificationChoiceBox() {
+        classificationChoiceBox.getItems().add("Sclerotic vs Non-Sclerotic");
+        classificationChoiceBox.getItems().add("Sclerotic + 12 classes");
+        classificationChoiceBox.setValue("Sclerotic vs Non-Sclerotic");
+    }
+
+    /**
      * Returns true if an image or project is open, false otherwise
      * 
      * @return True if an image or project is open, false otherwise
      */
     private boolean isImageOrProjectOpen() {
         return qupath.getProject() != null || qupath.getImageData() != null;
+    }
+
+    /**
+     * Returns true if a multiclass classification is selected, false otherwise
+     * 
+     * @return True if a multiclass classification is selected, false otherwise
+     */
+    private boolean isMulticlassClassification() {
+        return classificationChoiceBox.getValue().equals("Sclerotic + 12 classes");
     }
 
     /**
@@ -328,6 +356,7 @@ public class GDCnnController {
      * Sets up the interface elements
      */
     private void setUpInterfaceElements() {
+        // FIXME: Is this useless? Buttons are binded to selected images
         boolean disable = !isImageOrProjectOpen();
         imgsCheckList.setDisable(disable);
         deselectAllImgsBtn.setDisable(disable);
@@ -336,6 +365,8 @@ public class GDCnnController {
         runDetectionBtn.setDisable(disable);
         runClassificationBtn.setDisable(disable);
         viewResultsBtn.setDisable(disable);
+        classificationChoiceBox.setDisable(disable);
+        cancelBtn.setDisable(!isRunning());
         if (!disable) {
             setImgsCheckListElements();
         }

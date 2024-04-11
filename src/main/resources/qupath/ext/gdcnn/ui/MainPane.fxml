@@ -9,7 +9,7 @@
 <?import org.controlsfx.control.CheckListView?>
 <?import java.lang.*?>
 
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="470.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="qupath.ext.gdcnn.ui.GDCnnController">
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="503.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="qupath.ext.gdcnn.ui.GDCnnController">
   <columnConstraints>
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
   </columnConstraints>
@@ -35,6 +35,12 @@
                </children>
             </HBox>
             <Separator />
+            <HBox alignment="BASELINE_CENTER" spacing="8.0">
+               <children>
+                  <Label alignment="TOP_LEFT" text="Select classification mode" />
+                  <ChoiceBox fx:id="classificationChoiceBox" prefWidth="200.0" />
+               </children>
+            </HBox>
             <Button fx:id="runAllBtn" disable="true" mnemonicParsing="false" onAction="#runAll" text="Run Detection + Classification" />
             <Label alignment="TOP_LEFT" text="or" />
             <HBox alignment="CENTER" spacing="8.0">
