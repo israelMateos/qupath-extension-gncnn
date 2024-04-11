@@ -1,5 +1,7 @@
 package qupath.ext.gdcnn.entities;
 
+import java.util.HashMap;
+
 import javafx.scene.image.ImageView;
 
 public class ImageResult {
@@ -12,20 +14,14 @@ public class ImageResult {
 
     private int nGlomeruli;
 
-    private int noSclerotic;
+    private HashMap<String, Integer> diseaseCounts;
 
-    private int sclerotic;
-
-    private int noClassified;
-
-    public ImageResult(ImageView thumbnail, String name, String mostPredictedClass, int nGlomeruli, int noSclerotic, int sclerotic, int noClassified) {
+    public ImageResult(ImageView thumbnail, String name, String mostPredictedClass, int nGlomeruli, HashMap<String, Integer> diseaseCounts) {
         this.thumbnail = thumbnail;
         this.name = name;
         this.mostPredictedClass = mostPredictedClass;
         this.nGlomeruli = nGlomeruli;
-        this.noSclerotic = noSclerotic;
-        this.sclerotic = sclerotic;
-        this.noClassified = noClassified;
+        this.diseaseCounts = diseaseCounts;
     }
 
     public ImageView getThumbnail() {
@@ -45,14 +41,62 @@ public class ImageResult {
     }
 
     public int getNoSclerotic() {
-        return noSclerotic;
+        return diseaseCounts.getOrDefault("Non-sclerotic", 0);
     }
 
     public int getSclerotic() {
-        return sclerotic;
+        return diseaseCounts.getOrDefault("Sclerotic", 0);
+    }
+
+    public int getABMGN() {
+        return diseaseCounts.getOrDefault("ABMGN", 0);
+    }
+
+    public int getANCA() {
+        return diseaseCounts.getOrDefault("ANCA", 0);
+    }
+
+    public int getC3GN() {
+        return diseaseCounts.getOrDefault("C3-GN", 0);
+    }
+
+    public int getCryoglobulinemicGN() {
+        return diseaseCounts.getOrDefault("CryoglobulinemicGN", 0);
+    }
+
+    public int getDDD() {
+        return diseaseCounts.getOrDefault("DDD", 0);
+    }
+
+    public int getFibrillary() {
+        return diseaseCounts.getOrDefault("Fibrillary", 0);
+    }
+
+    public int getIAGN() {
+        return diseaseCounts.getOrDefault("IAGN", 0);
+    }
+
+    public int getIgAN() {
+        return diseaseCounts.getOrDefault("IgAN", 0);
+    }
+
+    public int getMPGN() {
+        return diseaseCounts.getOrDefault("MPGN", 0);
+    }
+
+    public int getMembranous() {
+        return diseaseCounts.getOrDefault("Membranous", 0);
+    }
+
+    public int getPGNMID() {
+        return diseaseCounts.getOrDefault("PGNMID", 0);
+    }
+
+    public int getSLEGNIV() {
+        return diseaseCounts.getOrDefault("SLEGN-IV", 0);
     }
 
     public int getNoClassified() {
-        return noClassified;
+        return diseaseCounts.getOrDefault("Non-classified", 0);
     }
 }

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -36,6 +37,7 @@ import qupath.lib.gui.QuPathGUI;
 import qupath.lib.images.ImageData;
 import qupath.lib.images.servers.ImageServer;
 import qupath.lib.objects.PathObject;
+import qupath.lib.objects.classes.PathClass;
 import qupath.lib.objects.hierarchy.PathObjectHierarchy;
 import qupath.lib.objects.hierarchy.events.PathObjectSelectionModel;
 import qupath.lib.projects.Project;
@@ -321,37 +323,49 @@ public class TaskManager {
                     Collection<PathObject> annotations = hierarchy.getAnnotationObjects();
 
                     int nGlomeruli = 0;
-                    int noSclerotic = 0;
-                    int sclerotic = 0;
-                    int noClassified = 0;
+                    HashMap<String, Integer> diseaseCounts = new HashMap<String, Integer>() {
+                        {
+                            put("Non-sclerotic", 0);
+                            put("Sclerotic", 0);
+                            put("ABMGN", 0);
+                            put("ANCA", 0);
+                            put("C3-GN", 0);
+                            put("CryoglobulinemicGN", 0);
+                            put("DDD", 0);
+                            put("Fibrillary", 0);
+                            put("IAGN", 0);
+                            put("IgAN", 0);
+                            put("MPGN", 0);
+                            put("Membranous", 0);
+                            put("PGNMID", 0);
+                            put("SLEGN-IV", 0);
+                            put("Non-classified", 0);
+                        }
+                    };
 
                     for (PathObject annotation : annotations) {
-                        if (annotation.getPathClass() != null) {
-                            if (annotation.getPathClass().getName().equals("Glomerulus")) {
-                                nGlomeruli++;
-                                noClassified++;
-                            } else if (annotation.getPathClass().getName().equals("Sclerotic")) {
-                                nGlomeruli++;
-                                sclerotic++;
-                            } else if (annotation.getPathClass().getName().equals("NoSclerotic")) {
-                                nGlomeruli++;
-                                noSclerotic++;
-                            }
+                        PathClass pathClass = annotation.getPathClass();
+                        if (pathClass != null) {
+                            String className = pathClass.getName();
+                            // Adapt the class names to the ones in the report
+                            className = className.replace("Glomerulus", "Non-classified");
+                            className = className.replace("NoSclerotic", "Non-sclerotic");
+                            diseaseCounts.put(className, diseaseCounts.get(className) + 1);
+                            nGlomeruli++;
                         }
                     }
 
                     String mostPredictedClass = "";
-                    if (noClassified > noSclerotic && noClassified > sclerotic) {
-                        mostPredictedClass = "Non-classified";
-                    } else if (sclerotic > noSclerotic) {
-                        mostPredictedClass = "Sclerotic";
-                    } else if (noSclerotic > sclerotic) {
-                        mostPredictedClass = "Non-sclerotic";
+                    int maxCount = 0;
+                    for (Map.Entry<String, Integer> entry : diseaseCounts.entrySet()) {
+                        if (entry.getValue() > maxCount) {
+                            mostPredictedClass = entry.getKey();
+                            maxCount = entry.getValue();
+                        }
                     }
 
                     ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 200), null));
-                    results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, noSclerotic,
-                            sclerotic, noClassified));
+                    results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, diseaseCounts));
                 }
             }
         } else {
@@ -363,37 +377,49 @@ public class TaskManager {
                 Collection<PathObject> annotations = hierarchy.getAnnotationObjects();
 
                 int nGlomeruli = 0;
-                int noSclerotic = 0;
-                int sclerotic = 0;
-                int noClassified = 0;
+                HashMap<String, Integer> diseaseCounts = new HashMap<String, Integer>() {
+                    {
+                        put("Non-sclerotic", 0);
+                        put("Sclerotic", 0);
+                        put("ABMGN", 0);
+                        put("ANCA", 0);
+                        put("C3-GN", 0);
+                        put("CryoglobulinemicGN", 0);
+                        put("DDD", 0);
+                        put("Fibrillary", 0);
+                        put("IAGN", 0);
+                        put("IgAN", 0);
+                        put("MPGN", 0);
+                        put("Membranous", 0);
+                        put("PGNMID", 0);
+                        put("SLEGN-IV", 0);
+                        put("Non-classified", 0);
+                    }
+                };
 
-                for (PathObject annotation : annotations) {
-                    if (annotation.getPathClass() != null) {
-                        if (annotation.getPathClass().getName().equals("Glomerulus")) {
+                    for (PathObject annotation : annotations) {
+                        PathClass pathClass = annotation.getPathClass();
+                        if (pathClass != null) {
+                            String className = pathClass.getName();
+                            // Adapt the class names to the ones in the report
+                            className = className.replace("Glomerulus", "Non-classified");
+                            className = className.replace("NoSclerotic", "Non-sclerotic");
+                            diseaseCounts.put(className, diseaseCounts.get(className) + 1);
                             nGlomeruli++;
-                            noClassified++;
-                        } else if (annotation.getPathClass().getName().equals("Sclerotic")) {
-                            nGlomeruli++;
-                            sclerotic++;
-                        } else if (annotation.getPathClass().getName().equals("NoSclerotic")) {
-                            nGlomeruli++;
-                            noSclerotic++;
                         }
                     }
-                }
 
-                String mostPredictedClass = "";
-                if (noClassified > noSclerotic && noClassified > sclerotic) {
-                    mostPredictedClass = "Non-classified";
-                } else if (sclerotic > noSclerotic) {
-                    mostPredictedClass = "Sclerotic";
-                } else if (noSclerotic > sclerotic) {
-                    mostPredictedClass = "Non-sclerotic";
-                }
+                    String mostPredictedClass = "";
+                    int maxCount = 0;
+                    for (Map.Entry<String, Integer> entry : diseaseCounts.entrySet()) {
+                        if (entry.getValue() > maxCount) {
+                            mostPredictedClass = entry.getKey();
+                            maxCount = entry.getValue();
+                        }
+                    }
 
-                ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 20), null));
-                results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, noSclerotic,
-                        sclerotic, noClassified));
+                    ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 200), null));
+                    results.add(new ImageResult(thumbnail, imageName, mostPredictedClass, nGlomeruli, diseaseCounts));
             } else {
                 logger.error("No project or image is open");
             }
