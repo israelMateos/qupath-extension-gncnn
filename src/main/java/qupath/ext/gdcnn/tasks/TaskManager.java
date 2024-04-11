@@ -406,9 +406,10 @@ public class TaskManager {
      * Runs the detection and classification of the glomeruli
      * 
      * @param selectedImages
+     * @param multiclass
      * @throws IOException
      */
-    public void runAll(ObservableList<String> selectedImages) throws IOException {
+    public void runAll(ObservableList<String> selectedImages, Boolean multiclass) throws IOException {
         logger.info("Running all tasks");
 
         progressStep = 1.0 / (5.0 * selectedImages.size()); // 5 tasks in total
@@ -420,7 +421,7 @@ public class TaskManager {
         tileWSIs(selectedImages, progressListener);
         detectGlomeruli(selectedImages, progressListener);
         exportAnnotations(selectedImages, progressListener);
-        classifyGlomeruli(selectedImages, progressListener);
+        classifyGlomeruli(selectedImages, multiclass, progressListener);
     }
 
     /**
@@ -444,8 +445,12 @@ public class TaskManager {
 
     /**
      * Runs the classification of the glomeruli
+     * 
+     * @param selectedImages
+     * @param multiclass
+     * @throws IOException
      */
-    public void runClassification(List<String> imgsWithGlomeruli) throws IOException {
+    public void runClassification(List<String> imgsWithGlomeruli, Boolean multiclass) throws IOException {
         logger.info("Running classification pipeline");
 
         progressStep = 1.0 / (2.0 * imgsWithGlomeruli.size()); // 2 tasks in total
@@ -454,7 +459,7 @@ public class TaskManager {
         progressProperty.bind(progressListener.progressProperty());
 
         exportAnnotations(imgsWithGlomeruli, progressListener);
-        classifyGlomeruli(imgsWithGlomeruli, progressListener);
+        classifyGlomeruli(imgsWithGlomeruli, multiclass, progressListener);
     }
 
     /**
@@ -507,10 +512,17 @@ public class TaskManager {
      * Classifies annotated glomeruli
      * 
      * @param selectedImages
+     * @param multiclass
      * @param progressListener
      * @throws IOException
      */
-    private void classifyGlomeruli(List<String> selectedImages, ProgressListener progressListener) throws IOException {
-        submitTask(new ClassificationTask(qupath, selectedImages, "swin_transformer", progressListener));
+    private void classifyGlomeruli(List<String> selectedImages, Boolean multiclass, ProgressListener progressListener) throws IOException {
+        ClassificationTask classificationTask;
+        if (multiclass) {
+            classificationTask = new ClassificationTask(qupath, selectedImages, "swin_transformer", "convnext", progressListener);
+        } else {
+            classificationTask = new ClassificationTask(qupath, selectedImages, "swin_transformer", progressListener);
+        }
+        submitTask(classificationTask);
     }
 }

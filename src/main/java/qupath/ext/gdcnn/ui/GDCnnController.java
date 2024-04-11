@@ -124,10 +124,12 @@ public class GDCnnController {
             return;
         } else {
             ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
+            // TODO: Multiclass classification for some images and binary classification for others may be useful
+            Boolean multiclass = isMulticlassClassification();
             logger.info("Running all tasks");
             try {
                 refreshViewer(selectedImages);
-                taskManager.runAll(selectedImages);
+                taskManager.runAll(selectedImages, multiclass);
             } catch (IOException e) {
                 logger.error("Error running all tasks", e);
                 Dialogs.showErrorMessage("Error running all tasks", e);
@@ -195,9 +197,10 @@ public class GDCnnController {
 
             if (continueClassification) {
                 logger.info("Running classification pipeline");
+                Boolean multiclass = isMulticlassClassification();
                 try {
                     refreshViewer(imgsWithGlomeruli);
-                    taskManager.runClassification(imgsWithGlomeruli);
+                    taskManager.runClassification(imgsWithGlomeruli, multiclass);
                 } catch (IOException e) {
                     logger.error("Error running classification", e);
                     Dialogs.showErrorMessage("Error running classification", e);
@@ -311,6 +314,15 @@ public class GDCnnController {
     }
 
     /**
+     * Returns true if a multiclass classification is selected, false otherwise
+     * 
+     * @return True if a multiclass classification is selected, false otherwise
+     */
+    private boolean isMulticlassClassification() {
+        return classificationChoiceBox.getValue().equals("Sclerotic + 12 classes");
+    }
+
+    /**
      * Puts the project images in the check list
      */
     private void setImgsCheckListElements() {
@@ -342,6 +354,7 @@ public class GDCnnController {
      * Sets up the interface elements
      */
     private void setUpInterfaceElements() {
+        // FIXME: Is this useless? Buttons are binded to selected images
         boolean disable = !isImageOrProjectOpen();
         imgsCheckList.setDisable(disable);
         deselectAllImgsBtn.setDisable(disable);

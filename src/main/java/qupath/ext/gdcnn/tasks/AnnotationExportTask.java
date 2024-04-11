@@ -105,6 +105,7 @@ public class AnnotationExportTask extends Task<Void> {
 
         logger.info("Exporting {} annotations for {}", annotations.size(), imageName);
         for (PathObject annotation : annotations) {
+            // TODO: Update progress with each annotation
             if (Thread.interrupted()) {
                 throw new InterruptedException();
             }
