@@ -17,14 +17,15 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import qupath.ext.gdcnn.entities.ImageResult;
 import qupath.ext.gdcnn.tasks.TaskManager;
+import qupath.ext.gdcnn.utils.Utils;
 import qupath.fx.dialogs.Dialogs;
 import qupath.lib.common.GeneralTools;
 import qupath.lib.gui.QuPathGUI;
@@ -124,7 +125,8 @@ public class GDCnnController {
             return;
         } else {
             ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
-            // TODO: Multiclass classification for some images and binary classification for others may be useful
+            // TODO: Multiclass classification for some images and binary classification for
+            // others may be useful
             Boolean multiclass = isMulticlassClassification();
             logger.info("Running all tasks");
             try {
@@ -172,7 +174,7 @@ public class GDCnnController {
             boolean continueClassification = true;
 
             try {
-                imgsWithGlomeruli = taskManager.getImgsWithGlomeruli(selectedImages);
+                imgsWithGlomeruli = Utils.getImgsWithGlomeruli(qupath, selectedImages);
             } catch (IOException e) {
                 logger.error("Error checking \"Glomerulus\" annotations", e);
                 Dialogs.showErrorMessage("Error checking \"Glomerulus\" annotations", e);
@@ -223,7 +225,7 @@ public class GDCnnController {
             logger.info("Showing results");
             try {
                 ObservableList<String> selectedImages = imgsCheckList.getCheckModel().getCheckedItems();
-                ObservableList<ImageResult> results = taskManager.getResults(selectedImages);
+                ObservableList<ImageResult> results = Utils.getResults(qupath, selectedImages);
                 ResultsPane resultsPane = new ResultsPane(stage);
                 resultsPane.show(results);
             } catch (IOException e) {

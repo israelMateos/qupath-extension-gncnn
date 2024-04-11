@@ -17,8 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.concurrent.Task;
+import qupath.ext.gdcnn.entities.ProgressListener;
 import qupath.ext.gdcnn.env.VirtualEnvironment;
-import qupath.ext.gdcnn.listeners.ProgressListener;
 import qupath.ext.gdcnn.utils.Utils;
 import qupath.lib.common.ColorTools;
 import qupath.lib.common.GeneralTools;

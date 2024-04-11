@@ -1,4 +1,4 @@
-package qupath.ext.gdcnn.listeners;
+package qupath.ext.gdcnn.entities;
 
 import javafx.beans.property.SimpleDoubleProperty;
 
