@@ -42,7 +42,7 @@
             </TableView>
             <HBox alignment="CENTER_RIGHT" prefHeight="25.0" spacing="8.0">
                <children>
-                  <Button fx:id="saveBtn" mnemonicParsing="false" text="Save" />
+                  <Button fx:id="saveBtn" mnemonicParsing="false" onAction="#saveResults" text="Save" />
                </children>
             </HBox>
          </children>

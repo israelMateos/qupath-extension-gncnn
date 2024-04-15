@@ -1,5 +1,11 @@
 package qupath.ext.gdcnn.ui;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +16,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import qupath.ext.gdcnn.entities.ImageResult;
 
 /**
@@ -128,5 +136,44 @@ public class ResultsController {
      */
     public void fillTable(ObservableList<ImageResult> results) {
         resultsTable.setItems(results);
+    }
+
+    @FXML
+    /**
+     * Saves the results to a file
+     */
+    private void saveResults() {
+        logger.info("Saving results...");
+
+        ObservableList<ImageResult> results = resultsTable.getItems();
+
+        // Open file manager to select the file path and name
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Results");
+        fileChooser.setInitialFileName("results.csv"); // Set default file name
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        Stage stage = (Stage) resultsTable.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            try (FileWriter writer = new FileWriter(file)) {
+                CSVFormat format = CSVFormat.DEFAULT;
+                format.builder().setDelimiter(';');
+                try (CSVPrinter csvPrinter = new CSVPrinter(writer, format)) {
+                    // Write the header
+                    csvPrinter.printRecord(ImageResult.getCSVHeader());
+                    for (ImageResult result : results) {
+                        csvPrinter.printRecord(result.toCSVRow());
+                    }
+                    logger.info("Results saved");
+                } catch (Exception e) {
+                    logger.error("Error occurred while writing CSV records", e);
+                }
+            } catch (IOException e) {
+                logger.error("Error occurred while creating FileWriter", e);
+            }
+        }
+
+        logger.info("Results saved to {}", file.getAbsolutePath());
     }
 }
