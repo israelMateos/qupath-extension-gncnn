@@ -5,7 +5,7 @@ import java.util.HashMap;
 import javafx.scene.image.ImageView;
 
 public class ImageResult {
-    
+
     private ImageView thumbnail;
 
     private String name;
@@ -16,7 +16,8 @@ public class ImageResult {
 
     private HashMap<String, Integer> diseaseCounts;
 
-    public ImageResult(ImageView thumbnail, String name, String mostPredictedClass, int nGlomeruli, HashMap<String, Integer> diseaseCounts) {
+    public ImageResult(ImageView thumbnail, String name, String mostPredictedClass, int nGlomeruli,
+            HashMap<String, Integer> diseaseCounts) {
         this.thumbnail = thumbnail;
         this.name = name;
         this.mostPredictedClass = mostPredictedClass;
@@ -98,5 +99,26 @@ public class ImageResult {
 
     public int getNoClassified() {
         return diseaseCounts.getOrDefault("Non-classified", 0);
+    }
+
+    /*
+     * Returns a CSV row with the results, separated by ';'
+     * 
+     * @return CSV row corresponding to the results
+     */
+    public String toCSVRow() {
+        return name + ";" + mostPredictedClass + ";" + nGlomeruli + ";" + getNoSclerotic() + ";" + getSclerotic() + ";"
+                + getABMGN() + ";" + getANCA() + ";" + getC3GN() + ";" + getCryoglobulinemicGN() + ";" + getDDD() + ";"
+                + getFibrillary() + ";" + getIAGN() + ";" + getIgAN() + ";" + getMPGN() + ";" + getMembranous() + ";"
+                + getPGNMID() + ";" + getSLEGNIV() + ";" + getNoClassified();
+    }
+
+    /**
+     * Returns the header for the CSV file
+     * 
+     * @return CSV header
+     */
+    public static String getCSVHeader() {
+        return "Image;Most predicted class;Number of glomeruli;Non-sclerotic;Sclerotic;ABMGN;ANCA;C3-GN;CryoglobulinemicGN;DDD;Fibrillary;IAGN;IgAN;MPGN;Membranous;PGNMID;SLEGN-IV;Non-classified";
     }
 }
