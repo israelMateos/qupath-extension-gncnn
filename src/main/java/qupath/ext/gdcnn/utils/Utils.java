@@ -323,4 +323,22 @@ public class Utils {
         }
         return filteredList;
     }
+
+    /**
+     * Filters a list of ImageResults by a given filter
+     * 
+     * @param results
+     * @param filter
+     * @return The filtered list of ImageResults
+     */
+    public static ObservableList<ImageResult> filterResults(ObservableList<ImageResult> results, String filter) {
+        ObservableList<ImageResult> filteredResults = FXCollections.observableArrayList();
+        for (ImageResult result : results) {
+            if (result.getName().toLowerCase().contains(filter.toLowerCase())
+                    || result.getMostPredictedClass().toLowerCase().contains(filter.toLowerCase())) {
+                filteredResults.add(result);
+            }
+        }
+        return filteredResults;
+    }
 }

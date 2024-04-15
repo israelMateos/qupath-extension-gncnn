@@ -14,11 +14,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import qupath.ext.gdcnn.entities.ImageResult;
+import qupath.ext.gdcnn.utils.Utils;
 
 /**
  * Controller for the results pane
@@ -69,6 +71,10 @@ public class ResultsController {
     private TableColumn<ImageResult, Integer> noClassifiedCol;
     @FXML
     private Button saveBtn;
+    @FXML
+    private TextField resultsSearchBar;
+
+    private ObservableList<ImageResult> results;
 
     @FXML
     /**
@@ -78,6 +84,7 @@ public class ResultsController {
         logger.info("Initializing...");
 
         bindValueFactories();
+        bindSearchBar();
     }
 
     /**
@@ -130,12 +137,20 @@ public class ResultsController {
     }
 
     /**
-     * Fills the table with the results
-     * 
-     * @param results
+     * Binds the search bar to the table
      */
-    public void fillTable(ObservableList<ImageResult> results) {
-        resultsTable.setItems(results);
+    private void bindSearchBar() {
+        // Filter the images in the check list using the search bar
+        resultsSearchBar.textProperty().addListener((observable, oldValue, newValue) -> {
+            // If the search bar is empty, show all the images
+            if (newValue.isEmpty() || newValue.isBlank() || newValue == null) {
+                resultsTable.setItems(results);
+            } else {
+                // Filter the results by their name and most predicted class
+                ObservableList<ImageResult> filteredResults = Utils.filterResults(results, newValue);
+                resultsTable.setItems(filteredResults);
+            }
+        });
     }
 
     @FXML
@@ -175,5 +190,15 @@ public class ResultsController {
         }
 
         logger.info("Results saved to {}", file.getAbsolutePath());
+    }
+
+    /**
+     * Fills the table with the results
+     * 
+     * @param results
+     */
+    public void fillTable(ObservableList<ImageResult> results) {
+        resultsTable.setItems(results);
+        this.results = results;
     }
 }
