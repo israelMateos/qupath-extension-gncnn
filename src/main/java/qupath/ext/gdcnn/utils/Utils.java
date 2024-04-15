@@ -306,4 +306,21 @@ public class Utils {
 
         return results;
     }
+
+    /**
+     * Filters a list of strings by a given filter
+     * 
+     * @param list
+     * @param filter
+     * @return The filtered list
+     */
+    public static ObservableList<String> filterList(ObservableList<String> list, String filter) {
+        ObservableList<String> filteredList = FXCollections.observableArrayList();
+        for (String item : list) {
+            if (item.toLowerCase().contains(filter.toLowerCase())) {
+                filteredList.add(item);
+            }
+        }
+        return filteredList;
+    }
 }

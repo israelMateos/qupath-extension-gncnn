@@ -21,6 +21,7 @@ import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import qupath.ext.gdcnn.entities.ImageResult;
@@ -44,6 +45,8 @@ public class GDCnnController {
 
     private Stage stage;
 
+    @FXML
+    private TextField imgSearchBar;
     @FXML
     private Button deselectAllImgsBtn;
     @FXML
@@ -86,6 +89,7 @@ public class GDCnnController {
         populateClassificationChoiceBox();
         setUpInterfaceElements();
         bindButtons();
+        bindSearchBar();
         bindProgress();
     }
 
@@ -300,6 +304,26 @@ public class GDCnnController {
                         qupath.imageDataProperty(), qupath.projectProperty())));
     }
 
+    /**
+     * Binds the search bar to the check list
+     */
+    private void bindSearchBar() {
+        imgSearchBar.disableProperty()
+                .bind(taskManager.runningProperty().or(Bindings.createBooleanBinding(() -> !isImageOrProjectOpen(),
+                        qupath.imageDataProperty(), qupath.projectProperty())));
+
+        imgSearchBar.textProperty().addListener((observable, oldValue, newValue) -> {
+            // If the search bar is empty, show all the images
+            if (newValue.isEmpty() || newValue.isBlank() || newValue == null) {
+                setImgsCheckListElements();
+            } else {
+                imgsCheckList.setItems(
+                        FXCollections.observableArrayList(Utils.filterList(imgsCheckList.getItems(), newValue)));
+            }
+            imgSearchBar.requestFocus(); // Retain focus on the search bar
+        });
+    }
+
     private void populateClassificationChoiceBox() {
         classificationChoiceBox.getItems().add("Sclerotic vs Non-Sclerotic");
         classificationChoiceBox.getItems().add("Sclerotic + 12 classes");
@@ -366,6 +390,7 @@ public class GDCnnController {
         runClassificationBtn.setDisable(disable);
         viewResultsBtn.setDisable(disable);
         classificationChoiceBox.setDisable(disable);
+        imgSearchBar.setDisable(disable);
         cancelBtn.setDisable(!isRunning());
         if (!disable) {
             setImgsCheckListElements();
