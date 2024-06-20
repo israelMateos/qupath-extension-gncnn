@@ -14,6 +14,13 @@ from gdcnn.classification.inference.paths import get_logs_path
 from gdcnn.definitions import ROOT_DIR
 
 
+def get_most_predicted_topk_classes(scores, topk):
+    """Each glomerulus have topk classes predicted. This function returns the topk classes that are most predicted for the whole WSI."""
+    scores = scores.sum(axis=0)
+    topk_labels = np.argsort(scores)[::-1][:topk]
+    return topk_labels
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='Classifiers Inference for Glomeruli Task')
@@ -22,6 +29,7 @@ def main():
     parser.add_argument('--netB', type=str, help='Network architecture for Sclerotic vs. Non-Sclerotic', required=True)
     parser.add_argument('--netM', type=str, help='Network architecture for 12 classes (Non-sclerotic)', required=False)
     parser.add_argument('--multi', action='store_true', help='Use 12-class classification after Sclerotic vs. Non-Sclerotic classification', default=False)
+    parser.add_argument('--topk', type=int, help='Top k classes to consider for 12-class classification', default=1)
     args = parser.parse_args()
 
     if args.multi and args.netM is None:
@@ -143,7 +151,9 @@ def main():
                     scores = mult_model(return_loss=False, **data)
                 # Collect the predicted class and the scores
                 pred_label = np.argsort(scores, axis=1)[0][::-1]
-                pred_class = mult_model.CLASSES[pred_label[0]][3:]
+                # pred_class = mult_model.CLASSES[pred_label[0]][3:]
+                topk_labels = pred_label[:args.topk]
+                pred_class = [mult_model.CLASSES[l][3:] for l in topk_labels]
                 scores = scores[0]
                 mesc_dict['ABMGN-prob'].append(scores[0])
                 mesc_dict['ANCA-prob'].append(scores[1])
@@ -157,6 +167,8 @@ def main():
                 mesc_dict['Membranous-prob'].append(scores[9])
                 mesc_dict['PGNMID-prob'].append(scores[10])
                 mesc_dict['SLEGN-IV-prob'].append(scores[11])
+
+                pred_class = " | ".join(pred_class)
             
             mesc_dict['filename'].append(image_path)
             mesc_dict['predicted-class'].append(pred_class)
@@ -165,8 +177,33 @@ def main():
         mesc_df.to_csv(output_file_csv, sep=';', index=False)
 
         # Save each WSI's results
-        most_predicted_class = mesc_df['predicted-class'].mode().values[0]
-        count_most_predicted_class = mesc_df[mesc_df['predicted-class'] == most_predicted_class].shape[0]
+        if args.topk == 1:
+            most_predicted_class = mesc_df['predicted-class'].mode().values[0]
+            count_most_predicted_class = mesc_df[mesc_df['predicted-class'] == most_predicted_class].shape[0]
+        else:
+            scores = mesc_df[['ABMGN-prob', 'ANCA-prob', 'C3-GN-prob', 'CryoglobulinemicGN-prob', 'DDD-prob', 'Fibrillary-prob', 'IAGN-prob', 'IgAGN-prob', 'MPGN-prob', 'Membranous-prob', 'PGNMID-prob', 'SLEGN-IV-prob']].values
+            no_sclerotic_prob = mesc_df['NoSclerotic-prob'].values.reshape(-1, 1)
+            scores = scores * no_sclerotic_prob
+            sclerotic_prob = mesc_df['Sclerotic-prob'].values.reshape(-1, 1)
+            scores = np.concatenate((sclerotic_prob, scores), axis=1)
+            # Replace NaNs with 0
+            scores = np.nan_to_num(scores)
+            topk_labels = get_most_predicted_topk_classes(scores, args.topk)
+
+            classes = []
+            for label in topk_labels:
+                if label == 0:
+                    classes.append("Sclerotic")
+                else:
+                    classes.append(mult_model.CLASSES[label - 1][3:])
+            most_predicted_class = " | ".join(classes)
+            # Get the count of the most predicted class (the first one in the topk)
+            top1_most_predicted_class = classes[0]
+            top1_predicted_classes = mesc_df['predicted-class'].apply(lambda x: x.split(" | ")[0])
+            count_most_predicted_class = mesc_df[top1_predicted_classes == top1_most_predicted_class].shape[0]
+
+        # most_predicted_class = mesc_df['predicted-class'].mode().values[0]
+        # count_most_predicted_class = mesc_df[mesc_df['predicted-class'] == most_predicted_class].shape[0]
         total_crops = mesc_df.shape[0]
 
         wsi_dict['WSI-ID'].append(wsi_id)
