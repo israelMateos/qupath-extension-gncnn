@@ -30,6 +30,8 @@
             <CheckListView fx:id="imgsCheckList" disable="true" />
             <HBox alignment="CENTER_RIGHT" spacing="8.0">
                <children>
+                  <TextField fx:id="imgSearchBar" promptText="Search images..." />
+                  <Region prefHeight="25.0" prefWidth="117.0" />
                   <Button fx:id="deselectAllImgsBtn" disable="true" mnemonicParsing="false" onAction="#deselectAllImgs" text="Deselect all" />
                   <Button fx:id="selectAllImgsBtn" disable="true" mnemonicParsing="false" onAction="#selectAllImgs" text="Select all" />
                </children>

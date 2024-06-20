@@ -42,6 +42,8 @@
             </TableView>
             <HBox alignment="CENTER_RIGHT" prefHeight="25.0" spacing="8.0">
                <children>
+                  <TextField fx:id="resultsSearchBar" prefHeight="25.0" prefWidth="310.0" promptText="Search..." />
+                  <Region prefHeight="25.0" prefWidth="808.0" HBox.hgrow="ALWAYS" />
                   <Button fx:id="saveBtn" mnemonicParsing="false" onAction="#saveResults" text="Save" />
                </children>
             </HBox>

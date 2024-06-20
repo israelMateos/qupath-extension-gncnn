@@ -21,6 +21,7 @@ import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import qupath.ext.gdcnn.entities.ImageResult;
@@ -44,6 +45,8 @@ public class GDCnnController {
 
     private Stage stage;
 
+    @FXML
+    private TextField imgSearchBar;
     @FXML
     private Button deselectAllImgsBtn;
     @FXML
@@ -84,8 +87,10 @@ public class GDCnnController {
         taskManager = new TaskManager(qupath);
 
         populateClassificationChoiceBox();
-        setUpInterfaceElements();
-        bindButtons();
+        if (isImageOrProjectOpen()) {
+            setImgsCheckListElements();
+        }
+        bindElements();
         bindProgress();
     }
 
@@ -285,19 +290,44 @@ public class GDCnnController {
     }
 
     /**
-     * Binds the buttons to the selected images in the check list and the task
+     * Binds the elements to the selected images in the check list and the task,
+     * and to the image or project being open
      */
-    private void bindButtons() {
+    private void bindElements() {
         BooleanBinding selectedImagesBinding = Bindings.isEmpty(imgsCheckList.getCheckModel().getCheckedItems())
                 .or(taskManager.runningProperty());
+        BooleanBinding noImageOrProjectOpenBinding = Bindings.createBooleanBinding(() -> !isImageOrProjectOpen(),
+                qupath.imageDataProperty(), qupath.projectProperty());
+
+        // Bindings to the image or project being open
+        imgsCheckList.disableProperty().bind(noImageOrProjectOpenBinding);
+        deselectAllImgsBtn.disableProperty().bind(noImageOrProjectOpenBinding);
+        selectAllImgsBtn.disableProperty().bind(noImageOrProjectOpenBinding);
+
+        // Bindings to the selected images in the check list and the task
         runAllBtn.disableProperty().bind(selectedImagesBinding);
         runDetectionBtn.disableProperty().bind(selectedImagesBinding);
         runClassificationBtn.disableProperty().bind(selectedImagesBinding);
         viewResultsBtn.disableProperty().bind(selectedImagesBinding);
+
+        // Bindings to the task
         cancelBtn.disableProperty().bind(taskManager.runningProperty().not());
-        classificationChoiceBox.disableProperty()
-                .bind(taskManager.runningProperty().or(Bindings.createBooleanBinding(() -> !isImageOrProjectOpen(),
-                        qupath.imageDataProperty(), qupath.projectProperty())));
+
+        // Bindings to the image or project being open and the task
+        classificationChoiceBox.disableProperty().bind(taskManager.runningProperty().or(noImageOrProjectOpenBinding));
+        imgSearchBar.disableProperty().bind(taskManager.runningProperty().or(noImageOrProjectOpenBinding));
+
+        // Filter the images in the check list using the search bar
+        imgSearchBar.textProperty().addListener((observable, oldValue, newValue) -> {
+            // If the search bar is empty, show all the images
+            if (newValue.isEmpty() || newValue.isBlank() || newValue == null) {
+                setImgsCheckListElements();
+            } else {
+                imgsCheckList.setItems(
+                        FXCollections.observableArrayList(Utils.filterList(imgsCheckList.getItems(), newValue)));
+            }
+            imgSearchBar.requestFocus(); // Retain focus on the search bar
+        });
     }
 
     private void populateClassificationChoiceBox() {
@@ -350,26 +380,6 @@ public class GDCnnController {
         }
 
         imgsCheckList.setItems(imgsCheckListItems);
-    }
-
-    /**
-     * Sets up the interface elements
-     */
-    private void setUpInterfaceElements() {
-        // FIXME: Is this useless? Buttons are binded to selected images
-        boolean disable = !isImageOrProjectOpen();
-        imgsCheckList.setDisable(disable);
-        deselectAllImgsBtn.setDisable(disable);
-        selectAllImgsBtn.setDisable(disable);
-        runAllBtn.setDisable(disable);
-        runDetectionBtn.setDisable(disable);
-        runClassificationBtn.setDisable(disable);
-        viewResultsBtn.setDisable(disable);
-        classificationChoiceBox.setDisable(disable);
-        cancelBtn.setDisable(!isRunning());
-        if (!disable) {
-            setImgsCheckListElements();
-        }
     }
 
     /**

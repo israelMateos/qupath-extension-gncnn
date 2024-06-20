@@ -306,4 +306,39 @@ public class Utils {
 
         return results;
     }
+
+    /**
+     * Filters a list of strings by a given filter
+     * 
+     * @param list
+     * @param filter
+     * @return The filtered list
+     */
+    public static ObservableList<String> filterList(ObservableList<String> list, String filter) {
+        ObservableList<String> filteredList = FXCollections.observableArrayList();
+        for (String item : list) {
+            if (item.toLowerCase().contains(filter.toLowerCase())) {
+                filteredList.add(item);
+            }
+        }
+        return filteredList;
+    }
+
+    /**
+     * Filters a list of ImageResults by a given filter
+     * 
+     * @param results
+     * @param filter
+     * @return The filtered list of ImageResults
+     */
+    public static ObservableList<ImageResult> filterResults(ObservableList<ImageResult> results, String filter) {
+        ObservableList<ImageResult> filteredResults = FXCollections.observableArrayList();
+        for (ImageResult result : results) {
+            if (result.getName().toLowerCase().contains(filter.toLowerCase())
+                    || result.getMostPredictedClass().toLowerCase().contains(filter.toLowerCase())) {
+                filteredResults.add(result);
+            }
+        }
+        return filteredResults;
+    }
 }
