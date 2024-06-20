@@ -297,13 +297,24 @@ public class Utils {
                         }
                     }
 
-                    // Get the top 3 most predicted classes
-                    String mostPredictedClass = getTopkMostPredictedClass(diseaseProbs, 3);
-                    int maxCount = 0;
-                    for (Map.Entry<String, Integer> entry : diseaseCounts.entrySet()) {
-                        if (entry.getValue() > maxCount) {
-                            maxCount = entry.getValue();
+                    // If all the probabilities are 0, the class is empty
+                    boolean empty = true;
+                    for (Map.Entry<String, Double> entry : diseaseProbs.entrySet()) {
+                        if (entry.getValue() > 0) {
+                            empty = false;
+                            break;
                         }
+                    }
+
+                    // Get the top 3 most predicted classes
+                    String mostPredictedClass = "";
+                    if (empty) {
+                        // If there are non-classified glomeruli, the most predicted class is "Non-classified"
+                        if (diseaseCounts.get("Non-classified") > 0) {
+                            mostPredictedClass = "Non-classified";
+                        }
+                    } else {
+                        mostPredictedClass = getTopkMostPredictedClass(diseaseProbs, 3);
                     }
 
                     ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 200), null));
@@ -388,13 +399,24 @@ public class Utils {
                     }
                 }
 
-                // Get the top 3 most predicted classes
-                String mostPredictedClass = getTopkMostPredictedClass(diseaseProbs, 3);
-                int maxCount = 0;
-                for (Map.Entry<String, Integer> entry : diseaseCounts.entrySet()) {
-                    if (entry.getValue() > maxCount) {
-                        maxCount = entry.getValue();
+                // If all the probabilities are 0, the class is empty
+                boolean empty = true;
+                for (Map.Entry<String, Double> entry : diseaseProbs.entrySet()) {
+                    if (entry.getValue() > 0) {
+                        empty = false;
+                        break;
                     }
+                }
+
+                // Get the top 3 most predicted classes
+                String mostPredictedClass = "";
+                if (empty) {
+                    // If there are non-classified glomeruli, the most predicted class is "Non-classified"
+                    if (diseaseCounts.get("Non-classified") > 0) {
+                        mostPredictedClass = "Non-classified";
+                    }
+                } else {
+                    mostPredictedClass = getTopkMostPredictedClass(diseaseProbs, 3);
                 }
 
                 ImageView thumbnail = new ImageView(SwingFXUtils.toFXImage(getThumbnail(imageData, 200), null));
