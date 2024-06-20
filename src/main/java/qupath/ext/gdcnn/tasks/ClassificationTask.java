@@ -38,6 +38,9 @@ public class ClassificationTask extends Task<Void> {
 
     private static final Logger logger = LoggerFactory.getLogger(ClassificationTask.class);
 
+    private static final String[] CLASSES = { "NoSclerotic", "Sclerotic", "ABMGN", "ANCA", "C3-GN", "CryoglobulinemicGN",
+            "DDD", "Fibrillary", "IAGN", "IgAN", "MPGN", "Membranous", "PGNMID", "SLEGN-IV" };
+
     private static final HashMap<String, Integer> CLASS_COLORS = new HashMap<String, Integer>() {
         {
             put("NoSclerotic", ColorTools.GREEN);
@@ -134,7 +137,7 @@ public class ClassificationTask extends Task<Void> {
         arguments.addAll(Arrays.asList(TaskPaths.CLASSIFICATION_COMMAND, "-e", QP.buildFilePath(outputBaseDir),
                 "--netB", binaryModelName));
         if (!multiclassModelName.equals("None")) {
-            arguments.addAll(Arrays.asList("--netM", multiclassModelName, "--multi"));
+            arguments.addAll(Arrays.asList("--netM", multiclassModelName, "--multi", "--topk", "3"));
         }
         venv.setArguments(arguments);
 
@@ -191,10 +194,19 @@ public class ClassificationTask extends Task<Void> {
 
                 if (annotation != null) {
                     String predictedClass = record.get(1);
-                    Integer color = CLASS_COLORS.get(predictedClass);
+                    Integer color = CLASS_COLORS.get(predictedClass.split(" | ")[0]);
                     PathClass pathClass = PathClass.getInstance(predictedClass, color);
 
                     annotation.setPathClass(pathClass);
+                }
+
+                // Add custom measurements for each class probabilities
+                for (int i = 2; i < record.size(); i++) {
+                    Double prob = 0.0;
+                    if (!record.get(i).isEmpty()) {
+                        prob = Double.parseDouble(record.get(i));
+                    }
+                    annotation.getMeasurementList().put(CLASSES[i - 2] + "-prob", prob);
                 }
 
                 // Check if the thread has been interrupted before updating the

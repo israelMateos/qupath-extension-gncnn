@@ -176,6 +176,33 @@ public class Utils {
         return img;
     }
 
+    public static String getTopkMostPredictedClass(HashMap<String, Double> diseaseProbs, int k) {
+        // Check if any value for any key which is not 'Non-sclerotic' or 'Sclerotic' is greater than 0
+        boolean removeNonSclerotic = false;
+        for (Map.Entry<String, Double> entry : diseaseProbs.entrySet()) {
+            String key = entry.getKey();
+            double value = entry.getValue();
+            if (!key.equals("Non-sclerotic") && !key.equals("Sclerotic") && value > 0) {
+                removeNonSclerotic = true;
+                break;
+            }
+        }
+        
+        // Get the top k most predicted classes, i.e., the classes with the highest probabilities, removing the 'Non-sclerotic' class if necessary
+        List<Map.Entry<String, Double>> sortedProbs = new ArrayList<>(diseaseProbs.entrySet());
+        if (removeNonSclerotic) {
+            sortedProbs.removeIf(entry -> entry.getKey().equals("Non-sclerotic"));
+        }
+        sortedProbs.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
+        List<String> topkClasses = new ArrayList<>();
+        int topk = removeNonSclerotic ? k : 1;
+        for (int i = 0; i < topk && i < sortedProbs.size(); i++) {
+            topkClasses.add(sortedProbs.get(i).getKey());
+        }
+
+        return String.join(" | ", topkClasses);
+    }
+
     /**
      * Returns the results of the detection and classification of the glomeruli,
      * including all images in the project (or the current image if no project
@@ -189,7 +216,6 @@ public class Utils {
     public static ObservableList<ImageResult> getResults(QuPathGUI qupath, ObservableList<String> selectedImages)
             throws IOException {
         ObservableList<ImageResult> results = FXCollections.observableArrayList();
-
         Project<BufferedImage> project = qupath.getProject();
         if (project != null) {
             // Check for glomerulus annotations in the selected images
@@ -221,6 +247,25 @@ public class Utils {
                             put("Non-classified", 0);
                         }
                     };
+                    HashMap<String, Double> diseaseProbs = new HashMap<String, Double>() {
+                        {
+                            put("Non-sclerotic", 0.0);
+                            put("Sclerotic", 0.0);
+                            put("ABMGN", 0.0);
+                            put("ANCA", 0.0);
+                            put("C3-GN", 0.0);
+                            put("CryoglobulinemicGN", 0.0);
+                            put("DDD", 0.0);
+                            put("Fibrillary", 0.0);
+                            put("IAGN", 0.0);
+                            put("IgAN", 0.0);
+                            put("MPGN", 0.0);
+                            put("Membranous", 0.0);
+                            put("PGNMID", 0.0);
+                            put("SLEGN-IV", 0.0);
+                            put("Non-classified", 0.0);
+                        }
+                    };
 
                     for (PathObject annotation : annotations) {
                         PathClass pathClass = annotation.getPathClass();
@@ -229,16 +274,34 @@ public class Utils {
                             // Adapt the class names to the ones in the report
                             className = className.replace("Glomerulus", "Non-classified");
                             className = className.replace("NoSclerotic", "Non-sclerotic");
+                            className = className.split(" ")[0];
                             diseaseCounts.put(className, diseaseCounts.get(className) + 1);
                             nGlomeruli++;
+
+                            // Get the probabilities of the detected classes
+                            Map<String, Number> measurements = annotation.getMeasurements();
+                            Double noScleroticProb = measurements.getOrDefault("NoSclerotic-prob", 0.0).doubleValue();
+
+                            // All the probabilities except the "NoSclerotic" and "Sclerotic"
+                            // must be multiplied by the "NoSclerotic" probability, as they
+                            // are sub-classes of "NoSclerotic"
+                            for (Map.Entry<String, Number> entry : measurements.entrySet()) {
+                                String key = entry.getKey();
+                                Double value = entry.getValue().doubleValue();
+                                if (!key.equals("NoSclerotic-prob") && !key.equals("Sclerotic-prob")) {
+                                    diseaseProbs.put(key.replace("-prob", ""), diseaseProbs.get(key.replace("-prob", "")) + value * noScleroticProb);
+                                } else {
+                                    diseaseProbs.put(key.replace("-prob", "").replace("NoSclerotic", "Non-sclerotic"), diseaseProbs.get(key.replace("-prob", "").replace("NoSclerotic", "Non-sclerotic")) + value);
+                                }
+                            }
                         }
                     }
 
-                    String mostPredictedClass = "";
+                    // Get the top 3 most predicted classes
+                    String mostPredictedClass = getTopkMostPredictedClass(diseaseProbs, 3);
                     int maxCount = 0;
                     for (Map.Entry<String, Integer> entry : diseaseCounts.entrySet()) {
                         if (entry.getValue() > maxCount) {
-                            mostPredictedClass = entry.getKey();
                             maxCount = entry.getValue();
                         }
                     }
@@ -275,6 +338,25 @@ public class Utils {
                         put("Non-classified", 0);
                     }
                 };
+                HashMap<String, Double> diseaseProbs = new HashMap<String, Double>() {
+                    {
+                        put("Non-sclerotic", 0.0);
+                        put("Sclerotic", 0.0);
+                        put("ABMGN", 0.0);
+                        put("ANCA", 0.0);
+                        put("C3-GN", 0.0);
+                        put("CryoglobulinemicGN", 0.0);
+                        put("DDD", 0.0);
+                        put("Fibrillary", 0.0);
+                        put("IAGN", 0.0);
+                        put("IgAN", 0.0);
+                        put("MPGN", 0.0);
+                        put("Membranous", 0.0);
+                        put("PGNMID", 0.0);
+                        put("SLEGN-IV", 0.0);
+                        put("Non-classified", 0.0);
+                    }
+                };
 
                 for (PathObject annotation : annotations) {
                     PathClass pathClass = annotation.getPathClass();
@@ -283,16 +365,34 @@ public class Utils {
                         // Adapt the class names to the ones in the report
                         className = className.replace("Glomerulus", "Non-classified");
                         className = className.replace("NoSclerotic", "Non-sclerotic");
+                        className = className.split(" ")[0];
                         diseaseCounts.put(className, diseaseCounts.get(className) + 1);
                         nGlomeruli++;
+
+                        // Get the probabilities of the detected classes
+                        Map<String, Number> measurements = annotation.getMeasurements();
+                        Double noScleroticProb = measurements.getOrDefault("NoSclerotic-prob", 0.0).doubleValue();
+
+                        // All the probabilities except the "NoSclerotic" and "Sclerotic"
+                        // must be multiplied by the "NoSclerotic" probability, as they
+                        // are sub-classes of "NoSclerotic"
+                        for (Map.Entry<String, Number> entry : measurements.entrySet()) {
+                            String key = entry.getKey();
+                            Double value = entry.getValue().doubleValue();
+                            if (!key.equals("NoSclerotic-prob") && !key.equals("Sclerotic-prob")) {
+                                diseaseProbs.put(key.replace("-prob", ""), diseaseProbs.get(key.replace("-prob", "")) + value * noScleroticProb);
+                            } else {
+                                diseaseProbs.put(key.replace("-prob", "").replace("NoSclerotic", "Non-sclerotic"), diseaseProbs.get(key.replace("-prob", "").replace("NoSclerotic", "Non-sclerotic")) + value);
+                            }
+                        }
                     }
                 }
 
-                String mostPredictedClass = "";
+                // Get the top 3 most predicted classes
+                String mostPredictedClass = getTopkMostPredictedClass(diseaseProbs, 3);
                 int maxCount = 0;
                 for (Map.Entry<String, Integer> entry : diseaseCounts.entrySet()) {
                     if (entry.getValue() > maxCount) {
-                        mostPredictedClass = entry.getKey();
                         maxCount = entry.getValue();
                     }
                 }
