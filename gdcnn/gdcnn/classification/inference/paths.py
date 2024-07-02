@@ -1,3 +1,9 @@
+"""
+From: https://github.com/Nicolik/MESCnn
+Modified by: Israel Mateos-Aparicio-Ruiz
+Modifications:
+    - Changed logs_dir to 'gdcnn/classification/logs'
+"""
 import os
 from gdcnn.definitions import ROOT_DIR
 

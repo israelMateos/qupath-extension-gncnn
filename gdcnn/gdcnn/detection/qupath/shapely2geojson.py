@@ -1,3 +1,11 @@
+"""
+Original:
+    Copyright (c) 2018 Alex Vykaliuk
+    License: MIT
+Modified by: Israel Mateos-Aparicio-Ruiz
+Modifications:
+    - Adapted output to match the QuPath format
+"""
 import json
 import uuid
 

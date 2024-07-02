@@ -1,3 +1,9 @@
+"""
+From: https://github.com/Nicolik/MESCnn
+Modified by: Israel Mateos-Aparicio-Ruiz
+Modifications:
+    - Removed unused torch import
+"""
 import numpy as np
 
 

@@ -1,3 +1,6 @@
+/**
+ * Copyright (C) 2024 Israel Mateos-Aparicio-Ruiz
+ */
 package qupath.ext.gdcnn.entities;
 
 import java.util.HashMap;

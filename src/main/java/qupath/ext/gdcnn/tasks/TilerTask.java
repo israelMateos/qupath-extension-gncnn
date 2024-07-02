@@ -1,3 +1,6 @@
+/**
+ * Copyright (C) 2024 Israel Mateos-Aparicio-Ruiz
+ */
 package qupath.ext.gdcnn.tasks;
 
 import java.awt.image.BufferedImage;

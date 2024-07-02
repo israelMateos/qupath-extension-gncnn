@@ -1,3 +1,10 @@
+"""
+From: https://github.com/Nicolik/MESCnn
+Modified by: Israel Mateos-Aparicio-Ruiz
+Modifications:
+    - Removed unused functions
+    - Added local_dir parameter to download_detector
+"""
 from huggingface_hub import hf_hub_download
 
 

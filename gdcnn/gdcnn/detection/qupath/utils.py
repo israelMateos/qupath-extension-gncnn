@@ -1,3 +1,10 @@
+"""
+From: https://github.com/Nicolik/MESCnn
+Modified by: Israel Mateos-Aparicio-Ruiz
+Modifications:
+    - Removed unused functions
+    - Adapted tile2xywh to own format
+"""
 import os
 
 import cv2

@@ -1,4 +1,7 @@
-"""Apply thresholding to an image and save the result as a GeoJSON file."""
+"""Apply thresholding to an image and save the result as a GeoJSON file.
+
+Copyright (C) 2024 Israel Mateos-Aparicio-Ruiz
+"""
 import argparse
 import logging
 import os

@@ -1,3 +1,9 @@
+"""
+From: https://github.com/Nicolik/MESCnn
+Modified by: Israel Mateos-Aparicio-Ruiz
+Modifications:
+    - Added automatic device selection
+"""
 from detectron2.config import get_cfg
 from detectron2 import model_zoo
 

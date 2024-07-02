@@ -1,3 +1,14 @@
+"""
+From: https://github.com/Nicolik/MESCnn
+Modified by: Israel Mateos-Aparicio-Ruiz
+Modifications:
+    - Instead of Oxford classification, we use a two-step classification:
+        1. Sclerotic vs. Non-Sclerotic
+        2. 12 classes (Non-sclerotic), which is optional
+    - Added top-3 prediction (instead of top-1) for the 12 classes
+    - Added most predicted class to the summary report
+    - Removed download of the models (only local models are used)
+"""
 import logging
 import os
 
@@ -43,7 +54,7 @@ def main():
     root_path = args.root_path
     export_dir = args.export_dir
 
-    mesc_log_dir = get_logs_path(root_path)
+    gdc_log_dir = get_logs_path(root_path)
     crop_dir = os.path.join(export_dir, "Temp", "ann-export-output")
 
     if not os.path.exists(crop_dir):
@@ -71,7 +82,7 @@ def main():
         output_file_csv = os.path.join(report_dir, f"{wsi_id}.csv")
         prediction_dir = os.path.join(crop_dir, wsi_id)
 
-        mesc_dict = {
+        gdc_dict = {
             'filename': [],
             'predicted-class': [],
 
@@ -94,8 +105,8 @@ def main():
 
         # Model 1: Sclerotic vs. Non-Sclerotic
         net_name = net_name_dict["B"]
-        net_path = os.path.join(mesc_log_dir, 'binary', net_name, f'{net_name}_B_ckpt.pth')
-        config_path = os.path.join(mesc_log_dir, 'binary', net_name, f'{net_name}_B_config.py')
+        net_path = os.path.join(gdc_log_dir, 'binary', net_name, f'{net_name}_B_ckpt.pth')
+        config_path = os.path.join(gdc_log_dir, 'binary', net_name, f'{net_name}_B_config.py')
 
         device = get_proper_device()
         bin_model = init_model(config_path, net_path, device=device)
@@ -103,8 +114,8 @@ def main():
         # Model 2: 12 classes
         if args.multi:
             net_name = net_name_dict["M"]
-            net_path = os.path.join(mesc_log_dir, '12classes', net_name, f'{net_name}_M_ckpt.pth')
-            config_path = os.path.join(mesc_log_dir, '12classes', net_name, f'{net_name}_M_config.py')
+            net_path = os.path.join(gdc_log_dir, '12classes', net_name, f'{net_name}_M_ckpt.pth')
+            config_path = os.path.join(gdc_log_dir, '12classes', net_name, f'{net_name}_M_config.py')
             
             mult_model = init_model(config_path, net_path, device=device)
         
@@ -128,23 +139,23 @@ def main():
             pred_label = np.argsort(scores, axis=1)[0][::-1]
             pred_class = bin_model.CLASSES[pred_label[0]][3:]
             scores = scores[0]
-            mesc_dict['NoSclerotic-prob'].append(scores[0])
-            mesc_dict['Sclerotic-prob'].append(scores[1])
+            gdc_dict['NoSclerotic-prob'].append(scores[0])
+            gdc_dict['Sclerotic-prob'].append(scores[1])
 
             if not args.multi or pred_class == "Sclerotic":
                 # Append NaNs for the 12 classes
-                mesc_dict['ABMGN-prob'].append(np.nan)
-                mesc_dict['ANCA-prob'].append(np.nan)
-                mesc_dict['C3-GN-prob'].append(np.nan)
-                mesc_dict['CryoglobulinemicGN-prob'].append(np.nan)
-                mesc_dict['DDD-prob'].append(np.nan)
-                mesc_dict['Fibrillary-prob'].append(np.nan)
-                mesc_dict['IAGN-prob'].append(np.nan)
-                mesc_dict['IgAGN-prob'].append(np.nan)
-                mesc_dict['MPGN-prob'].append(np.nan)
-                mesc_dict['Membranous-prob'].append(np.nan)
-                mesc_dict['PGNMID-prob'].append(np.nan)
-                mesc_dict['SLEGN-IV-prob'].append(np.nan)
+                gdc_dict['ABMGN-prob'].append(np.nan)
+                gdc_dict['ANCA-prob'].append(np.nan)
+                gdc_dict['C3-GN-prob'].append(np.nan)
+                gdc_dict['CryoglobulinemicGN-prob'].append(np.nan)
+                gdc_dict['DDD-prob'].append(np.nan)
+                gdc_dict['Fibrillary-prob'].append(np.nan)
+                gdc_dict['IAGN-prob'].append(np.nan)
+                gdc_dict['IgAGN-prob'].append(np.nan)
+                gdc_dict['MPGN-prob'].append(np.nan)
+                gdc_dict['Membranous-prob'].append(np.nan)
+                gdc_dict['PGNMID-prob'].append(np.nan)
+                gdc_dict['SLEGN-IV-prob'].append(np.nan)
             else:
                 # Forward the 12 classes model
                 with torch.no_grad():
@@ -155,36 +166,36 @@ def main():
                 topk_labels = pred_label[:args.topk]
                 pred_class = [mult_model.CLASSES[l][3:] for l in topk_labels]
                 scores = scores[0]
-                mesc_dict['ABMGN-prob'].append(scores[0])
-                mesc_dict['ANCA-prob'].append(scores[1])
-                mesc_dict['C3-GN-prob'].append(scores[2])
-                mesc_dict['CryoglobulinemicGN-prob'].append(scores[3])
-                mesc_dict['DDD-prob'].append(scores[4])
-                mesc_dict['Fibrillary-prob'].append(scores[5])
-                mesc_dict['IAGN-prob'].append(scores[6])
-                mesc_dict['IgAGN-prob'].append(scores[7])
-                mesc_dict['MPGN-prob'].append(scores[8])
-                mesc_dict['Membranous-prob'].append(scores[9])
-                mesc_dict['PGNMID-prob'].append(scores[10])
-                mesc_dict['SLEGN-IV-prob'].append(scores[11])
+                gdc_dict['ABMGN-prob'].append(scores[0])
+                gdc_dict['ANCA-prob'].append(scores[1])
+                gdc_dict['C3-GN-prob'].append(scores[2])
+                gdc_dict['CryoglobulinemicGN-prob'].append(scores[3])
+                gdc_dict['DDD-prob'].append(scores[4])
+                gdc_dict['Fibrillary-prob'].append(scores[5])
+                gdc_dict['IAGN-prob'].append(scores[6])
+                gdc_dict['IgAGN-prob'].append(scores[7])
+                gdc_dict['MPGN-prob'].append(scores[8])
+                gdc_dict['Membranous-prob'].append(scores[9])
+                gdc_dict['PGNMID-prob'].append(scores[10])
+                gdc_dict['SLEGN-IV-prob'].append(scores[11])
 
                 pred_class = " | ".join(pred_class)
             
-            mesc_dict['filename'].append(image_path)
-            mesc_dict['predicted-class'].append(pred_class)
+            gdc_dict['filename'].append(image_path)
+            gdc_dict['predicted-class'].append(pred_class)
 
-        mesc_df = pd.DataFrame(data=mesc_dict)
-        mesc_df.to_csv(output_file_csv, sep=';', index=False)
+        gdc_df = pd.DataFrame(data=gdc_dict)
+        gdc_df.to_csv(output_file_csv, sep=';', index=False)
 
         # Save each WSI's results
         if args.topk == 1:
-            most_predicted_class = mesc_df['predicted-class'].mode().values[0]
-            count_most_predicted_class = mesc_df[mesc_df['predicted-class'] == most_predicted_class].shape[0]
+            most_predicted_class = gdc_df['predicted-class'].mode().values[0]
+            count_most_predicted_class = gdc_df[gdc_df['predicted-class'] == most_predicted_class].shape[0]
         else:
-            scores = mesc_df[['ABMGN-prob', 'ANCA-prob', 'C3-GN-prob', 'CryoglobulinemicGN-prob', 'DDD-prob', 'Fibrillary-prob', 'IAGN-prob', 'IgAGN-prob', 'MPGN-prob', 'Membranous-prob', 'PGNMID-prob', 'SLEGN-IV-prob']].values
-            no_sclerotic_prob = mesc_df['NoSclerotic-prob'].values.reshape(-1, 1)
+            scores = gdc_df[['ABMGN-prob', 'ANCA-prob', 'C3-GN-prob', 'CryoglobulinemicGN-prob', 'DDD-prob', 'Fibrillary-prob', 'IAGN-prob', 'IgAGN-prob', 'MPGN-prob', 'Membranous-prob', 'PGNMID-prob', 'SLEGN-IV-prob']].values
+            no_sclerotic_prob = gdc_df['NoSclerotic-prob'].values.reshape(-1, 1)
             scores = scores * no_sclerotic_prob
-            sclerotic_prob = mesc_df['Sclerotic-prob'].values.reshape(-1, 1)
+            sclerotic_prob = gdc_df['Sclerotic-prob'].values.reshape(-1, 1)
             scores = np.concatenate((sclerotic_prob, scores), axis=1)
             # Replace NaNs with 0
             scores = np.nan_to_num(scores)
@@ -199,12 +210,10 @@ def main():
             most_predicted_class = " | ".join(classes)
             # Get the count of the most predicted class (the first one in the topk)
             top1_most_predicted_class = classes[0]
-            top1_predicted_classes = mesc_df['predicted-class'].apply(lambda x: x.split(" | ")[0])
-            count_most_predicted_class = mesc_df[top1_predicted_classes == top1_most_predicted_class].shape[0]
+            top1_predicted_classes = gdc_df['predicted-class'].apply(lambda x: x.split(" | ")[0])
+            count_most_predicted_class = gdc_df[top1_predicted_classes == top1_most_predicted_class].shape[0]
 
-        # most_predicted_class = mesc_df['predicted-class'].mode().values[0]
-        # count_most_predicted_class = mesc_df[mesc_df['predicted-class'] == most_predicted_class].shape[0]
-        total_crops = mesc_df.shape[0]
+        total_crops = gdc_df.shape[0]
 
         wsi_dict['WSI-ID'].append(wsi_id)
         wsi_dict['most-predicted-class'].append(most_predicted_class)

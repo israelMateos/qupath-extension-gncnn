@@ -1,3 +1,12 @@
+"""
+From: https://github.com/Nicolik/MESCnn
+Modified by: Israel Mateos-Aparicio-Ruiz
+Modifications:
+    - Removed QuPath path argument
+    - Added pixel size argument
+    - Modified area computation to use pixel size
+    - Added annotations export to GeoJSON
+"""
 import logging
 import os
 import tqdm

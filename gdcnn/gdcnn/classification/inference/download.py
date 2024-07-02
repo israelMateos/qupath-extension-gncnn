@@ -1,3 +1,9 @@
+"""
+From: https://github.com/Nicolik/MESCnn
+Modified by: Israel Mateos-Aparicio-Ruiz
+Modifications:
+    - Changed local_dir to './gdcnn'
+"""
 from huggingface_hub import hf_hub_download
 
 

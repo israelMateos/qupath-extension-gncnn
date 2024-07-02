@@ -1,3 +1,6 @@
+/**
+ * Copyright (C) 2024 Israel Mateos-Aparicio-Ruiz
+ */
 package qupath.ext.gdcnn.ui;
 
 import java.io.File;
