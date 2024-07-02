@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Get QuPath installation path from install.cfg qupath_path variable
-source ./install.cfg
+source ./linux.cfg
 echo "QuPath installation path: ${qupath_path}"
 echo "Extension path: ${extension_path}"
 
