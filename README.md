@@ -25,24 +25,35 @@ author = {Nicola Altini and Michele Rossini and Sándor Turkevi-Nagy and Frances
 }
 ```
 
+## Dependencies
+
+The extension requires the following dependencies:
+
+- Python 3.8 or 3.9 (not higher)
+- CUDA-compatible GPU
+
 ## Installation
 > [!WARNING]
 > This extension **is developed for QuPath 0.5.0**, and has not been tested with other versions.
+>
+> This extension requires a CUDA-compatible GPU, and has been tested only with CUDA 11.1.
 
-> [!NOTE]
-> A script is currently being developed to automate the installation process.
+**0.** Install Python 3.8 or 3.9 (not higher) on your system.
 
-**1.** To run the GDCnn extension, you need to install the GDCnn tool for Python.
-The tool is available as a local package, and can be installed by running the
-following command in the terminal, from the root directory of the repository:
+**1.** Download the `.jar` file for the extension from the [Releases](https://github.com/israelMateos/qupath-extension-gdcnn/releases/latest) page.
+
+**2.** In `install/install.cfg`, define the following variables:
+
+- `qupath_path`: the path to the QuPath installation directory. It should contain the `bin` directory, in which the `QuPath` executable is located.
+- `extension_path`: the path to the `.jar` file downloaded in step 1. It should include the file name.
+  
+**3.** From the `install` directory, run the following command:
 
 ```bash
-pip install ./gdcnn/
+bash install.sh
 ```
 
-**2.** Download the `.jar` file for the extension from the [Releases](https://github.com/israelMateos/qupath-extension-gdcnn/releases/latest) page.
-
-**3.** Open QuPath, and drag the `.jar` file into the QuPath main window. The extension will be installed.
+This script will copy the extension `.jar` file to the QuPath extensions directory, and will create a new directory for the GDCnn extension in the QuPath extensions directory. The next time you open QuPath, the extension will be available in the menu.
 
 ## Usage
 The extension adds a new menu item to QuPath, called *GDCnn*. This menu item contains the button *Open GDCnn*.
