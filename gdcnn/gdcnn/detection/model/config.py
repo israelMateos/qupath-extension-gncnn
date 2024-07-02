@@ -1,6 +1,8 @@
 from detectron2.config import get_cfg
 from detectron2 import model_zoo
 
+from gdcnn.classification.gutils.utils import get_proper_device
+
 
 class DetectronConfigFile:
     R_50_DC5_1x = "COCO-InstanceSegmentation/mask_rcnn_R_50_DC5_1x.yaml"
@@ -89,6 +91,7 @@ def build_model_config(config_file):
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
     cfg.TEST.DETECTIONS_PER_IMAGE = 1000
+    cfg.MODEL.DEVICE = get_proper_device()
     return cfg
 
 
