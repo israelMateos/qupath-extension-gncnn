@@ -9,6 +9,11 @@ GDCnn was tested on Ubuntu 20.04 and 22.04. It requires Python 3.8 or 3.9 (not h
 
 **0.** Install Python 3.8 or 3.9 (not higher) on your system.
 
+<!-- **0.** Install on your system the following dependencies:
+
+- Python 3.8 or 3.9 (not higher)
+- Git LFS (for downloading the model weights) -->
+
 **1.** Download the `.jar` file for the extension from the [Releases](https://github.com/israelMateos/qupath-extension-gdcnn/releases/latest) page.
 
 **2.** In `install/install.cfg`, define the following variables:
