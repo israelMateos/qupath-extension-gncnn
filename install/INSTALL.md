@@ -16,15 +16,28 @@ GDCnn was tested on Ubuntu 20.04 and 22.04. It requires Python 3.8 or 3.9 (not h
 
 **1.** Download the `.jar` file for the extension from the [Releases](https://github.com/israelMateos/qupath-extension-gdcnn/releases/latest) page.
 
-**2.** In `install/install.cfg`, define the following variables:
+**2.** This step depends on the platform you are using.
+
+- **Linux**: edit `install/linux.cfg`.
+- **Windows**: edit `install/windows.cfg`.
+
+In the configuration file, you should set the following variables:
 
 - `qupath_path`: the path to the QuPath installation directory. It should contain the `bin` directory, in which the `QuPath` executable is located.
 - `extension_path`: the path to the `.jar` file downloaded in step 1. It should include the file name.
   
 **3.** From the `install` directory, run the following command:
 
+- **Linux**:
+
 ```bash
 bash install.sh
+```
+
+- **Windows**:
+
+```bash
+install.bat
 ```
 
 This script will copy the extension `.jar` file to the QuPath extensions directory, and will create a new directory for the GDCnn extension in the QuPath extensions directory. The next time you open QuPath, the extension will be available in the menu.
