@@ -1,19 +1,48 @@
 :: Batch Script
 
 :: Get QuPath installation path from install.cfg qupath_path variable
-call install.cfg
+for /f "usebackq tokens=1* delims==" %%a in ("windows.cfg") do (
+    if "%%a"=="qupath_path" set qupath_path=%%b
+    if "%%a"=="extension_path" set extension_path=%%b
+)
 echo QuPath installation path: %qupath_path%
 echo Extension path: %extension_path%
+
+:: Detect NVIDIA GPU
+echo Detecting NVIDIA GPU...
+set "nvidia_gpu=false"
+for /f "usebackq tokens=2 delims==" %%a in (`wmic path win32_VideoController get name`) do (
+    echo %%a | findstr /i "NVIDIA" >nul
+    if not errorlevel 1 (
+        set "nvidia_gpu=true"
+        goto :break
+    )
+)
+:break
+echo NVIDIA GPU detected: %nvidia_gpu%
+
+:: Set torch_suffix and mmcv-version based on nvidia_gpu value
+if %nvidia_gpu%==true (
+    set "suffix=cu111"
+) else (
+    set "suffix=cpu"
+)
+echo suffix: %torch_suffix%
+
 
 :: Install the required Python packages
 echo Installing the required Python packages...
 :: Install torch and torchvision pre-built with CUDA 11.1
 :: If not installed previously, gdcnn cannot be installed (detectron2 dependency)
-pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 --no-cache-dir -f https://download.pytorch.org/whl/torch_stable.html
+pip install torch==1.8.0+%suffix% torchvision==0.9.0+%suffix% --no-cache-dir -f https://download.pytorch.org/whl/torch_stable.html
 :: Install pre-built mmcv-full to avoid errors when compiling from source
-pip install "mmcv-full>=1.4.6" --no-cache-dir -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html
+if %nvidia_gpu%==true (
+    pip install "mmcv-full==1.7.2" --no-cache-dir -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html
+) else (
+    pip install "mmcv==1.7.2" --no-cache-dir
+)
 
-pip install .\gdcnn\ --no-cache-dir
+pip install ..\gdcnn\[%suffix%] --no-cache-dir
 echo Python packages installed.
 
 :: Get model target paths
@@ -37,6 +66,5 @@ rmdir /S /Q ..\models
 
 :: Install the QuPath extension
 echo Installing QuPath extension
-set qupath="%qupath_path%\bin\QuPath"
-%qupath% script .\install.groovy --args %qupath_path% --save
+%qupath_path% script .\install.groovy --args %extension_path% --save
 echo QuPath extension installed.

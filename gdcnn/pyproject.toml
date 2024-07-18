@@ -97,16 +97,40 @@ dependencies = [
   "cached-property>=1.5.2",
   "huggingface-hub>=0.20.3",
   "mmcls>=0.25.0",
-  "mmcv-full>=1.4.6",
   "opencv-python>=4.9.0.80",
   "pandas>=2.0.3",
   "shapely>=2.0.3",
   "tqdm>=4.66.2",
-  "torch==1.8.0+cu111",
-  "torchvision==0.9.0+cu111",
-  "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
 ]
 # dynamic = ["dependencies"]
+
+
+[project.optional-dependencies]
+cu111 = [
+    "torch==1.8.0+cu111",
+    "torchvision==0.9.0+cu111",
+    "mmcv-full==1.7.2"
+]
+
+cpu = [
+    "torch==1.8.0+cpu",
+    "torchvision==0.9.0+cpu",
+    "mmcv==1.7.2"
+]
+
+linux = [
+    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
+]
+
+linux-cu111 = [
+    "gdcnn[cu111]",
+    "gdcnn[linux]"
+]
+
+linux-cpu = [
+    "gdcnn[cpu]",
+    "gdcnn[linux]"
+]
 
 # List URLs that are relevant to your project
 [project.urls]

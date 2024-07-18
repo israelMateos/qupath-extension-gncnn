@@ -14,9 +14,9 @@ pip install torch==1.8.0+cu111 \
     --no-cache-dir \
     -f https://download.pytorch.org/whl/torch_stable.html
 # Install pre-built mmcv-full to avoid errors when compiling from source
-pip install "mmcv-full>=1.4.6" --no-cache-dir -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html
+pip install "mmcv-full==1.7.2" --no-cache-dir -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html
 
-pip install ./gdcnn/ --no-cache-dir
+pip install ./gdcnn/[linux-cu111] --no-cache-dir
 echo "Python packages installed."
 
 # Get model target paths
