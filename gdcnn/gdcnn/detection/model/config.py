@@ -97,7 +97,7 @@ def build_model_config(config_file):
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
     cfg.TEST.DETECTIONS_PER_IMAGE = 1000
-    cfg.MODEL.DEVICE = get_proper_device()
+    cfg.MODEL.DEVICE = str(get_proper_device())
     return cfg
 
 

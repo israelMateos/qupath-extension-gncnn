@@ -6,6 +6,7 @@ Modifications:
     - Added pixel size argument
     - Modified area computation to use pixel size
     - Added annotations export to GeoJSON
+    - Added TorchScript support for Windows/MacOS
 """
 import logging
 import os
@@ -13,10 +14,30 @@ import tqdm
 import cv2
 import numpy as np
 import time
+import sys
 
-from detectron2.engine import DefaultPredictor
+if 'linux' in sys.platform:
+    from detectron2.engine import DefaultPredictor
+else:
+    import torch
+    import torchvision.transforms as T
+
+    def preprocess_input(image, device):
+        height, width = image.shape[:2]
+
+        transform = T.Compose([
+            T.ToPILImage(),
+            T.Resize(800),
+        ])
+
+        image = np.array(transform(image))
+        image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
+        image.to(device)
+
+        return {"image": image, "height": height, "width": width}
 
 print("Loading local libraries...")
+from gdcnn.classification.gutils.utils import get_proper_device
 from gdcnn.definitions import ROOT_DIR
 from gdcnn.detection.model.config import build_model_config, CLI_MODEL_NAME_DICT, set_config, DEFAULT_SEGMENTATION_MODEL
 from gdcnn.detection.qupath.config import MIN_AREA_GLOMERULUS_UM, DETECTRON_SCORE_THRESHOLD
@@ -24,6 +45,7 @@ from gdcnn.detection.qupath.utils import get_dataset_dicts_validation, tile2xywh
 from gdcnn.detection.qupath.nms import nms
 from gdcnn.detection.qupath.download import download_detector
 from gdcnn.detection.qupath.shapely2geojson import poly2geojson
+from gdcnn.detection.qupath.mask_ops import paste_masks_in_image, scale_boxes
 print("Local libraries loaded!")
 
 
@@ -53,7 +75,21 @@ def main():
     tool_dir = os.path.join(ROOT_DIR, 'gdcnn')
     model_folder = os.path.join(tool_dir, 'detection', 'logs', model_name, config_dir)
     logs_dir = os.path.join(model_folder, 'output')
-    path_to_weights = os.path.join(logs_dir, "model_final.pth")
+
+    device = str(get_proper_device())
+    platform = sys.platform
+    # If platform is other than Linux, use torchscript
+    if not 'linux' in platform:
+        if device == "cuda":
+            path_to_weights = os.path.join(logs_dir, "model_final_cuda.ts")
+        elif device == "cpu":
+            path_to_weights = os.path.join(logs_dir, "model_final_cpu.ts")
+        else:
+            raise ValueError(f"Unsupported device: {device}")
+    else:
+        path_to_weights = os.path.join(logs_dir, "model_final.pth")
+
+
     if not os.path.exists(path_to_weights):
         print(f"Model weights not found: {path_to_weights}!")
         model_path = download_detector(model_name, config_dir, tool_dir)
@@ -61,9 +97,13 @@ def main():
     else:
         print(f"Model weights found: {path_to_weights}!")
 
-    cfg.MODEL.WEIGHTS = path_to_weights
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = DETECTRON_SCORE_THRESHOLD
-    predictor = DefaultPredictor(cfg)
+    if not 'linux' in platform:
+        predictor = torch.jit.load(path_to_weights)
+        predictor.eval()
+    else:
+        cfg.MODEL.WEIGHTS = path_to_weights
+        cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = DETECTRON_SCORE_THRESHOLD
+        predictor = DefaultPredictor(cfg)
 
     tile_dir = os.path.join(args.export, 'Temp', 'tiler-output', 'Tiles', args.wsi)
     path_to_segment_output = os.path.join(args.export, 'Temp', 'segment-output')
@@ -89,15 +129,37 @@ def main():
 
         im = cv2.imread(filename)
         start_time = time.time()
-        outputs = predictor(im)
-        classes = outputs["instances"].get("pred_classes").cpu().numpy()
-        scores = outputs["instances"].get("scores").cpu().numpy()
+        if not 'linux' in platform:
+            lib = "TorchScript"
+            # Disable gradient computation during inference
+            with torch.no_grad():
+                inputs = preprocess_input(im)  # Preprocess input image if needed
+                image = inputs["image"]
+                inputs = [{"image": image}]  # remove other unused keys
+                outputs = predictor(image)
+            
+            # keys=['pred_boxes', 'pred_classes', 'pred_masks', 'scores']
+            boxes = outputs[0].cpu().numpy()
+            classes = outputs[1].cpu().numpy()
+            scores = outputs[3].cpu().numpy()
+            masks = outputs[2][:, 0, :, :]
+            
+            if outputs[2].shape[0] > 0:
+                boxes = scale_boxes(boxes, 4096 / 800)
+                masks = paste_masks_in_image(masks, boxes, im.shape[:2])
+            mask_array = masks.cpu().numpy()
+        else:
+            lib = "Detectron2"
+            outputs = predictor(im)
+            classes = outputs["instances"].get("pred_classes").cpu().numpy()
+            scores = outputs["instances"].get("scores").cpu().numpy()
 
-        mask_array = outputs['instances'].to("cpu").pred_masks.numpy()
+            mask_array = outputs['instances'].to("cpu").pred_masks.numpy()
+
         mask_array = mask_array.astype(np.uint8)
         end_time = time.time()
         elapsed_time = end_time - start_time
-        logging.info(f"[Detectron2] Elapsed Time (sec): {elapsed_time:.2f}")
+        logging.info(f"[{lib}] Elapsed Time (sec): {elapsed_time:.2f}")
 
         for m, mask in enumerate(mask_array):
             logging.info(f"Mask ({m}) - shape: {mask.shape}, dtype: {mask.dtype}, sum: {mask.sum()}")
