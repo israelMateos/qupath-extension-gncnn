@@ -32,18 +32,28 @@ echo suffix: %torch_suffix%
 
 :: Install the required Python packages
 echo Installing the required Python packages...
-:: Install torch and torchvision pre-built with CUDA 11.1
+:: Install numpy and cached-property first to avoid errors in Python 3.9
+pip install "numpy>=1.24.4,<2" "cached-property>=1.5.2" --no-cache-dir
+:: Install torch and torchvision pre-built with CUDA 11.1 if NVIDIA GPU is detected
+:: Otherwise, install the CPU version
 :: If not installed previously, gdcnn cannot be installed (detectron2 dependency)
 pip install torch==1.8.0+%suffix% torchvision==0.9.0+%suffix% --no-cache-dir -f https://download.pytorch.org/whl/torch_stable.html
 :: Install pre-built mmcv-full to avoid errors when compiling from source
 if %nvidia_gpu%==true (
     pip install "mmcv-full==1.7.2" --no-cache-dir -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html
-) else (
+) 
+:: If no NVIDIA GPU is detected, install mmcv (lite version) instead
+else (
     pip install "mmcv==1.7.2" --no-cache-dir
 )
 
 pip install ..\gdcnn\[%suffix%] --no-cache-dir
 echo Python packages installed.
+
+:: Download the models
+echo Downloading the models...
+python .\download_models.py
+echo Models downloaded.
 
 :: Get model target paths
 echo Copying the models to the target paths...
@@ -53,12 +63,12 @@ set classification_model_dir="%gdcnn_path%\classification\logs\"
 
 :: Copy the detection model to the target path
 if not exist %detection_model_dir% mkdir %detection_model_dir%
-copy ..\models\detection\model_final.pth %detection_model_dir%
+copy ..\models\models\detection\model_final.pth %detection_model_dir%
 echo Detection model copied.
 
 :: Copy the classification models to the target path
 if not exist %classification_model_dir% mkdir %classification_model_dir%
-xcopy /E /I ..\models\classification\* %classification_model_dir%
+xcopy /E /I ..\models\models\classification\* %classification_model_dir%
 echo Classification models copied.
 
 :: Remove models directory

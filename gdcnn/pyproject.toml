@@ -93,7 +93,7 @@ classifiers = [
 # For an analysis of this field vs pip's requirements files see:
 # https://packaging.python.org/discussions/install-requires-vs-requirements/
 dependencies = [
-  "numpy>=1.24.4",
+  "numpy>=1.24.4,<2",
   "cached-property>=1.5.2",
   "huggingface-hub>=0.20.3",
   "mmcls>=0.25.0",
