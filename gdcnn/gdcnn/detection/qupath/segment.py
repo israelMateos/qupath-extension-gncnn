@@ -45,7 +45,7 @@ from gdcnn.detection.qupath.utils import get_dataset_dicts_validation, tile2xywh
 from gdcnn.detection.qupath.nms import nms
 from gdcnn.detection.qupath.download import download_detector
 from gdcnn.detection.qupath.shapely2geojson import poly2geojson
-from gdcnn.detection.qupath.mask_ops import paste_masks_in_image, scale_boxes
+from gdcnn.detection.qupath.mask_ops import paste_masks_in_image
 print("Local libraries loaded!")
 
 
@@ -61,6 +61,9 @@ def main():
 
     args = parser.parse_args()
 
+    print("undersampling: ", args.undersampling)
+    print("pixel size: ", args.pixel_size)
+
     if 'linux' in sys.platform:
         if args.model not in CLI_MODEL_NAME_DICT:
             logging.warning(f"Model '{args.model}' not present, default to {DEFAULT_SEGMENTATION_MODEL}!")
@@ -72,7 +75,7 @@ def main():
         cfg = build_model_config(config_file)
         config_dir = set_config(cfg, train_config)
     else:
-        model_name = "cascade_R_50_FPN_1x"
+        model_name = "cascade_mask_rcnn_R_50_FPN_1x"
         config_dir = 'external-validation'
 
     undersampling = args.undersampling
@@ -138,19 +141,22 @@ def main():
             lib = "TorchScript"
             # Disable gradient computation during inference
             with torch.no_grad():
-                inputs = preprocess_input(im)  # Preprocess input image if needed
+                inputs = preprocess_input(im, device)  # Preprocess input image if needed
                 image = inputs["image"]
-                inputs = [{"image": image}]  # remove other unused keys
                 outputs = predictor(image)
             
             # keys=['pred_boxes', 'pred_classes', 'pred_masks', 'scores']
-            boxes = outputs[0].cpu().numpy()
+            boxes = outputs[0]
             classes = outputs[1].cpu().numpy()
             scores = outputs[3].cpu().numpy()
             masks = outputs[2][:, 0, :, :]
             
             if outputs[2].shape[0] > 0:
-                boxes = scale_boxes(boxes, 4096 / 800)
+                print("Boxes before scaling: ", boxes)
+                scale_factor = inputs["width"] / image.shape[2] # Images are square
+                print("Scale factor: ", scale_factor)
+                boxes *= scale_factor
+                print("Boxes after scaling: ", boxes)
                 masks = paste_masks_in_image(masks, boxes, im.shape[:2])
             mask_array = masks.cpu().numpy()
         else:

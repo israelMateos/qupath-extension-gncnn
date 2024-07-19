@@ -9,7 +9,7 @@ echo Extension path: %extension_path%
 :: Detect NVIDIA GPU
 echo Detecting NVIDIA GPU...
 set "nvidia_gpu=false"
-for /f "usebackq tokens=2 delims==" %%a in (`wmic path win32_VideoController get name`) do (
+for /f "usebackq tokens=1* delims=" %%a in (`wmic path win32_VideoController get name`) do (
     echo %%a | findstr /i "NVIDIA" >nul
     if not errorlevel 1 (
         set "nvidia_gpu=true"
@@ -36,11 +36,10 @@ pip install "numpy>=1.24.4,<2" "cached-property>=1.5.2" --no-cache-dir
 :: Otherwise, install the CPU version
 :: If not installed previously, gdcnn cannot be installed (detectron2 dependency)
 pip install torch==1.8.0+%suffix% torchvision==0.9.0+%suffix% --no-cache-dir -f https://download.pytorch.org/whl/torch_stable.html
-:: Install pre-built mmcv-full to avoid errors when compiling from source
+:: Install pre-built mmcv-full/mmcv(lite) to avoid errors when compiling from source
 if %nvidia_gpu%==true (
     pip install "mmcv-full==1.7.2" --no-cache-dir -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html
 ) 
-:: If no NVIDIA GPU is detected, install mmcv (lite version) instead
 else (
     pip install "mmcv==1.7.2" --no-cache-dir
 )
@@ -61,12 +60,12 @@ set classification_model_dir="%gdcnn_path%\classification\logs\"
 
 :: Copy the detection model to the target path
 if not exist %detection_model_dir% mkdir %detection_model_dir%
-copy ..\models\models\detection\model_final.pth %detection_model_dir%
+xcopy /E /I "..\models\models\detection\*" %detection_model_dir%
 echo Detection model copied.
 
 :: Copy the classification models to the target path
 if not exist %classification_model_dir% mkdir %classification_model_dir%
-xcopy /E /I ..\models\models\classification\* %classification_model_dir%
+xcopy /E /I "..\models\models\classification\*" %classification_model_dir%
 echo Classification models copied.
 
 :: Remove models directory
