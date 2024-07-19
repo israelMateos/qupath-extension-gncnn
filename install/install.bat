@@ -1,6 +1,4 @@
-:: Batch Script
-
-:: Get QuPath installation path from install.cfg qupath_path variable
+:: Get paths from windows.cfg variables
 for /f "usebackq tokens=1* delims==" %%a in ("windows.cfg") do (
     if "%%a"=="qupath_path" set qupath_path=%%b
     if "%%a"=="extension_path" set extension_path=%%b
@@ -21,13 +19,13 @@ for /f "usebackq tokens=2 delims==" %%a in (`wmic path win32_VideoController get
 :break
 echo NVIDIA GPU detected: %nvidia_gpu%
 
-:: Set torch_suffix and mmcv-version based on nvidia_gpu value
+:: Set suffix and mmcv-version based on nvidia_gpu value
 if %nvidia_gpu%==true (
     set "suffix=cu111"
 ) else (
     set "suffix=cpu"
 )
-echo suffix: %torch_suffix%
+echo suffix: %suffix%
 
 
 :: Install the required Python packages
