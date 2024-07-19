@@ -5,18 +5,33 @@ source ./linux.cfg
 echo "QuPath installation path: ${qupath_path}"
 echo "Extension path: ${extension_path}"
 
+# Detect NVIDIA GPU and save boolean result
+echo "Detecting NVIDIA GPU..."
+nvidia-smi > /dev/null
+if [ $? -eq 0 ]; then
+    echo "NVIDIA GPU detected."
+    suffix='cu111'
+else
+    echo "NVIDIA GPU not detected."
+    suffix='cpu'
+fi
+
 # Install the required Python packages
 echo "Installing the required Python packages..."
 # Install torch and torchvision pre-built with CUDA 11.1
 # If not installed previously, gdcnn cannot be installed (detectron2 dependency)
-pip install torch==1.8.0+cu111 \
-    torchvision==0.9.0+cu111 \
+pip install torch==1.8.0+${suffix} \
+    torchvision==0.9.0+${suffix} \
     --no-cache-dir \
     -f https://download.pytorch.org/whl/torch_stable.html
 # Install pre-built mmcv-full to avoid errors when compiling from source
-pip install "mmcv-full==1.7.2" --no-cache-dir -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html
+if [ $suffix = 'cu111' ]; then
+    pip install "mmcv-full==1.7.2" --no-cache-dir -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html
+else
+    pip install "mmcv==1.7.2" --no-cache-dir
+fi
 
-pip install ./gdcnn/[linux-cu111] --no-cache-dir
+pip install ../gdcnn/[linux-${suffix}] --no-cache-dir
 echo "Python packages installed."
 
 # Get model target paths
@@ -41,5 +56,5 @@ rm -rf ../models
 # Install the QuPath extension
 echo "Installing QuPath extension"
 qupath="${qupath_path}/bin/QuPath"
-$qupath script ./install.groovy --args $qupath_path --save
+$qupath script ./install.groovy --args $extension_path --save
 echo "QuPath extension installed."
