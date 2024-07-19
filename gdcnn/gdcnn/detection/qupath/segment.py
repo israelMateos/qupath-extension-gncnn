@@ -18,6 +18,7 @@ import sys
 
 if 'linux' in sys.platform:
     from detectron2.engine import DefaultPredictor
+    from gdcnn.detection.model.config import build_model_config, CLI_MODEL_NAME_DICT, set_config, DEFAULT_SEGMENTATION_MODEL
 else:
     import torch
     import torchvision.transforms as T
@@ -39,7 +40,6 @@ else:
 print("Loading local libraries...")
 from gdcnn.classification.gutils.utils import get_proper_device
 from gdcnn.definitions import ROOT_DIR
-from gdcnn.detection.model.config import build_model_config, CLI_MODEL_NAME_DICT, set_config, DEFAULT_SEGMENTATION_MODEL
 from gdcnn.detection.qupath.config import MIN_AREA_GLOMERULUS_UM, DETECTRON_SCORE_THRESHOLD
 from gdcnn.detection.qupath.utils import get_dataset_dicts_validation, tile2xywh, mask2polygon, get_area_10x
 from gdcnn.detection.qupath.nms import nms
@@ -54,21 +54,26 @@ def main():
     parser = argparse.ArgumentParser(description='Segment Glomeruli with Detectron2 from WSI')
     parser.add_argument('-w', '--wsi', type=str, help='path/to/wsi', required=True)
     parser.add_argument('-e', '--export', type=str, help='path/to/export', required=True)
-    parser.add_argument('-m', '--model', type=str, help='Model to use for inference', default=DEFAULT_SEGMENTATION_MODEL)
+    parser.add_argument('-m', '--model', type=str, help='Model to use for inference', default="cascade_R_50_FPN_1x")
     parser.add_argument('-c', '--train-config', type=str, help='I=Internal/E=External/A=All', default="external")
     parser.add_argument('--undersampling', type=int, help='Undersampling factor of tiles', default=4)
     parser.add_argument('--pixel-size', type=float, help='Pixel size of the WSI', default=0.5)
 
     args = parser.parse_args()
-    if args.model not in CLI_MODEL_NAME_DICT:
-        logging.warning(f"Model '{args.model}' not present, default to {DEFAULT_SEGMENTATION_MODEL}!")
-        args.model = DEFAULT_SEGMENTATION_MODEL
 
-    train_config = args.train_config
-    config_file, model_name = CLI_MODEL_NAME_DICT[args.model]
+    if 'linux' in sys.platform:
+        if args.model not in CLI_MODEL_NAME_DICT:
+            logging.warning(f"Model '{args.model}' not present, default to {DEFAULT_SEGMENTATION_MODEL}!")
+            args.model = DEFAULT_SEGMENTATION_MODEL
 
-    cfg = build_model_config(config_file)
-    config_dir = set_config(cfg, train_config)
+        train_config = args.train_config
+        config_file, model_name = CLI_MODEL_NAME_DICT[args.model]
+
+        cfg = build_model_config(config_file)
+        config_dir = set_config(cfg, train_config)
+    else:
+        model_name = "cascade_R_50_FPN_1x"
+        config_dir = 'external-validation'
 
     undersampling = args.undersampling
 

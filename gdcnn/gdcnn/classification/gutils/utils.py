@@ -13,4 +13,4 @@ def get_proper_device():
     # elif torch.has_mps:
     #     return torch.device("mps")
     else:
-        torch.device("cpu")
+        return torch.device("cpu")
