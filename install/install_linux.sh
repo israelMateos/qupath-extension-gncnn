@@ -28,12 +28,7 @@ pip install torch==1.8.0+${suffix} \
     --no-cache-dir \
     -f https://download.pytorch.org/whl/torch_stable.html
 # Install pre-built mmcv-full to avoid errors when compiling from source
-if [ $suffix = 'cu111' ]; then
-    pip install "mmcv-full==1.7.2" --no-cache-dir -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html
-# If no NVIDIA GPU is detected, install mmcv (lite version) instead
-else
-    pip install "mmcv==1.7.2" --no-cache-dir
-fi
+pip install "mmcv-full==1.7.2" --no-cache-dir -f https://download.openmmlab.com/mmcv/dist/${suffix}/torch1.8.0/index.html
 
 # pip install ../gdcnn/[linux-${suffix}] --no-cache-dir
 echo "Python packages installed."
@@ -51,7 +46,7 @@ classification_model_dir="${gdcnn_path}/classification/logs/"
 
 # Copy the detection model to the target path
 mkdir -p ${detection_model_dir}
-cp ../models/models/detection/model_final.pth ${detection_model_dir}
+cp ../models/models/detection/* ${detection_model_dir}
 echo "Detection model copied."
 
 # Copy the classification models to the target path

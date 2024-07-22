@@ -2,8 +2,8 @@
 
 GDCnn (*G*lomerular *D*isease *C*lassification by *n*eural *n*etwork) is an
 extension which integrates a pipeline for glomerular detection and classification
-into QuPath. The pipeline is designed to classify glomeruli into sclerosed and
-non-sclerosed classes, and to further classify non-sclerosed glomeruli into
+into QuPath. The pipeline is designed to classify glomeruli into sclerotic and
+non-sclerotic classes, and to further classify non-sclerotic glomeruli into
 12 other pathologies.
 
 The pipeline is based on the [MESCnn](https://github.com/Nicolik/MESCnn) 
@@ -30,13 +30,17 @@ author = {Nicola Altini and Michele Rossini and Sándor Turkevi-Nagy and Frances
 The extension requires the following dependencies:
 
 - Python 3.8 or 3.9 (not higher)
-- CUDA-compatible GPU
+- If using a NVIDIA GPU:
+  - CUDA 11.1
 
 ## Installation
+
 > [!WARNING]
-> This extension **is developed for QuPath 0.5.0**, and has not been tested with other versions.
+> This extension **is developed for QuPath 0.5.0 or higher**, and has not been tested with other versions.
 >
-> This extension requires a CUDA-compatible GPU, and has been tested only with CUDA 11.1.
+> If having a NVIDIA GPU, the extension only supports CUDA 11.1. CPU is also supported.
+
+GDCnn was tested on Ubuntu 20.04 and 22.04, Windows 10 and macOS Big Sur 11.4. It requires Python 3.8 or 3.9 (not higher).
 
 **0.** Install Python 3.8 or 3.9 (not higher) on your system.
 
@@ -51,10 +55,13 @@ The extension requires the following dependencies:
 
 - **Linux**: edit `install/linux.cfg`.
 - **Windows**: edit `install/windows.cfg`.
+- **macOS**: edit `install/mac.cfg`.
 
 In the configuration file, you should set the following variables:
 
-- `qupath_path`: the path to the QuPath installation directory. It should contain the `bin` directory, in which the `QuPath` executable is located.
+- `qupath_path`: 
+  - For Linux, the path to the QuPath installation directory. It should contain the `bin` directory, in which the `QuPath` executable is located.
+  - For Windows and macOS, the path to the QuPath executable. In Windows, it should include the console version of QuPath, _e.g._ `QuPath-0.5.1 (console).exe`. In macOS, it should include the executable buried inside the `.app` directory, _e.g._ `QuPath-0.5.1-x64.app/Contents/MacOS/QuPath-0.5.1-x64`.
 - `extension_path`: the path to the `.jar` file downloaded in step 1. It should include the file name.
   
 **3.** From the `install` directory, run the following command:
@@ -68,16 +75,24 @@ bash install.sh
 - **Windows**:
 
 ```bash
-install.bat
+.\install.bat
 ```
 
-This script will copy the extension `.jar` file to the QuPath extensions directory, and will create a new directory for the GDCnn extension in the QuPath extensions directory. The next time you open QuPath, the extension will be available in the menu.
+- **macOS**:
+
+```bash
+sh install.sh
+```
+
+This script will install the Python tool on which the extension depends, and will download the model weights. It will also create a new directory for the GDCnn extension in the QuPath extensions directory. The next time you open QuPath, the extension will be available in the menu.
+
+**4.** Once the extension is installed, you can remove this repository's directory (`qupath-extension-gdcnn`) from your system.
 
 ## Usage
 The extension adds a new menu item to QuPath, called *GDCnn*. This menu item contains the button *Open GDCnn*.
 
 This button opens a dialog window, where you can select the image/s you want to analyze.
-You must also select the classification mode: *Sclerosed vs Non-Sclerosed* or *Sclerosed + 12 classes*.
+You must also select the classification mode: *Sclerotic vs Non-Sclerotic* or *Sclerotic + 12 classes*.
 
 After selecting the image/s and the classification mode, click:
 
@@ -110,12 +125,34 @@ To build the extension from source, use the following command from the root dire
 
 The extension `.jar` file will be generated in the `build/libs` directory.
 
-## Bug with Ubuntu
+## Troubleshooting
+
+### Bug with Ubuntu
 
 If you are using Ubuntu, you may get `Ubuntu Error 13: Permission denied` when trying to run the extension. As stated in [this issue](https://forum.image.sc/t/could-not-execute-system-command-in-qupath-thanks-to-groovy-script-and-java-processbuilder-class/61629/2?u=oburri), Java's `ProcessBuilder` class is not allowed to run on Ubuntu.
 
 To fix this, QuPath must be [built from source](https://qupath.readthedocs.io/en/stable/docs/reference/building.html) instead of using the installer. This will allow the extension to run without issues.
 
+### Bug with Windows
+
+If you are using Windows, you may get an error when trying to install the extension. In the last step, _i.e._, when the extension is being copied to the QuPath extensions directory, you may get an error saying that the file is being used by another process. This occurs if the extension is already loaded in QuPath.
+
+To fix this, close QuPath before running the installation script, and remove the extension from the QuPath extensions directory if it is already there.
+
+### macOS installation takes too long
+
+In some versions of macOS, the installation script may seem to hang when installing the Python tool. Specifically, this may occur when the script is trying to install the `opencv-python` package. This is a known issue with the `opencv-python` package, and it is not related to the extension.
+
+Although the script may seem to hang, it is still running. The package must be compiled from source, which takes some time. The installation will finish eventually.
+
+### Glomeruli detection takes too long
+
+The glomeruli detection process is the most time-consuming part of the pipeline. In case you are using a CPU, the process may take a long time to finish (depending on the image size, it may take more than 10 minutes). This is because the detection process is based on a two-stage model, which is computationally expensive. If you have a CUDA-compatible GPU, the process will be faster.
+
+Currently, MPS is not supported, so the extension will use the CPU by default in macOS. This may be changed in future versions.
+
 ## License
 
 This extension is licensed under the GNU General Public License v3.0. For more information, see the [LICENSE](LICENSE) file.
+
+Also, part of [detectron2](https://github.com/facebookresearch/detectron2) is used in the extension. Detectron2 is licensed under the Apache License 2.0. For more information, see the [LICENSE_DETECTRON2](LICENSE_DETECTRON2) file.

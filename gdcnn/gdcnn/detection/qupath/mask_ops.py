@@ -1,9 +1,10 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 #
 # As this source code is licensed under the Apache 2.0 license, a copy of the
-# license terms is provided in the LICENSE file in this same folder/module, as
-# stated in the license terms. However, the main code is licensed under the
-# GPL-3.0 license, as stated in the LICENSE file in the root of this repository.
+# license terms is provided in the LICENSE_DETECTRON2 file in the root of this
+# repository, as stated in the license terms. However, the main code is licensed 
+# under the GPL-3.0 license, as stated in the LICENSE file in the root of this
+# repository.
 import numpy as np
 from typing import Tuple
 import torch

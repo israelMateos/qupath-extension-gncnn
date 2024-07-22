@@ -1,11 +1,11 @@
 # GDCnn Installation
 
 > [!WARNING]
-> This extension **is developed for QuPath 0.5.0**, and has not been tested with other versions.
+> This extension **is developed for QuPath 0.5.0 or higher**, and has not been tested with other versions.
 >
-> This extension requires a CUDA-compatible GPU, and has been tested only with CUDA 11.1.
+> If having a NVIDIA GPU, the extension only supports CUDA 11.1. CPU is also supported.
 
-GDCnn was tested on Ubuntu 20.04 and 22.04. It requires Python 3.8 or 3.9 (not higher).
+GDCnn was tested on Ubuntu 20.04 and 22.04, Windows 10 and macOS Big Sur 11.4. It requires Python 3.8 or 3.9 (not higher).
 
 **0.** Install Python 3.8 or 3.9 (not higher) on your system.
 
@@ -20,10 +20,13 @@ GDCnn was tested on Ubuntu 20.04 and 22.04. It requires Python 3.8 or 3.9 (not h
 
 - **Linux**: edit `install/linux.cfg`.
 - **Windows**: edit `install/windows.cfg`.
+- **macOS**: edit `install/mac.cfg`.
 
 In the configuration file, you should set the following variables:
 
-- `qupath_path`: the path to the QuPath installation directory. It should contain the `bin` directory, in which the `QuPath` executable is located.
+- `qupath_path`: 
+  - For Linux, the path to the QuPath installation directory. It should contain the `bin` directory, in which the `QuPath` executable is located.
+  - For Windows and macOS, the path to the QuPath executable. In Windows, it should include the console version of QuPath, _e.g._ `QuPath-0.5.1 (console).exe`. In macOS, it should include the executable buried inside the `.app` directory, _e.g._ `QuPath-0.5.1-x64.app/Contents/MacOS/QuPath-0.5.1-x64`.
 - `extension_path`: the path to the `.jar` file downloaded in step 1. It should include the file name.
   
 **3.** From the `install` directory, run the following command:
@@ -37,7 +40,15 @@ bash install.sh
 - **Windows**:
 
 ```bash
-install.bat
+.\install.bat
 ```
 
-This script will copy the extension `.jar` file to the QuPath extensions directory, and will create a new directory for the GDCnn extension in the QuPath extensions directory. The next time you open QuPath, the extension will be available in the menu.
+- **macOS**:
+
+```bash
+sh install.sh
+```
+
+This script will install the Python tool on which the extension depends, and will download the model weights. It will also create a new directory for the GDCnn extension in the QuPath extensions directory. The next time you open QuPath, the extension will be available in the menu.
+
+**4.** Once the extension is installed, you can remove this repository's directory (`qupath-extension-gdcnn`) from your system.
