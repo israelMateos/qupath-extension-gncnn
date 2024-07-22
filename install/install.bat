@@ -36,13 +36,8 @@ pip install "numpy>=1.24.4,<2" "cached-property>=1.5.2" --no-cache-dir
 :: Otherwise, install the CPU version
 :: If not installed previously, gdcnn cannot be installed (detectron2 dependency)
 pip install torch==1.8.0+%suffix% torchvision==0.9.0+%suffix% --no-cache-dir -f https://download.pytorch.org/whl/torch_stable.html
-:: Install pre-built mmcv-full/mmcv(lite) to avoid errors when compiling from source
-if %nvidia_gpu%==true (
-    pip install "mmcv-full==1.7.2" --no-cache-dir -f https://download.openmmlab.com/mmcv/dist/cu111/torch1.8.0/index.html
-) 
-else (
-    pip install "mmcv==1.7.2" --no-cache-dir
-)
+:: Install pre-built mmcv-full to avoid errors when compiling from source
+pip install "mmcv-full==1.7.2" --no-cache-dir -f https://download.openmmlab.com/mmcv/dist/%suffix%/torch1.8.0/index.html
 
 pip install ..\gdcnn\[%suffix%] --no-cache-dir
 echo Python packages installed.

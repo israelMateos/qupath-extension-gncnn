@@ -152,11 +152,8 @@ def main():
             masks = outputs[2][:, 0, :, :]
             
             if outputs[2].shape[0] > 0:
-                print("Boxes before scaling: ", boxes)
                 scale_factor = inputs["width"] / image.shape[2] # Images are square
-                print("Scale factor: ", scale_factor)
                 boxes *= scale_factor
-                print("Boxes after scaling: ", boxes)
                 masks = paste_masks_in_image(masks, boxes, im.shape[:2])
             mask_array = masks.cpu().numpy()
         else:
