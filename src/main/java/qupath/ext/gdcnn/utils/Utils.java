@@ -278,7 +278,6 @@ public class Utils {
                             className = className.replace("Glomerulus", "Non-classified");
                             className = className.replace("NoSclerotic", "Non-sclerotic");
                             className = className.split(" ")[0];
-                            System.err.println(className);
                             diseaseCounts.put(className, diseaseCounts.get(className) + 1);
                             nGlomeruli++;
 

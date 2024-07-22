@@ -32,7 +32,7 @@
                   <TableColumn fx:id="DDDCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="DDD" />
                   <TableColumn fx:id="FibrillaryCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="Fibrillary" />
                   <TableColumn fx:id="IAGNCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="IAGN" />
-                  <TableColumn fx:id="IgANCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="IgAN" />
+                  <TableColumn fx:id="IgAGNCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="IgAGN" />
                   <TableColumn fx:id="MPGNCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="MPGN" />
                   <TableColumn fx:id="MembranousCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="Membranous" />
                   <TableColumn fx:id="PGNMIDCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="PGNMID" />

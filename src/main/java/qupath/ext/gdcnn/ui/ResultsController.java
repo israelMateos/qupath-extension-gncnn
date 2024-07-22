@@ -61,7 +61,7 @@ public class ResultsController {
     @FXML
     private TableColumn<ImageResult, Integer> IAGNCol;
     @FXML
-    private TableColumn<ImageResult, Integer> IgANCol;
+    private TableColumn<ImageResult, Integer> IgAGNCol;
     @FXML
     private TableColumn<ImageResult, Integer> MPGNCol;
     @FXML
@@ -110,7 +110,7 @@ public class ResultsController {
         PropertyValueFactory<ImageResult, Integer> DDDColFactory = new PropertyValueFactory<>("DDD");
         PropertyValueFactory<ImageResult, Integer> FibrillaryColFactory = new PropertyValueFactory<>("Fibrillary");
         PropertyValueFactory<ImageResult, Integer> IAGNColFactory = new PropertyValueFactory<>("IAGN");
-        PropertyValueFactory<ImageResult, Integer> IgANColFactory = new PropertyValueFactory<>("IgAN");
+        PropertyValueFactory<ImageResult, Integer> IgAGNColFactory = new PropertyValueFactory<>("IgAGN");
         PropertyValueFactory<ImageResult, Integer> MPGNColFactory = new PropertyValueFactory<>("MPGN");
         PropertyValueFactory<ImageResult, Integer> MembranousColFactory = new PropertyValueFactory<>("Membranous");
         PropertyValueFactory<ImageResult, Integer> PGNMIDColFactory = new PropertyValueFactory<>("PGNMID");
@@ -131,7 +131,7 @@ public class ResultsController {
         DDDCol.setCellValueFactory(DDDColFactory);
         FibrillaryCol.setCellValueFactory(FibrillaryColFactory);
         IAGNCol.setCellValueFactory(IAGNColFactory);
-        IgANCol.setCellValueFactory(IgANColFactory);
+        IgAGNCol.setCellValueFactory(IgAGNColFactory);
         MPGNCol.setCellValueFactory(MPGNColFactory);
         MembranousCol.setCellValueFactory(MembranousColFactory);
         PGNMIDCol.setCellValueFactory(PGNMIDColFactory);

@@ -42,7 +42,7 @@ public class ClassificationTask extends Task<Void> {
     private static final Logger logger = LoggerFactory.getLogger(ClassificationTask.class);
 
     private static final String[] CLASSES = { "NoSclerotic", "Sclerotic", "ABMGN", "ANCA", "C3-GN", "CryoglobulinemicGN",
-            "DDD", "Fibrillary", "IAGN", "IgAN", "MPGN", "Membranous", "PGNMID", "SLEGN-IV" };
+            "DDD", "Fibrillary", "IAGN", "IgAGN", "MPGN", "Membranous", "PGNMID", "SLEGN-IV" };
 
     private static final HashMap<String, Integer> CLASS_COLORS = new HashMap<String, Integer>() {
         {
@@ -55,7 +55,7 @@ public class ClassificationTask extends Task<Void> {
             put("DDD", ColorTools.YELLOW);
             put("Fibrillary", ColorTools.packRGB(225, 128, 128)); // Pink
             put("IAGN", ColorTools.packRGB(75, 0, 130)); // Indigo
-            put("IgAN", ColorTools.packRGB(128, 0, 0)); // Brown
+            put("IgAGN", ColorTools.packRGB(128, 0, 0)); // Brown
             put("MPGN", ColorTools.packRGB(255, 165, 0)); // Orange
             put("Membranous", ColorTools.packRGB(0, 128, 128)); // Teal
             put("PGNMID", ColorTools.packRGB(128, 0, 128)); // Purple

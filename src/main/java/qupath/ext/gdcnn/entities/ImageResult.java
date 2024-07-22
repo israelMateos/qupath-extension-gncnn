@@ -80,8 +80,8 @@ public class ImageResult {
         return diseaseCounts.getOrDefault("IAGN", 0);
     }
 
-    public int getIgAN() {
-        return diseaseCounts.getOrDefault("IgAN", 0);
+    public int getIgAGN() {
+        return diseaseCounts.getOrDefault("IgAGN", 0);
     }
 
     public int getMPGN() {
@@ -112,7 +112,7 @@ public class ImageResult {
     public String toCSVRow() {
         return name + ";" + mostPredictedClass + ";" + nGlomeruli + ";" + getNoSclerotic() + ";" + getSclerotic() + ";"
                 + getABMGN() + ";" + getANCA() + ";" + getC3GN() + ";" + getCryoglobulinemicGN() + ";" + getDDD() + ";"
-                + getFibrillary() + ";" + getIAGN() + ";" + getIgAN() + ";" + getMPGN() + ";" + getMembranous() + ";"
+                + getFibrillary() + ";" + getIAGN() + ";" + getIgAGN() + ";" + getMPGN() + ";" + getMembranous() + ";"
                 + getPGNMID() + ";" + getSLEGNIV() + ";" + getNoClassified();
     }
 
@@ -122,6 +122,6 @@ public class ImageResult {
      * @return CSV header
      */
     public static String getCSVHeader() {
-        return "Image;Most predicted class;Number of glomeruli;Non-sclerotic;Sclerotic;ABMGN;ANCA;C3-GN;CryoglobulinemicGN;DDD;Fibrillary;IAGN;IgAN;MPGN;Membranous;PGNMID;SLEGN-IV;Non-classified";
+        return "Image;Most predicted class;Number of glomeruli;Non-sclerotic;Sclerotic;ABMGN;ANCA;C3-GN;CryoglobulinemicGN;DDD;Fibrillary;IAGN;IgAGN;MPGN;Membranous;PGNMID;SLEGN-IV;Non-classified";
     }
 }
