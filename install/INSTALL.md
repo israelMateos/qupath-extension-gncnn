@@ -1,11 +1,11 @@
-# GDCnn Installation
+# GNCnn Installation
 
 > [!WARNING]
 > This extension **is developed for QuPath 0.5.0 or higher**, and has not been tested with other versions.
 >
 > If having a NVIDIA GPU, the extension only supports CUDA 11.1. CPU is also supported.
 
-GDCnn was tested on Ubuntu 20.04 and 22.04, Windows 10 and macOS Big Sur 11.4. It requires Python 3.8 or 3.9 (not higher).
+GNCnn was tested on Ubuntu 20.04 and 22.04, Windows 10 and macOS Big Sur 11.4. It requires Python 3.8 or 3.9 (not higher).
 
 **0.** Install Python 3.8 or 3.9 (not higher) on your system.
 
@@ -14,7 +14,7 @@ GDCnn was tested on Ubuntu 20.04 and 22.04, Windows 10 and macOS Big Sur 11.4. I
 - Python 3.8 or 3.9 (not higher)
 - Git LFS (for downloading the model weights) -->
 
-**1.** Download the `.jar` file for the extension from the [Releases](https://github.com/israelMateos/qupath-extension-gdcnn/releases/latest) page.
+**1.** Download the `.jar` file for the extension from the [Releases](https://github.com/israelMateos/qupath-extension-gncnn/releases/latest) page.
 
 **2.** This step depends on the platform you are using.
 
@@ -49,6 +49,6 @@ bash install.sh
 sh install.sh
 ```
 
-This script will install the Python tool on which the extension depends, and will download the model weights. It will also create a new directory for the GDCnn extension in the QuPath extensions directory. The next time you open QuPath, the extension will be available in the menu.
+This script will install the Python tool on which the extension depends, and will download the model weights. It will also create a new directory for the GNCnn extension in the QuPath extensions directory. The next time you open QuPath, the extension will be available in the menu.
 
-**4.** Once the extension is installed, you can remove this repository's directory (`qupath-extension-gdcnn`) from your system.
+**4.** Once the extension is installed, you can remove this repository's directory (`qupath-extension-gncnn`) from your system.

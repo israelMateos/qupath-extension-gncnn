@@ -10,7 +10,7 @@ plugins {
 }
 
 // TODO: Change the module name
-ext.moduleName = 'io.github.qupath.extension.gdcnn'
+ext.moduleName = 'io.github.qupath.extension.gncnn'
 
 // TODO: Define the extension name & version, and provide a short description
 base {

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.GridPane?>
+
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="qupath.ext.gncnn.ui.ResultsController">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+      <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="8.0">
+         <children>
+            <TableView fx:id="resultsTable" prefHeight="559.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+               <columns>
+                  <TableColumn fx:id="thumbnailCol" prefWidth="210.0" style="-fx-alignment: CENTER" text="Thumbnail" />
+                  <TableColumn fx:id="imageCol" prefWidth="300.0" style="-fx-alignment: CENTER" text="Image" />
+                  <TableColumn fx:id="mostPredictedClassCol" prefWidth="170.0" style="-fx-alignment: CENTER" text="Most predicted class" />
+                  <TableColumn fx:id="nGlomeruliCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="Glomeruli" />
+                  <TableColumn fx:id="noScleroticCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="Non-sclerotic" />
+                  <TableColumn fx:id="scleroticCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="Sclerotic" />
+                  <TableColumn fx:id="ABMGNCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="AMBGN" />
+                  <TableColumn fx:id="ANCACol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="ANCA" />
+                  <TableColumn fx:id="C3GNCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="C3-GN" />
+                  <TableColumn fx:id="CryoglobulinemicGNCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="Cryoglobulinemic GN" />
+                  <TableColumn fx:id="DDDCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="DDD" />
+                  <TableColumn fx:id="FibrillaryCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="Fibrillary" />
+                  <TableColumn fx:id="IAGNCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="IAGN" />
+                  <TableColumn fx:id="IgAGNCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="IgAGN" />
+                  <TableColumn fx:id="MPGNCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="MPGN" />
+                  <TableColumn fx:id="MembranousCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="Membranous" />
+                  <TableColumn fx:id="PGNMIDCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="PGNMID" />
+                  <TableColumn fx:id="SLEGNIVCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="SLEGN-IV" />
+                  <TableColumn fx:id="noClassifiedCol" minWidth="0.0" prefWidth="170.0" style="-fx-alignment: CENTER" text="Non-classified" />
+               </columns>
+            </TableView>
+            <HBox alignment="CENTER_RIGHT" prefHeight="25.0" spacing="8.0">
+               <children>
+                  <TextField fx:id="resultsSearchBar" prefHeight="25.0" prefWidth="310.0" promptText="Search..." />
+                  <Region prefHeight="25.0" prefWidth="808.0" HBox.hgrow="ALWAYS" />
+                  <Button fx:id="saveBtn" mnemonicParsing="false" onAction="#saveResults" text="Save" />
+               </children>
+            </HBox>
+         </children>
+         <GridPane.margin>
+            <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+         </GridPane.margin>
+      </VBox>
+   </children>
+</GridPane>

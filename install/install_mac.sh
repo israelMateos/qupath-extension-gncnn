@@ -7,7 +7,7 @@ echo "Extension path: ${extension_path}"
 
 Install the required Python packages
 echo "Installing the required Python packages..."
-pip install "../gdcnn/[mac]" --no-cache-dir
+pip install "../gncnn/[mac]" --no-cache-dir
 echo "Python packages installed."
 
 # Download the models
@@ -17,9 +17,9 @@ echo "Models downloaded."
 
 # Get model target paths
 echo "Copying the models to the target paths..."
-gdcnn_path=$(python -c "import gdcnn; print(gdcnn.__path__[0])")
-detection_model_dir="${gdcnn_path}/detection/logs/cascade_mask_rcnn_R_50_FPN_1x/external-validation/output/"
-classification_model_dir="${gdcnn_path}/classification/logs/"
+gncnn_path=$(python -c "import gncnn; print(gncnn.__path__[0])")
+detection_model_dir="${gncnn_path}/detection/logs/cascade_mask_rcnn_R_50_FPN_1x/external-validation/output/"
+classification_model_dir="${gncnn_path}/classification/logs/"
 
 # Copy the detection model to the target path
 mkdir -p ${detection_model_dir}

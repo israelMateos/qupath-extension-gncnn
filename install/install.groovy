@@ -1,5 +1,5 @@
 /**
- * This script installs the GDCnn extension in QuPath.
+ * This script installs the GNCnn extension in QuPath.
  */
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -32,9 +32,9 @@ if (!extensionsDir.exists()) {
 def jarFile = new File(this.args[0])
 
 if (!jarFile.exists()) {
-    throw new FileNotFoundException('GDCnn.jar not found')
+    throw new FileNotFoundException('GNCnn.jar not found')
 } else {
-    Files.copy(jarFile.toPath(), Paths.get(extensionsDir.getAbsolutePath() + '/GDCnn.jar'), StandardCopyOption.REPLACE_EXISTING)
+    Files.copy(jarFile.toPath(), Paths.get(extensionsDir.getAbsolutePath() + '/GNCnn.jar'), StandardCopyOption.REPLACE_EXISTING)
 }
 
-println('GDCnn extension installed')
+println('GNCnn extension installed')

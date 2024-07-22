@@ -1,10 +1,10 @@
-# GDCnn
+# GNCnn
 
-GDCnn (*G*lomerular *D*isease *C*lassification by *n*eural *n*etwork) is an
+GNCnn (*G*lomerulo*N*ephritis *C*lassification by *n*eural *n*etwork) is an
 extension which integrates a pipeline for glomerular detection and classification
 into QuPath. The pipeline is designed to classify glomeruli into sclerotic and
 non-sclerotic classes, and to further classify non-sclerotic glomeruli into
-12 other pathologies.
+12 common common glomerulonephritis diagnoses.
 
 The pipeline is based on the [MESCnn](https://github.com/Nicolik/MESCnn) 
 pipeline, which was developed for the Oxford classification of glomeruli in
@@ -40,7 +40,7 @@ The extension requires the following dependencies:
 >
 > If having a NVIDIA GPU, the extension only supports CUDA 11.1. CPU is also supported.
 
-GDCnn was tested on Ubuntu 20.04 and 22.04, Windows 10 and macOS Big Sur 11.4. It requires Python 3.8 or 3.9 (not higher).
+GNCnn was tested on Ubuntu 20.04 and 22.04, Windows 10 and macOS Big Sur 11.4. It requires Python 3.8 or 3.9 (not higher).
 
 **0.** Install Python 3.8 or 3.9 (not higher) on your system.
 
@@ -49,7 +49,7 @@ GDCnn was tested on Ubuntu 20.04 and 22.04, Windows 10 and macOS Big Sur 11.4. I
 - Python 3.8 or 3.9 (not higher)
 - Git LFS (for downloading the model weights) -->
 
-**1.** Download the `.jar` file for the extension from the [Releases](https://github.com/israelMateos/qupath-extension-gdcnn/releases/latest) page.
+**1.** Download the `.jar` file for the extension from the [Releases](https://github.com/israelMateos/qupath-extension-gncnn/releases/latest) page.
 
 **2.** This step depends on the platform you are using.
 
@@ -84,12 +84,12 @@ bash install.sh
 sh install.sh
 ```
 
-This script will install the Python tool on which the extension depends, and will download the model weights. It will also create a new directory for the GDCnn extension in the QuPath extensions directory. The next time you open QuPath, the extension will be available in the menu.
+This script will install the Python tool on which the extension depends, and will download the model weights. It will also create a new directory for the GNCnn extension in the QuPath extensions directory. The next time you open QuPath, the extension will be available in the menu.
 
-**4.** Once the extension is installed, you can remove this repository's directory (`qupath-extension-gdcnn`) from your system.
+**4.** Once the extension is installed, you can remove this repository's directory (`qupath-extension-gncnn`) from your system.
 
 ## Usage
-The extension adds a new menu item to QuPath, called *GDCnn*. This menu item contains the button *Open GDCnn*.
+The extension adds a new menu item to QuPath, called *GNCnn*. This menu item contains the button *Open GNCnn*.
 
 This button opens a dialog window, where you can select the image/s you want to analyze.
 You must also select the classification mode: *Sclerotic vs Non-Sclerotic* or *Sclerotic + 12 classes*.
@@ -100,11 +100,11 @@ After selecting the image/s and the classification mode, click:
 - *Run Classification* to classify "Glomerulus" annotations into the selected classes.
 - *Run Detection + Classification* to run both detection and classification.
 
-<img src="images/gdcnn_main.png" alt="GDCnn Dialog" width="400"/>
+<img src="images/gncnn_main.png" alt="GNCnn Dialog" width="400"/>
 
 The glomeruli are automatically annotated in the corresponding images. An example of the annotations is shown below:
 
-![GDCnn Annotations](images/gdcnn_ann.png)
+![GNCnn Annotations](images/gncnn_ann.png)
 
 Another button, *View results*, opens a dialog window with the results of the selected image/s.
 The results are shown in a table, where each WSI presents:
@@ -113,7 +113,7 @@ The results are shown in a table, where each WSI presents:
 - The number of glomeruli for each class.
 - The 3 most probable classes for the WSI.
 
-![GDCnn Results](images/gdcnn_results.png)
+![GNCnn Results](images/gncnn_results.png)
 
 ## Building the extension
 
@@ -155,4 +155,4 @@ Currently, MPS is not supported, so the extension will use the CPU by default in
 
 This extension is licensed under the GNU General Public License v3.0. For more information, see the [LICENSE](LICENSE) file.
 
-Also, part of [detectron2](https://github.com/facebookresearch/detectron2) is used in the extension. Detectron2 is licensed under the Apache License 2.0. For more information, see the [LICENSE_DETECTRON2](LICENSE_DETECTRON2) file.
+Also, part of [detectron2](https://github.com/facebookresearch/detectron2) is used in the extension. Detectron2 is licensed under the Apache License 2.0. For more information, see the [LICENSE_DETECTRON2](gncnn/LICENSE_DETECTRON2) file.

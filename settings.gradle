@@ -8,7 +8,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'qupath-extension-gdcnn'
+rootProject.name = 'qupath-extension-gncnn'
 
 // Note that the QuPath API isn't stable; something designed for
 // 0.X.a should work with 0.X.b, but not necessarily with 0.Y.a.

@@ -9,7 +9,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def download_repository(output_dir):
     return snapshot_download(
-        repo_id="israelMateos/GDCnn",
+        repo_id="israelMateos/GNCnn",
         token="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",
         local_dir=output_dir,
         local_dir_use_symlinks=False,

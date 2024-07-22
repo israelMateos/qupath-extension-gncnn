@@ -43,11 +43,12 @@ bin/
 
 ## Python
 /detectron2/
-/gdcnn/gdcnn/detection/logs*
-/gdcnn/gdcnn/classification/logs*
+/gncnn/gncnn/detection/logs*
+/gncnn/gncnn/classification/logs*
+/models/
 /Data/
 /build/
-/GDCnn.egg-info/
+/GNCnn.egg-info/
 /.paquo.toml
 
  Byte-compiled / optimized / DLL files
