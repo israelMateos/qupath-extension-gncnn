@@ -242,7 +242,7 @@ public class Utils {
                             put("DDD", 0);
                             put("Fibrillary", 0);
                             put("IAGN", 0);
-                            put("IgAN", 0);
+                            put("IgAGN", 0);
                             put("MPGN", 0);
                             put("Membranous", 0);
                             put("PGNMID", 0);
@@ -261,7 +261,7 @@ public class Utils {
                             put("DDD", 0.0);
                             put("Fibrillary", 0.0);
                             put("IAGN", 0.0);
-                            put("IgAN", 0.0);
+                            put("IgAGN", 0.0);
                             put("MPGN", 0.0);
                             put("Membranous", 0.0);
                             put("PGNMID", 0.0);
@@ -278,6 +278,7 @@ public class Utils {
                             className = className.replace("Glomerulus", "Non-classified");
                             className = className.replace("NoSclerotic", "Non-sclerotic");
                             className = className.split(" ")[0];
+                            System.err.println(className);
                             diseaseCounts.put(className, diseaseCounts.get(className) + 1);
                             nGlomeruli++;
 
@@ -344,7 +345,7 @@ public class Utils {
                         put("DDD", 0);
                         put("Fibrillary", 0);
                         put("IAGN", 0);
-                        put("IgAN", 0);
+                        put("IgAGN", 0);
                         put("MPGN", 0);
                         put("Membranous", 0);
                         put("PGNMID", 0);
@@ -363,7 +364,7 @@ public class Utils {
                         put("DDD", 0.0);
                         put("Fibrillary", 0.0);
                         put("IAGN", 0.0);
-                        put("IgAN", 0.0);
+                        put("IgAGN", 0.0);
                         put("MPGN", 0.0);
                         put("Membranous", 0.0);
                         put("PGNMID", 0.0);
