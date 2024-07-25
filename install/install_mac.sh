@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Get QuPath installation path from install.cfg qupath_path variable
+# Get QuPath installation path from mac.cfg qupath_path variable
 . ./mac.cfg
 echo "QuPath installation path: ${qupath_path}"
 echo "Extension path: ${extension_path}"
