@@ -1,115 +1,152 @@
-# QuPath extension template
+# GNCnn
 
-This repo contains a template and instructions to help create a new extension for [QuPath](https://qupath.github.io).
+GNCnn (*G*lomerulo*N*ephritis *C*lassification by *n*eural *n*etwork) is an
+extension which integrates a pipeline for glomerular detection and classification
+into QuPath. The pipeline is designed to classify glomeruli into sclerotic and
+non-sclerotic classes, and to further classify non-sclerotic glomeruli into
+12 common common glomerulonephritis diagnoses.
 
-It already contains two minimal extensions, so the first task is to make sure that they work.
-Then, it's a matter of customizing the code to make it more useful.
+The pipeline is based on the [MESCnn](https://github.com/Nicolik/MESCnn) 
+pipeline, which was developed for the Oxford classification of glomeruli in
+IgA nephropathy. The paper for MESCnn can be found at 
+[https://www.sciencedirect.com/science/article/pii/S0169260723004807](https://www.sciencedirect.com/science/article/pii/S0169260723004807),
+and its citation in BibTeX is the following:
 
-> There are two extensions to show that you can use either Java or Groovy.
-
-## Build the extension
-
-Building the extension with Gradle should be pretty easy - you don't even need to install Gradle separately, because the 
-[Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html) will take care of that.
-
-Open a command prompt, navigate to where the code lives, and use
-```bash
-gradlew build
+```
+@article{ALTINI2023107814,
+title = {Performance and Limitations of a Supervised Deep Learning Approach for the Histopathological Oxford Classification of Glomeruli with IgA Nephropathy},
+journal = {Computer Methods and Programs in Biomedicine},
+pages = {107814},
+year = {2023},
+issn = {0169-2607},
+doi = {https://doi.org/10.1016/j.cmpb.2023.107814},
+url = {https://www.sciencedirect.com/science/article/pii/S0169260723004807},
+author = {Nicola Altini and Michele Rossini and Sándor Turkevi-Nagy and Francesco Pesce and Paola Pontrelli and Berardino Prencipe and Francesco Berloco and Surya Seshan and Jean-Baptiste Gibier and Anibal Pedraza Dorado and Gloria Bueno and Licia Peruzzi and Mattia Rossi and Albino Eccher and Feifei Li and Adamantios Koumpis and Oya Beyan and Jonathan Barratt and Huy Quoc Vo and Chandra Mohan and Hien Van Nguyen and Pietro Antonio Cicalese and Angela Ernst and Loreto Gesualdo and Vitoantonio Bevilacqua and Jan Ulrich Becker},
+}
 ```
 
-The built extension should be found inside `build/libs`.
-You can drag this onto QuPath to install it.
-You'll be prompted to create a user directory if you don't already have one.
+## Dependencies
 
-The minimal extension here doesn't do much, but it should at least install a new command under the 'Extensions' menu in 
-QuPath.
+The extension requires the following dependencies:
 
-> In case your extension contains external dependencies beyond what QuPath already includes, you can create a 
-> [single jar file](https://imperceptiblethoughts.com/shadow/introduction/#benefits-of-shadow) that bundles these along 
-> with your extension by using
-> ```bash
-> gradlew shadowJar
-> ```
-> If you don't do that, you'll need to drag *all* the extra dependences onto QuPath to install them as well.
+- Python 3.8 or 3.9 (not higher)
+- If using a NVIDIA GPU:
+  - CUDA 11.1
 
+## Installation
 
-## Set up in an IDE (optional)
+> [!WARNING]
+> This extension **is developed for QuPath 0.5.0 or higher**, and has not been tested with other versions.
+>
+> If you have a NVIDIA GPU, the extension only supports CUDA 11.1. CPU is also supported.
 
-During development, things are likely to be much easier if you work within an IDE.
+GNCnn was tested on Ubuntu 20.04 and 22.04, Windows 10 and macOS Big Sur 11.4. It requires Python 3.8 or 3.9 (not higher).
 
-QuPath itself is developed using IntelliJ, and you can import the extension template there.
+**0.** Install Python 3.8 or 3.9 (not higher) on your system, and CUDA 11.1 if you are using a NVIDIA GPU.
 
-However, for development and testing, it can help to import QuPath *and* the extension and have them in your IDE side-by-side.
+<!-- **0.** Install on your system the following dependencies:
 
-In IntelliJ, you can do this in a few steps:
-* Get QuPath's source code, as described at https://qupath.readthedocs.io/en/stable/docs/reference/building.html
-* Store your extension code in a directory *beside* QuPath's code. So it should be located next to the `qupath` code directory.
-* Import QuPath into IntelliJ as a Gradle project (you don't need to import the extension yet!)
-   * See https://www.jetbrains.com/help/idea/work-with-gradle-projects.html
-* Within `qupath/settings.gradle` add the line `includeFlat 'your-extension-code-directory'` (updating the code directory as needed)
-* Refresh the Gradle project in IntelliJ, and your extension code should appear
-* Create a [Run configuration](https://www.jetbrains.com/help/idea/run-debug-configuration.html) in IntelliJ to launch QuPath. An example of how that looks is shown below:
+- Python 3.8 or 3.9 (not higher)
+- Git LFS (for downloading the model weights) -->
 
-<img src="qupath-intellij.png" alt="QuPath run configuration in IntelliJ" width="428" />
+**1.** Download the latest release from the [Releases](https://github.com/israelMateos/qupath-extension-gncnn/releases/latest) page for the platform you are using.
 
-Now when you run QuPath from IntelliJ, your extension should (hopefully) be found - there's no need to add it by drag & drop.
+**2.** Edit `install/config.cfg`. You should set the following variables:
 
-## Customize the extension
+- `qupath_path`: 
+  - For Linux, the path to the QuPath installation directory. It should contain the `bin` directory, in which the `QuPath` executable is located.
+  - For Windows and macOS, the path to the QuPath executable. In Windows, it should include the console version of QuPath, _e.g._ `QuPath-0.5.1 (console).exe`. In macOS, it should include the executable buried inside the `.app` directory, _e.g._ `QuPath-0.5.1-x64.app/Contents/MacOS/QuPath-0.5.1-x64`.
+- `extension_path`: the path to the `.jar` file included in the release. It should include the file name.
+  
+**3.** From the `install` directory, run the following command:
 
-There are a few fixed steps to customizing the extension, and then the main creative part where you add your own code.
+- **Linux**:
 
-### Update `settings.gradle`
+```bash
+bash install.sh
+```
 
-Open `settings.gradle` and check the comment lines flagged with `\\TODO`.
-These point you towards parts you may well need to change.
+- **Windows**:
 
-### Update `build.gradle`
+```bash
+.\install.bat
+```
 
-Open `build.gradle` and follow a similar process to with `settings.gradle`, to update the bits flagged with `\\TODO`.
+- **macOS**:
 
-### Create the extension Java or Groovy file(s)
+```bash
+sh install.sh
+```
 
-For the extension to work, you need to create at least one file that extends `qupath.lib.gui.extensions.QuPathExtension`.
+This script will install the Python tool on which the extension depends, and will download the model weights. It will also create a new directory for the GNCnn extension in the QuPath extensions directory. The next time you open QuPath, the extension will be available in the menu.
 
-There are two examples in the template, in two languages:
-* **Java:** `qupath.ext.template.DemoExtension.java`.
-* **Groovy:** `qupath.ext.template.DemoGroovyExtension.java`.
+**4.** Once the extension is installed, you can remove this repository's directory (`qupath-extension-gncnn`) from your system.
 
-You can pick the one that corresponds to the language you want to use, and delete the other.
+## Usage
+The extension adds a new menu item to QuPath, called *GNCnn*. This menu item contains the button *Open GNCnn*.
 
-Then take your chosen file and rename it, edit it, move it to another package... basically, make it your own.
+This button opens a dialog window, where you can select the image/s you want to analyze.
+You must also select the classification mode: *Sclerotic vs Non-Sclerotic* or *Sclerotic + 12 classes*.
 
-> Please **don't neglect this step!** 
-> If you do, there's a chance of multiple extensions being created with the same class names... and causing confusion later.
+After selecting the image/s and the classification mode, click:
 
-### Update the `META-INF/services` file
+- *Run Detection* to detect glomeruli in the image/s.
+- *Run Classification* to classify "Glomerulus" annotations into the selected classes.
+- *Run Detection + Classification* to run both detection and classification.
 
-For QuPath to *find* the extension later, the full class name needs to be available in `resources/META-INFO/services/qupath.lib.gui.extensions.QuPathExtensions`.
+<img src="images/gncnn_main.png" alt="GNCnn Dialog" width="400"/>
 
-So remember to edit that file to include the class name that you actually used for your extension.
+The glomeruli are automatically annotated in the corresponding images. An example of the annotations is shown below:
 
-### Specify your license
+![GNCnn Annotations](images/gncnn_ann.png)
 
-Add a license file to your GitHub repo so that others know what they can and can't do with your extension.
+Another button, *View results*, opens a dialog window with the results of the selected image/s.
+The results are shown in a table, where each WSI presents:
 
-This should be compatible with QuPath's license -- see https://github.com/qupath/qupath
+- The number of glomeruli detected.
+- The number of glomeruli for each class.
+- The 3 most probable classes for the WSI.
 
-### Replace this readme
+![GNCnn Results](images/gncnn_results.png)
 
-Don't forget to replace the contents of this readme with your own!
+## Building the extension
 
+To build the extension from source, use the following command from the root directory of the repository:
 
-## Getting help
+```bash
+./gradlew clean shadow
+```
 
-For questions about QuPath and/or creating new extensions, please use the forum at https://forum.image.sc/tag/qupath
+The extension `.jar` file will be generated in the `build/libs` directory.
 
-------
+## Troubleshooting
+
+### Bug with Ubuntu
+
+If you are using Ubuntu, you may get `Ubuntu Error 13: Permission denied` when trying to run the extension. As stated in [this issue](https://forum.image.sc/t/could-not-execute-system-command-in-qupath-thanks-to-groovy-script-and-java-processbuilder-class/61629/2?u=oburri), Java's `ProcessBuilder` class is not allowed to run on Ubuntu.
+
+To fix this, QuPath must be [built from source](https://qupath.readthedocs.io/en/stable/docs/reference/building.html) instead of using the installer. This will allow the extension to run without issues.
+
+### Bug with Windows
+
+If you are using Windows, you may get an error when trying to install the extension. In the last step, _i.e._, when the extension is being copied to the QuPath extensions directory, you may get an error saying that the file is being used by another process. This occurs if the extension is already loaded in QuPath.
+
+To fix this, close QuPath before running the installation script, and remove the extension from the QuPath extensions directory if it is already there.
+
+### macOS installation takes too long
+
+In some versions of macOS, the installation script may seem to hang when installing the Python tool. Specifically, this may occur when the script is trying to install the `opencv-python` package. This is a known issue with the `opencv-python` package, and it is not related to the extension.
+
+Although the script may seem to hang, it is still running. The package must be compiled from source, which takes some time. The installation will finish eventually.
+
+### Glomeruli detection takes too long
+
+The glomeruli detection process is the most time-consuming part of the pipeline. In case you are using a CPU, the process may take a long time to finish (depending on the image size, it may take more than 10 minutes). This is because the detection process is based on a two-stage model, which is computationally expensive. If you have a CUDA-compatible GPU, the process will be faster.
+
+Currently, MPS is not supported, so the extension will use the CPU by default in macOS. This may be changed in future versions.
 
 ## License
 
-This is just a template, you're free to use it however you like.
-You can treat the contents of *this repository only* as being under [the Unlicense](https://unlicense.org) (except for the Gradle wrapper, which has its own license included).
+This extension is licensed under the GNU General Public License v3.0. For more information, see the [LICENSE](LICENSE) file.
 
-If you use it to create a new QuPath extension, I'd strongly encourage you to select a suitable open-source license for the extension.
-
-Note that *QuPath itself* is available under the GPL, so you do have to abide by those terms: see https://github.com/qupath/qupath for more.
+Also, part of [detectron2](https://github.com/facebookresearch/detectron2) is used in the extension. Detectron2 is licensed under the Apache License 2.0. For more information, see the [LICENSE_DETECTRON2](gncnn/LICENSE_DETECTRON2) file.

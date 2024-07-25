@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.GridPane?>
+
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="554.0" prefWidth="482.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="qupath.ext.gncnn.ui.ClassificationWarningController">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+      <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="8.0">
+         <children>
+            <Label alignment="CENTER_LEFT" prefHeight="35.0" text="From your selected images, classification will be applied only to images with &quot;Glomerulus&quot; annotations, i.e.:" wrapText="true">
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+            </Label>
+            <ListView fx:id="glomeruliImgsListView" prefHeight="200.0" prefWidth="450.0">
+               <VBox.margin>
+                  <Insets left="8.0" right="8.0" />
+               </VBox.margin>
+            </ListView>
+            <Label alignment="CENTER_LEFT" prefHeight="35.0" text="On the other hand, the following selected images do not have any &quot;Glomerulus&quot; annotations:" wrapText="true" />
+            <ListView fx:id="noGlomeruliImgsListView" prefHeight="200.0" prefWidth="450.0">
+               <VBox.margin>
+                  <Insets left="8.0" right="8.0" />
+               </VBox.margin>
+            </ListView>
+            <Separator prefWidth="200.0" />
+            <HBox alignment="CENTER_RIGHT" prefHeight="25.0" spacing="8.0">
+               <children>
+                  <Label text="Are you sure you want to continue?" />
+                  <Button fx:id="cancelBtn" mnemonicParsing="false" onAction="#cancelBtnClicked" text="Cancel" />
+                  <Button fx:id="okBtn" mnemonicParsing="false" onAction="#okBtnClicked" text="OK" />
+               </children>
+            </HBox>
+         </children>
+         <GridPane.margin>
+            <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+         </GridPane.margin>
+      </VBox>
+   </children>
+</GridPane>

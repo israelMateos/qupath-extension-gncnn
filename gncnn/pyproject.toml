@@ -1,0 +1,153 @@
+[build-system]
+# A list of packages that are needed to build your package:
+requires = ["setuptools >= 65", "wheel >= 0.38"]
+# The name of the Python object that frontends will use to perform the build:
+build-backend = "setuptools.build_meta"  # If not defined, then legacy behavior can happen.
+
+
+[project]
+# This is the name of your project. The first time you publish this
+# package, this name will be registered for you. It will determine how
+# users can install this project, e.g.:
+#
+# $ pip install sampleproject
+#
+# And where it will live on PyPI: https://pypi.org/project/sampleproject/
+#
+# There are some restrictions on what makes a valid project name
+# specification here:
+# https://packaging.python.org/specifications/core-metadata/#name
+name = "gncnn"  # REQUIRED, is the only field that cannot be marked as dynamic.
+
+version = "0.1.0"  # REQUIRED, although can be dynamic
+
+# This is a one-line description or tagline of what your project does. This
+# corresponds to the "Summary" metadata field:
+# https://packaging.python.org/specifications/core-metadata/#summary
+description = "Glomerular Disease Classification by Neural Network"
+
+# This is an optional longer description of your project that represents
+# the body of text which users will see when they visit PyPI.
+#
+# Often, this is the same as your README, so you can just read it in from
+# that file directly.
+#
+# This field corresponds to the "Description" metadata field:
+# https://packaging.python.org/specifications/core-metadata/#description-optional
+readme = "README.md"
+
+# Specify which Python versions you support. In contrast to the
+# 'Programming Language' classifiers in this file, 'pip install' will check this
+# and refuse to install the project if the version does not match. See
+# https://packaging.python.org/guides/distributing-packages-using-setuptools/#python-requires
+requires-python = ">=3.8"
+
+# This is either text indicating the license for the distribution, or a file
+# that contains the license.
+# https://packaging.python.org/en/latest/specifications/core-metadata/#license
+license = {file = "LICENSE"}
+
+# This field adds keywords for your project which will appear on the
+# project page. What does your project relate to?
+#
+# Note that this is a list of additional keywords, separated
+# by commas, to be used to assist searching for the distribution in a
+# larger catalog.
+keywords = ["artificial intelligence", "neural network", "glomerular disease"]
+
+authors = [
+  {name = "I. Mateos-Aparicio-Ruiz", email = "Israel.MateosAparici@uclm.es" }
+]
+maintainers = [
+  {name = "I. Mateos-Aparicio-Ruiz", email = "Israel.MateosAparici@uclm.es" }
+]
+
+# Classifiers help users find your project by categorizing it.
+#
+# For a list of valid classifiers, see https://pypi.org/classifiers/
+classifiers = [
+  # How mature is this project? Common values are
+  #   3 - Alpha
+  #   4 - Beta
+  #   5 - Production/Stable
+  "Development Status :: 3 - Alpha",
+
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+
+  # Specify the Python versions you support here. In particular, ensure
+  # that you indicate you support Python 3. These classifiers are *not*
+  # checked by "pip install". See instead "requires-python" key in this file.
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+
+# This field lists other packages that your project depends on to run.
+# Any package you put here will be installed by pip when your project is
+# installed, so they must be valid existing projects.
+#
+# For an analysis of this field vs pip's requirements files see:
+# https://packaging.python.org/discussions/install-requires-vs-requirements/
+dependencies = [
+  "numpy>=1.24.4,<2",
+  "cached-property>=1.5.2",
+  "huggingface-hub>=0.20.3",
+  "mmcls>=0.25.0",
+  "opencv-python>=4.9.0.80",
+  "pandas>=2.0.3",
+  "shapely>=2.0.3",
+  "tqdm>=4.66.2",
+]
+# dynamic = ["dependencies"]
+
+
+[project.optional-dependencies]
+cu111 = [
+    "torch==1.8.0+cu111",
+    "torchvision==0.9.0+cu111",
+    "mmcv-full==1.7.2"
+]
+
+cpu = [
+    "torch==1.8.0+cpu",
+    "torchvision==0.9.0+cpu",
+    "mmcv==1.7.2"
+]
+
+mac = [
+    "torch==1.8.0",
+    "torchvision==0.9.0",
+    "mmcv==1.7.2"
+]
+
+linux = [
+    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
+]
+
+linux-cu111 = [
+    "gncnn[cu111]",
+    "gncnn[linux]"
+]
+
+linux-cpu = [
+    "gncnn[cpu]",
+    "gncnn[linux]"
+]
+
+# List URLs that are relevant to your project
+[project.urls]
+"Source" = "https://github.com/israelMateos/GNCnn/"
+
+# The following would provide a command line executable called `sample`
+# which executes the function `main` from this package when invoked.
+[project.scripts]
+gncnn-threshold = "gncnn.detection.qupath.threshold:main"
+gncnn-segment = "gncnn.detection.qupath.segment:main"
+gncnn-classify = "gncnn.classification.inference.classify:main"
+
+# [tool.setuptools.dynamic]
+# dependencies = {file = "requirements.txt"}
