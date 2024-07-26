@@ -5,6 +5,12 @@ Original:
 Modified by: Israel Mateos-Aparicio-Ruiz
 Modifications:
     - Adapted output to match the QuPath format
+
+As this source code is licensed under the MIT license, a copy of the license
+terms is provided in the LICENSE_SHAPELY-GEOJSON file in the root of this
+repository, as stated in the license terms. However, the main code is licensed 
+under the GPL-3.0 license, as stated in the LICENSE file in the root of this
+repository.
 """
 import json
 import uuid
